@@ -1,0 +1,143 @@
+version: '3.6'
+
+networks:
+  net:
+    driver: overlay
+    attachable: true
+
+services:
+
+  cdrsim-berlin-answered:
+    image: matjaz99/cdrpr:1.0
+    networks:
+      - net
+    environment:
+      - CDRPR_DIRECTORY=/home
+      - CDRPR_THREADS=64
+      - CDRPR_BULK_SIZE=5000
+      - CDRPR_DEBUG_ENABLED=false
+      - CDRPR_ES_URL=http://192.168.1.106:9200/cdrs/_bulk?pretty
+      - CDRPR_EXIT=false
+      - CDRPR_SIMULATOR_MODE=true
+      - CDRPR_SIMULATOR_NODEID=Berlin
+      - CDRPR_SIMULATOR_DELAY=100
+      - CDRPR_SIMULATOR_CALL_REASON=16
+      - CDRPR_SIMULATOR_ANUM_START=1000000
+      - CDRPR_SIMULATOR_ANUM_RANGE=999999
+      - CDRPR_SIMULATOR_BNUM_START=8000000
+      - CDRPR_SIMULATOR_BNUM_RANGE=999999
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 3m
+        order: start-first
+
+  cdrsim-berlin-busy:
+    image: matjaz99/cdrpr:1.0
+    networks:
+      - net
+    environment:
+      - CDRPR_DIRECTORY=/home
+      - CDRPR_THREADS=32
+      - CDRPR_BULK_SIZE=1000
+      - CDRPR_DEBUG_ENABLED=false
+      - CDRPR_ES_URL=http://192.168.1.106:9200/cdrs/_bulk?pretty
+      - CDRPR_EXIT=false
+      - CDRPR_SIMULATOR_MODE=true
+      - CDRPR_SIMULATOR_NODEID=Berlin
+      - CDRPR_SIMULATOR_DELAY=300
+      - CDRPR_SIMULATOR_CALL_REASON=17
+      - CDRPR_SIMULATOR_ANUM_START=1000000
+      - CDRPR_SIMULATOR_ANUM_RANGE=999999
+      - CDRPR_SIMULATOR_BNUM_START=8000000
+      - CDRPR_SIMULATOR_BNUM_RANGE=999999
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 3m
+        order: start-first
+
+  cdrsim-berlin-noreply:
+    image: matjaz99/cdrpr:1.0
+    networks:
+      - net
+    environment:
+      - CDRPR_DIRECTORY=/home
+      - CDRPR_THREADS=32
+      - CDRPR_BULK_SIZE=500
+      - CDRPR_DEBUG_ENABLED=false
+      - CDRPR_ES_URL=http://192.168.1.106:9200/cdrs/_bulk?pretty
+      - CDRPR_EXIT=false
+      - CDRPR_SIMULATOR_MODE=true
+      - CDRPR_SIMULATOR_NODEID=Berlin
+      - CDRPR_SIMULATOR_DELAY=500
+      - CDRPR_SIMULATOR_CALL_REASON=18
+      - CDRPR_SIMULATOR_ANUM_START=1000000
+      - CDRPR_SIMULATOR_ANUM_RANGE=999999
+      - CDRPR_SIMULATOR_BNUM_START=8000000
+      - CDRPR_SIMULATOR_BNUM_RANGE=999999
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 3m
+        order: start-first
+
+  cdrsim-berlin-rejected:
+    image: matjaz99/cdrpr:1.0
+    networks:
+      - net
+    environment:
+      - CDRPR_DIRECTORY=/home
+      - CDRPR_THREADS=32
+      - CDRPR_BULK_SIZE=1000
+      - CDRPR_DEBUG_ENABLED=false
+      - CDRPR_ES_URL=http://192.168.1.106:9200/cdrs/_bulk?pretty
+      - CDRPR_EXIT=false
+      - CDRPR_SIMULATOR_MODE=true
+      - CDRPR_SIMULATOR_NODEID=Berlin
+      - CDRPR_SIMULATOR_DELAY=300
+      - CDRPR_SIMULATOR_CALL_REASON=21
+      - CDRPR_SIMULATOR_ANUM_START=1000000
+      - CDRPR_SIMULATOR_ANUM_RANGE=999999
+      - CDRPR_SIMULATOR_BNUM_START=8000000
+      - CDRPR_SIMULATOR_BNUM_RANGE=999999
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 3m
+        order: start-first
+
+  cdrsim-berlin-other:
+    image: matjaz99/cdrpr:1.0
+    networks:
+      - net
+    environment:
+      - CDRPR_DIRECTORY=/home
+      - CDRPR_THREADS=32
+      - CDRPR_BULK_SIZE=1000
+      - CDRPR_DEBUG_ENABLED=false
+      - CDRPR_ES_URL=http://192.168.1.106:9200/cdrs/_bulk?pretty
+      - CDRPR_EXIT=false
+      - CDRPR_SIMULATOR_MODE=true
+      - CDRPR_SIMULATOR_NODEID=Berlin
+      - CDRPR_SIMULATOR_DELAY=300
+      - CDRPR_SIMULATOR_CALL_REASON=0
+      - CDRPR_SIMULATOR_ANUM_START=1000000
+      - CDRPR_SIMULATOR_ANUM_RANGE=999999
+      - CDRPR_SIMULATOR_BNUM_START=8000000
+      - CDRPR_SIMULATOR_BNUM_RANGE=999999
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 3m
+        order: start-first
