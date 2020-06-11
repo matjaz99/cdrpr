@@ -12,6 +12,7 @@ public class StorageThread extends Thread {
 
         while (true) {
 
+            PrometheusMetrics.queueSize.set(Start.getQueueSize());
             clearMap();
 
             try {
@@ -47,6 +48,7 @@ public class StorageThread extends Thread {
                     it.remove(); // avoids a ConcurrentModificationException
                 }
             }
+            PrometheusMetrics.callsInProgress.set(callsInProgress.size());
             System.out.println("StorageThread: removed=" + removedCount + ", callsInProgress.size=" + callsInProgress.size());
         } catch (Exception e) {
             System.err.println("StorageThread: Error cleaning table callsInProgress");

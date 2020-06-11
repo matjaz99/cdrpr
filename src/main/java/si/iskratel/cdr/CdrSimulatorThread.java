@@ -128,6 +128,7 @@ public class CdrSimulatorThread extends Thread {
 
         Start.addCdr(cdrBean);
         totalCount++;
+        PrometheusMetrics.totalCdrGenerated.labels(threadId + "").inc();
 
     }
 

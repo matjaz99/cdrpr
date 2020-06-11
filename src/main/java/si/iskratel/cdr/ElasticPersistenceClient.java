@@ -9,8 +9,6 @@ public class ElasticPersistenceClient implements IPersistenceClient {
     private int threadId = 0;
     private int sendInterval = 1000;
     private int bulkCount = 0;
-    private int postCount = 0;
-    private int resendCount = 0;
     private long totalCount = 0;
     private long startTime = 0;
     private long endTime = 0;
@@ -61,6 +59,8 @@ public class ElasticPersistenceClient implements IPersistenceClient {
                 Start.BULK_SIZE = originalBulkSize;
             }
 
+            PrometheusMetrics.bulkSize.labels(threadId + "").set(Start.BULK_SIZE);
+
             sendBulkPost();
             bulkCount = 0;
 
@@ -99,12 +99,10 @@ public class ElasticPersistenceClient implements IPersistenceClient {
             while (!response.isSuccessful()) {
                 Thread.sleep(1500);
                 response = httpClient.newCall(request).execute();
-                resendCount++;
-                System.out.println("ElasticPersistenceClient[" + threadId + "]: Retrying to send [" + postCount + "].");
+                PrometheusMetrics.elasticPostsResent.labels(threadId + "").inc();
             }
-            postCount++;
+            PrometheusMetrics.elasticPostsSent.labels(threadId + "").inc();
             sb = new StringBuilder();
-            System.out.println("ElasticPersistenceClient[" + threadId + "]: POST sent count: " + postCount + ", BULK=" + bulkCount + ", LEFT=" + Start.getQueueSize());
 
             if (!response.isSuccessful()) System.out.println("ElasticPersistenceClient[" + threadId + "]: Unexpected code: " + response);
 
@@ -115,7 +113,7 @@ public class ElasticPersistenceClient implements IPersistenceClient {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("ElasticPersistenceClient[" + threadId + "]: Recursive call.");
-            resendCount++;
+            PrometheusMetrics.elasticPostsResent.labels(threadId + "").inc();
             executeHttpRequest(request);
         }
     }

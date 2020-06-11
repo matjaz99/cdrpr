@@ -47,7 +47,7 @@ public class Start {
 //        String testUrl = "http://centosvm:9200/cdrs/_bulk?pretty";
 
         Map<String, String> getenv = System.getenv();
-        NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "96"));
+        NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "32"));
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "5000"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
@@ -75,6 +75,8 @@ public class Start {
         } catch (IOException e) {
             System.err.println("IOException: " + e.getMessage());
         }
+
+        PrometheusMetrics.startJetty();
 
         for (int i = 1; i < NUM_OF_THREADS + 1; i++) {
             CdrSimulatorThread t = new CdrSimulatorThread(i);
