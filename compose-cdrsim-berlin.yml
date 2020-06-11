@@ -12,7 +12,6 @@ services:
     networks:
       - net
     environment:
-      - CDRPR_DIRECTORY=/home
       - CDRPR_THREADS=64
       - CDRPR_BULK_SIZE=5000
       - CDRPR_DEBUG_ENABLED=false

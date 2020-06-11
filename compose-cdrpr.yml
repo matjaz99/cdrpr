@@ -10,19 +10,24 @@ networks:
 services:
 
   cdrpr:
-    image: matjaz99/cdrpr:1.0
+    image: matjaz99/cdrpr:2.0
     networks:
       - net
       - es_elastic
     environment:
-      - CDRPR_DIRECTORY=/opt/cdr
-      - CDRPR_THREADS=4
-      - CDRPR_BULK_SIZE=10000
+      - CDRPR_THREADS=64
+      - CDRPR_BULK_SIZE=5000
       - CDRPR_DEBUG_ENABLED=false
-      - CDRPR_ES_URL=http://es01:9200/cdrs/_bulk?pretty
+      - CDRPR_ES_URL=http://192.168.1.106:9200/cdrs/_bulk?pretty
       - CDRPR_EXIT=false
-    volumes:
-      - /opt/cdr:/opt/cdr
+      - CDRPR_SIMULATOR_MODE=true
+      - CDRPR_SIMULATOR_NODEID=Berlin
+      - CDRPR_SIMULATOR_DELAY=100
+      - CDRPR_SIMULATOR_CALL_REASON=0
+      - CDRPR_SIMULATOR_ANUM_START=1000000
+      - CDRPR_SIMULATOR_ANUM_RANGE=999999
+      - CDRPR_SIMULATOR_BNUM_START=8000000
+      - CDRPR_SIMULATOR_BNUM_RANGE=999999
     deploy:
       mode: replicated
       replicas: 1

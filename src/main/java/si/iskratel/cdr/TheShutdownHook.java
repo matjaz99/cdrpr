@@ -1,6 +1,6 @@
 package si.iskratel.cdr;
 
-public class MyShutdownHook extends Thread {
+public class TheShutdownHook extends Thread {
 	
 	@Override
 	public void run() {
@@ -12,10 +12,10 @@ public class MyShutdownHook extends Thread {
 		// stop processes and threads
 		// release resources...
 		
-		Test.running = false;
+		Start.running = false;
 
 		for (CdrSimulatorThread t :
-				Test.simulatorThreadThreads) {
+				Start.simulatorThreads) {
 			t.setRunning(false);
 		}
 		
