@@ -52,14 +52,22 @@ public class ElasticPersistenceClient implements IPersistenceClient {
 
             }
 
-            if (Start.getQueueSize() > 3 * originalBulkSize) sendInterval = sendInterval - 10;
-            if (Start.getQueueSize() > 5 * originalBulkSize) Start.BULK_SIZE = Start.BULK_SIZE + 100;
+            if (Start.getQueueSize() > 3 * originalBulkSize) {
+                sendInterval = sendInterval - 10;
+                if (sendInterval < 1) sendInterval = 1;
+            }
+            if (Start.getQueueSize() > 5 * originalBulkSize) {
+                Start.BULK_SIZE = Start.BULK_SIZE + 100;
+                if (Start.BULK_SIZE > 100000) Start.BULK_SIZE = 100000;
+            }
             if (Start.getQueueSize() < Start.BULK_SIZE) {
                 sendInterval = 1000;
                 Start.BULK_SIZE = originalBulkSize;
             }
 
-            PrometheusMetrics.bulkSize.labels(threadId + "").set(Start.BULK_SIZE);
+            PrometheusMetrics.bulkCount.set(bulkCount);
+            PrometheusMetrics.bulkSize.set(Start.BULK_SIZE);
+            PrometheusMetrics.sendInterval.set(sendInterval);
 
             sendBulkPost();
             bulkCount = 0;
@@ -118,7 +126,23 @@ public class ElasticPersistenceClient implements IPersistenceClient {
         }
     }
 
+    private void putToStringBuilderMinimalistic(CdrBean cdrBean) {
+        sb.append("{ \"index\":{} }\n").append("{");
+        sb.append("\"callingNumber\":\"").append(cdrBean.getCallingNumber()).append("\",");
+        sb.append("\"calledNumber\":\"").append(cdrBean.getCalledNumber()).append("\",");
+        sb.append("\"duration\":").append(cdrBean.getDuration()).append(",");
+        sb.append("\"cause\":").append(cdrBean.getCause()).append(",");
+        sb.append("\"nodeId\":\"").append(Start.SIMULATOR_NODEID).append("\",");
+        sb.append("\"timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
+    }
+
     private void putToStringBuilder(CdrBean cdrBean) {
+
+        if (Start.SIMULATOR_MINIMUM_DATA) {
+            putToStringBuilderMinimalistic(cdrBean);
+            return;
+        }
+
         sb.append("{ \"index\":{} }\n").append("{");
         sb.append("\"id\":\"").append(cdrBean.getId()).append("\",");
         sb.append("\"callId\":\"").append(cdrBean.getCallid()).append("\",");

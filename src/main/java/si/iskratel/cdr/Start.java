@@ -5,6 +5,7 @@ import si.iskratel.cdr.parser.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -14,8 +15,7 @@ public class Start {
     public static int NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
     public static String ES_URL;
-    public static boolean EXIT = false;
-    public static boolean SIMULATOR_MODE = false;
+    public static boolean EXIT_AT_THE_END = false;
     public static String SIMULATOR_NODEID;
     public static int SIMULATOR_DELAY = 10;
     public static int SIMULATOR_CALL_REASON = 0;
@@ -23,6 +23,7 @@ public class Start {
     public static int SIMULATOR_ANUM_RANGE = 0;
     public static int SIMULATOR_BNUM_START = 0;
     public static int SIMULATOR_BNUM_RANGE = 0;
+    public static boolean SIMULATOR_MINIMUM_DATA = false;
 
     public static long totalCount = 0;
     public static long badCdrRecordExceptionCount = 0;
@@ -43,28 +44,28 @@ public class Start {
 //        String testDir = "C:\\Users\\cerkvenik\\Documents\\CDRs\\experimental\\03";
         String testDir = "/Users/matjaz/Developer/cdr-files/samples/15M";
 //        String testUrl = "http://mcrk-docker-1:9200/cdrs/_bulk?pretty";
-        String testUrl = "http://pgcentos:9200/cdrs/_bulk?pretty";
-//        String testUrl = "http://centosvm:9200/cdrs/_bulk?pretty";
+//        String testUrl = "http://pgcentos:9200/cdrs/_bulk?pretty";
+        String testUrl = "http://centosvm:9200/cdrs/_bulk?pretty";
 
         Map<String, String> getenv = System.getenv();
-        NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "32"));
-        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "5000"));
+        NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "192"));
+        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
-        EXIT = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
-        SIMULATOR_MODE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "true"));
+        EXIT_AT_THE_END = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
         SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "Ljubljana");
         SIMULATOR_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
-        SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "1000000"));
-        SIMULATOR_ANUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_RANGE", "999999"));
-        SIMULATOR_BNUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_START", "8000000"));
-        SIMULATOR_BNUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_RANGE", "999999"));
+        SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "10000000"));
+        SIMULATOR_ANUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_RANGE", "9999999"));
+        SIMULATOR_BNUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_START", "80000000"));
+        SIMULATOR_BNUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_RANGE", "9999999"));
+        SIMULATOR_MINIMUM_DATA = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_SIMULATOR_MINIMUM_DATA", "true"));
 
+        System.out.println("HOSTNAME: " + InetAddress.getLocalHost().getHostName());
         System.out.println("NUM_OF_THREADS: " + NUM_OF_THREADS);
         System.out.println("BULK_SIZE: " + BULK_SIZE);
         System.out.println("ES_URL: " + ES_URL);
-        System.out.println("SIMULATOR_MODE: " + SIMULATOR_MODE);
         System.out.println("SIMULATOR_NODEID: " + SIMULATOR_NODEID);
         System.out.println("SIMULATOR_DELAY: " + SIMULATOR_DELAY);
         System.out.println("SIMULATOR_CALL_REASON: " + SIMULATOR_CALL_REASON);
@@ -77,6 +78,8 @@ public class Start {
         }
 
         PrometheusMetrics.startJetty();
+        PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
+        PrometheusMetrics.maxQueueSize.set(20 * BULK_SIZE);
 
         for (int i = 1; i < NUM_OF_THREADS + 1; i++) {
             CdrSimulatorThread t = new CdrSimulatorThread(i);
@@ -138,7 +141,7 @@ public class Start {
 //        System.out.println("Post requests count: " + totalPostCount);
 //        System.out.println("Resend count: " + totalResendCount);
 
-        if (!EXIT) {
+        if (!EXIT_AT_THE_END) {
             while (true) {
                 // do not exit
                 Thread.sleep(1000);
@@ -154,7 +157,7 @@ public class Start {
     }
 
     public static synchronized void addCdr(CdrBean cdrBean) {
-        if (queue.size() > 10 * BULK_SIZE) queue.poll();
+        if (queue.size() > 20 * BULK_SIZE) queue.poll();
         queue.add(cdrBean);
     }
 

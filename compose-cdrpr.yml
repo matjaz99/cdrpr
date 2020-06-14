@@ -9,7 +9,7 @@ networks:
 
 services:
 
-  cdrpr:
+  cdrpr-berlin:
     image: matjaz99/cdrpr:2.0
     networks:
       - net
@@ -24,12 +24,13 @@ services:
       - CDRPR_EXIT=false
       - CDRPR_SIMULATOR_MODE=true
       - CDRPR_SIMULATOR_NODEID=Berlin
-      - CDRPR_SIMULATOR_DELAY=100
+      - CDRPR_SIMULATOR_DELAY=20
       - CDRPR_SIMULATOR_CALL_REASON=0
-      - CDRPR_SIMULATOR_ANUM_START=1000000
-      - CDRPR_SIMULATOR_ANUM_RANGE=999999
-      - CDRPR_SIMULATOR_BNUM_START=8000000
-      - CDRPR_SIMULATOR_BNUM_RANGE=999999
+      - CDRPR_SIMULATOR_ANUM_START=10000000
+      - CDRPR_SIMULATOR_ANUM_RANGE=9999999
+      - CDRPR_SIMULATOR_BNUM_START=80000000
+      - CDRPR_SIMULATOR_BNUM_RANGE=9999999
+      - CDRPR_SIMULATOR_MINIMUM_DATA=true
     deploy:
       mode: replicated
       replicas: 1
