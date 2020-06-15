@@ -38,6 +38,7 @@ public class CdrParser {
                 Start.debug(cdrBean.toString());
             } catch (BadCdrRecordException e) {
                 Start.badCdrRecordExceptionCount++;
+                PpdrBean ppdrBean = cbc.parseBinaryPpdr(dr);
             } catch (Exception e) {
                 e.printStackTrace();
             }
