@@ -12,12 +12,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Start {
 
     public static int BULK_SIZE = 100;
-    public static int NUM_OF_THREADS = 1;
+    public static int SIMULATOR_NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
     public static String ES_URL;
     public static boolean EXIT_AT_THE_END = false;
+    public static String SIMULATOR_MODE;
+    public static String SIMULATOR_STORAGE_TYPE;
     public static String SIMULATOR_NODEID;
-    public static int SIMULATOR_DELAY = 10;
+    public static int SIMULATOR_CALL_DELAY = 10;
     public static int SIMULATOR_CALL_REASON = 0;
     public static int SIMULATOR_ANUM_START = 0;
     public static int SIMULATOR_ANUM_RANGE = 0;
@@ -45,29 +47,37 @@ public class Start {
         String testDir = "/Users/matjaz/Developer/cdr-files/samples/15M";
 //        String testUrl = "http://mcrk-docker-1:9200/cdrs/_bulk?pretty";
 //        String testUrl = "http://pgcentos:9200/cdrs/_bulk?pretty";
-        String testUrl = "http://centosvm:9200/cdrs/_bulk?pretty";
+        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk?pretty";
 
         Map<String, String> getenv = System.getenv();
-        NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "192"));
-        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
-        DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
-        ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
-        EXIT_AT_THE_END = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "4"));
         SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "Ljubljana");
-        SIMULATOR_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
+        SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "10000000"));
         SIMULATOR_ANUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_RANGE", "9999999"));
         SIMULATOR_BNUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_START", "80000000"));
         SIMULATOR_BNUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_RANGE", "9999999"));
-        SIMULATOR_MINIMUM_DATA = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_SIMULATOR_MINIMUM_DATA", "true"));
+        SIMULATOR_MINIMUM_DATA = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_SIMULATOR_MINIMUM_DATA", "false"));
+
+        // possible values
+//        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "STORE_ALL_CALLS");
+        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "STORE_AGGREGATED_CALLS");
+        SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
+//        SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "POSTGRES");
+
+        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
+        DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
+        ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
+        EXIT_AT_THE_END = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
+
 
         System.out.println("HOSTNAME: " + InetAddress.getLocalHost().getHostName());
-        System.out.println("NUM_OF_THREADS: " + NUM_OF_THREADS);
+        System.out.println("NUM_OF_THREADS: " + SIMULATOR_NUM_OF_THREADS);
         System.out.println("BULK_SIZE: " + BULK_SIZE);
         System.out.println("ES_URL: " + ES_URL);
         System.out.println("SIMULATOR_NODEID: " + SIMULATOR_NODEID);
-        System.out.println("SIMULATOR_DELAY: " + SIMULATOR_DELAY);
+        System.out.println("SIMULATOR_DELAY: " + SIMULATOR_CALL_DELAY);
         System.out.println("SIMULATOR_CALL_REASON: " + SIMULATOR_CALL_REASON);
 
         releaseCausesProps = new Properties();
@@ -79,9 +89,9 @@ public class Start {
 
         PrometheusMetrics.startJetty();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
-        PrometheusMetrics.maxQueueSize.set(20 * BULK_SIZE);
+        PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
 
-        for (int i = 1; i < NUM_OF_THREADS + 1; i++) {
+        for (int i = 1; i < SIMULATOR_NUM_OF_THREADS + 1; i++) {
             CdrSimulatorThread t = new CdrSimulatorThread(i);
             t.start();
             simulatorThreads.add(t);
@@ -91,62 +101,27 @@ public class Start {
         StorageThread ct = new StorageThread();
         ct.start();
 
-        IPersistenceClient persistenceClient = new ElasticPersistenceClient(1);
+        IPersistenceClient persistenceClient = null;
+
+        if (SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
+
+            if (SIMULATOR_MODE.equalsIgnoreCase("STORE_ALL_CALLS")) {
+                persistenceClient = new EsStoreAllCallsPersistenceClient(1);
+            }
+            if (SIMULATOR_MODE.equalsIgnoreCase("STORE_AGGREGATED_CALLS")) {
+                persistenceClient = new EsStoreAggregatedCalls(1);
+            }
+
+        }
+
+        if (SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
+
+            // TODO
+
+        }
+
         Thread t = new Thread(persistenceClient);
         t.start();
-
-//        while (running) {
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//
-//            }
-//        }
-
-        startTime = System.currentTimeMillis();
-
-//        while (true) {
-//            boolean stillRunning = false;
-//            for (EsClientThread2 t : threads) {
-//                stillRunning = stillRunning || t.isRunning();
-//            }
-//            if (stillRunning) {
-//                Thread.sleep(100);
-//            } else {
-//                break;
-//            }
-//        }
-
-//        long totalCdrCount = 0;
-//        long totalBadCdrCount = 0;
-//        int totalPostCount = 0;
-//        int totalResendCount = 0;
-//        for (EsClientThread2 t : threads) {
-//            totalCdrCount += t.getTotalCdrCount();
-//            totalBadCdrCount += t.getBadCdrRecordExceptionCount();
-//            totalPostCount += t.getPostCount();
-//            totalResendCount += t.getResendCount();
-//        }
-
-        endTime = System.currentTimeMillis();
-        long processingTime = endTime - startTime;
-
-//        System.out.println("--- Main process ended ---");
-//        System.out.println("Threads: " + NUM_OF_THREADS);
-//        System.out.println("Bulk size: " + BULK_SIZE);
-//        System.out.println("Records count: " + totalCdrCount);
-//        System.out.println("Bad records count: " + totalBadCdrCount);
-//        System.out.println("Total processing time: " + processingTime);
-//        System.out.println("Rate: " + (totalCdrCount * 1.0 / processingTime / 1.0 * 1000));
-//        System.out.println("Post requests count: " + totalPostCount);
-//        System.out.println("Resend count: " + totalResendCount);
-
-        if (!EXIT_AT_THE_END) {
-            while (true) {
-                // do not exit
-                Thread.sleep(1000);
-            }
-        }
 
     }
 
@@ -157,7 +132,7 @@ public class Start {
     }
 
     public static synchronized void addCdr(CdrBean cdrBean) {
-        if (queue.size() > 20 * BULK_SIZE) queue.poll();
+        if (queue.size() > 200 * BULK_SIZE) queue.poll();
         queue.add(cdrBean);
     }
 

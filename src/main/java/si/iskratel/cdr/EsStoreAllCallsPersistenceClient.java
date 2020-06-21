@@ -3,24 +3,21 @@ package si.iskratel.cdr;
 import okhttp3.*;
 import si.iskratel.cdr.parser.CdrBean;
 
-public class ElasticPersistenceClient implements IPersistenceClient {
+public class EsStoreAllCallsPersistenceClient implements IPersistenceClient {
 
     private boolean running = true;
     private int threadId = 0;
     private int sendInterval = 1000;
     private int bulkCount = 0;
-    private long totalCount = 0;
-    private long startTime = 0;
-    private long endTime = 0;
 
     private StringBuilder sb = new StringBuilder();
 
     private OkHttpClient httpClient = new OkHttpClient();
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
-    private int originalBulkSize = Start.BULK_SIZE;
+    private int dynamicBulkSize = Start.BULK_SIZE;
 
-    public ElasticPersistenceClient(int id) {
+    public EsStoreAllCallsPersistenceClient(int id) {
         this.threadId = id;
     }
 
@@ -31,8 +28,6 @@ public class ElasticPersistenceClient implements IPersistenceClient {
     @Override
     public void run() {
 
-        startTime = System.currentTimeMillis();
-
         while (running) {
 
             try {
@@ -40,7 +35,7 @@ public class ElasticPersistenceClient implements IPersistenceClient {
             } catch (InterruptedException e) {
             }
 
-            while (Start.getQueueSize() > 0 && bulkCount < Start.BULK_SIZE) {
+            while (Start.getQueueSize() > 0 && bulkCount < dynamicBulkSize) {
 
                 CdrBean c = Start.pollCdr();
                 if (c != null) {
@@ -52,21 +47,21 @@ public class ElasticPersistenceClient implements IPersistenceClient {
 
             }
 
-            if (Start.getQueueSize() > 3 * originalBulkSize) {
+            if (Start.getQueueSize() > 3 * Start.BULK_SIZE) {
                 sendInterval = sendInterval - 10;
                 if (sendInterval < 1) sendInterval = 1;
             }
-            if (Start.getQueueSize() > 5 * originalBulkSize) {
-                Start.BULK_SIZE = Start.BULK_SIZE + 100;
-                if (Start.BULK_SIZE > 100000) Start.BULK_SIZE = 100000;
+            if (Start.getQueueSize() > 5 * Start.BULK_SIZE) {
+                dynamicBulkSize = dynamicBulkSize + 100;
+                if (dynamicBulkSize > 100000) dynamicBulkSize = 100000;
             }
             if (Start.getQueueSize() < Start.BULK_SIZE) {
                 sendInterval = 1000;
-                Start.BULK_SIZE = originalBulkSize;
+                dynamicBulkSize = Start.BULK_SIZE;
             }
 
             PrometheusMetrics.bulkCount.set(bulkCount);
-            PrometheusMetrics.bulkSize.set(Start.BULK_SIZE);
+            PrometheusMetrics.bulkSize.set(dynamicBulkSize);
             PrometheusMetrics.sendInterval.set(sendInterval);
 
             sendBulkPost();

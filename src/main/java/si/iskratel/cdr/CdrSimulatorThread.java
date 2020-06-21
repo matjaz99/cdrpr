@@ -1,10 +1,7 @@
 package si.iskratel.cdr;
 
-import okhttp3.*;
 import si.iskratel.cdr.parser.*;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class CdrSimulatorThread extends Thread {
@@ -25,7 +22,7 @@ public class CdrSimulatorThread extends Thread {
         while (running) {
 
             try {
-                Thread.sleep(getRandomGaussian(Start.SIMULATOR_DELAY, Start.SIMULATOR_DELAY / 2));
+                Thread.sleep(getRandomGaussian(Start.SIMULATOR_CALL_DELAY, Start.SIMULATOR_CALL_DELAY / 2));
             } catch (InterruptedException e) {
             }
 
@@ -56,18 +53,20 @@ public class CdrSimulatorThread extends Thread {
 
         cdrBean.setCause(Start.SIMULATOR_CALL_REASON);
         if (Start.SIMULATOR_CALL_REASON == 0) {
-            if (totalCount % 5 == 0) {
+            if (totalCount % 3 == 0) {
                 cdrBean.setCause(16);
+            } else if (totalCount % 5 == 0) {
+                cdrBean.setCause(17);
             } else if (totalCount % 7 == 0) {
-                cdrBean.setCause(18);
+                cdrBean.setCause(19);
             } else if (totalCount % 9 == 0) {
                 cdrBean.setCause(21);
             } else if (totalCount % 11 == 0) {
-                cdrBean.setCause(34);
+                cdrBean.setCause(38);
             } else if (totalCount % 13 == 0) {
-                cdrBean.setCause(65);
-            } else if (totalCount % 17 == 0) {
-                cdrBean.setCause(111);
+                cdrBean.setCause(3);
+            } else if (totalCount % 15 == 0) {
+                cdrBean.setCause(6);
             } else {
                 cdrBean.setCause(getRandomInRange(1, 127));
             }

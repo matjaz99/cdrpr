@@ -1,8 +1,12 @@
+FROM maven:3.5.2-jdk-9 AS build
+COPY src /usr/src/app/src
+COPY pom.xml /usr/src/app
+RUN mvn -f /usr/src/app/pom.xml clean package
+
 FROM openjdk:8-jre
-
 RUN mkdir -p /opt/cdr
-
-COPY target/cdrpr-2.0-jar-with-dependencies.jar /opt/cdrpr-2.0-jar-with-dependencies.jar
+#COPY target/cdrpr-2.0-jar-with-dependencies.jar /opt/cdrpr-2.0-jar-with-dependencies.jar
+COPY --from=build /usr/src/app/target/cdrpr-2.0-jar-with-dependencies.jar /opt/cdrpr-2.0-jar-with-dependencies.jar
 COPY call_release_causes.properties /opt/call_release_causes.properties
 
 WORKDIR /opt
