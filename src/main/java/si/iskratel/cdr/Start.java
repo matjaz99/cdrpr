@@ -43,14 +43,12 @@ public class Start {
 
         Runtime.getRuntime().addShutdownHook(new TheShutdownHook());
 
-//        String testDir = "C:\\Users\\cerkvenik\\Documents\\CDRs\\experimental\\03";
-        String testDir = "/Users/matjaz/Developer/cdr-files/samples/15M";
 //        String testUrl = "http://mcrk-docker-1:9200/cdrs/_bulk?pretty";
-//        String testUrl = "http://pgcentos:9200/cdrs/_bulk?pretty";
-        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk?pretty";
+        String testUrl = "http://pgcentos:9200/cdraggs/_bulk?pretty";
+//        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk?pretty";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "4"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "16"));
         SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "Ljubljana");
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
