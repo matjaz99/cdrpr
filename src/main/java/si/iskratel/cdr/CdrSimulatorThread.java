@@ -39,6 +39,7 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setCallid(totalCount);
         cdrBean.setSequence(2);
         cdrBean.setCallType(0);
+        cdrBean.setNodeId(Start.getRandomNodeId());
 
         String a = getANumber();
         cdrBean.setCallingNumber(a);
@@ -53,19 +54,19 @@ public class CdrSimulatorThread extends Thread {
 
         cdrBean.setCause(Start.SIMULATOR_CALL_REASON);
         if (Start.SIMULATOR_CALL_REASON == 0) {
-            if (totalCount % 3 == 0) {
+            if (totalCount % 2 == 0) {
                 cdrBean.setCause(16);
-            } else if (totalCount % 5 == 0) {
+            } else if (totalCount % 3 == 0) {
                 cdrBean.setCause(17);
-            } else if (totalCount % 7 == 0) {
+            } else if (totalCount % 5 == 0) {
                 cdrBean.setCause(19);
-            } else if (totalCount % 9 == 0) {
+            } else if (totalCount % 7 == 0) {
                 cdrBean.setCause(21);
-            } else if (totalCount % 11 == 0) {
+            } else if (totalCount % 9 == 0) {
                 cdrBean.setCause(38);
-            } else if (totalCount % 13 == 0) {
+            } else if (totalCount % 11 == 0) {
                 cdrBean.setCause(3);
-            } else if (totalCount % 15 == 0) {
+            } else if (totalCount % 13 == 0) {
                 cdrBean.setCause(6);
             } else {
                 cdrBean.setCause(getRandomInRange(1, 127));
@@ -117,9 +118,9 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setEndTime(d2);
 
         cdrBean.setInTrunkId(getRandomGaussian(4, 8));
-        cdrBean.setInTrunkGroupId(9970 + getRandomGaussian(5, 5));
+        cdrBean.setInTrunkGroupId(9970 + getRandomGaussian(5, 10));
         cdrBean.setOutTrunkId(getRandomGaussian(2, 3));
-        cdrBean.setOutTrunkGroupId(8830 + getRandomGaussian(6, 5));
+        cdrBean.setOutTrunkGroupId(8830 + getRandomGaussian(6, 10));
 
         if (duration > 0) {
             StorageThread.addCall(a, et);

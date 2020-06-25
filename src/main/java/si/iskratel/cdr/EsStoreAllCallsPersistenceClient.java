@@ -127,7 +127,7 @@ public class EsStoreAllCallsPersistenceClient implements IPersistenceClient {
         sb.append("\"calledNumber\":\"").append(cdrBean.getCalledNumber()).append("\",");
         sb.append("\"duration\":").append(cdrBean.getDuration()).append(",");
         sb.append("\"cause\":").append(cdrBean.getCause()).append(",");
-        sb.append("\"nodeId\":\"").append(Start.SIMULATOR_NODEID).append("\",");
+        sb.append("\"nodeId\":\"").append(cdrBean.getNodeId()).append("\",");
         sb.append("\"timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
     }
 
@@ -174,7 +174,7 @@ public class EsStoreAllCallsPersistenceClient implements IPersistenceClient {
         sb.append("\"ctxCalledNumber\":\"").append(cdrBean.getCtxCalledNumber()).append("\",");
         sb.append("\"bgidOrig\":\"").append(cdrBean.getBgidOrig()).append("\",");
         sb.append("\"bgidTerm\":\"").append(cdrBean.getBgidTerm()).append("\",");
-        sb.append("\"nodeId\":\"").append(Start.SIMULATOR_NODEID).append("\",");
+        sb.append("\"nodeId\":\"").append(cdrBean.getNodeId()).append("\",");
         sb.append("\"timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
     }
 

@@ -4,6 +4,8 @@ import java.util.*;
 
 public class CdrBean {
 
+  protected String nodeId;
+
   protected int id;
   protected long callid = 0;
   protected String icid = null;
@@ -80,7 +82,14 @@ public class CdrBean {
   protected Integer voipFaxPagesTransferred = null;
   protected Integer voipFaxPagesRepeated = null;
 
-  
+  public String getNodeId() {
+    return nodeId;
+  }
+
+  public void setNodeId(String nodeId) {
+    this.nodeId = nodeId;
+  }
+
   public void setId(int id) {
     this.id = id;
   }

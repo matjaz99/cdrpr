@@ -106,13 +106,13 @@ public class EsStoreAggregatedCalls implements IPersistenceClient {
         }
 
         // prometheus metrics
-        countByCrc.labels(Start.SIMULATOR_NODEID, newCrc, cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
+        countByCrc.labels(cdrBean.getNodeId(), newCrc, cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
         if (crc == 16) {
-            countByDuration.labels(Start.SIMULATOR_NODEID, cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
+            countByDuration.labels(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
         }
 
         // cdrpr metrics
-        m_countByCrc.setLabelValues(Start.SIMULATOR_NODEID, newCrc, cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
+        m_countByCrc.setLabelValues(cdrBean.getNodeId(), newCrc, cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
 
     }
 
