@@ -1,12 +1,10 @@
 package si.iskratel.cdr;
 
 import io.prometheus.client.Gauge;
-import okhttp3.*;
 import si.iskratel.cdr.parser.CdrBean;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class EsStoreAggregatedCalls implements IPersistenceClient {
 
@@ -17,16 +15,18 @@ public class EsStoreAggregatedCalls implements IPersistenceClient {
 
     private List<CdrBean> tempList = new ArrayList<>();
 
-    private OkHttpClient httpClient = new OkHttpClient();
-    private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
     public static final Gauge countByCrc = Gauge.build().name("cdrpr_agg_byCrc_total")
             .labelNames("nodeId", "releaseCause", "incTG", "outTG").help("Number of calls by crc").register();
     public static final Gauge countByDuration = Gauge.build().name("cdrpr_agg_byDuration_total")
             .labelNames("nodeId", "incTG", "outTG").help("Total duration").register();
 
-    public static CdrMetric m_countByCrc = CdrMetric.build().setName("m_countByCrc")
+    public static PMetric m_countByCrc = PMetric.build().setName("m_countByCrc")
             .setLabelNames("nodeId", "cause", "incTG", "outTG").register();
+    public static PMetric m_durationByTG = PMetric.build().setName("m_durationByTG")
+            .setLabelNames("nodeId", "incTG", "outTG").register();
+    public static PMetric m_callsInProgress = PMetric.build().setName("m_callsInProgress")
+            .setLabelNames("host").register();
 
     public EsStoreAggregatedCalls(int id) {
         threadId = id;
@@ -50,6 +50,10 @@ public class EsStoreAggregatedCalls implements IPersistenceClient {
             aggregationTimestamp = System.currentTimeMillis();
             m_countByCrc.setTimestamp(aggregationTimestamp);
             m_countByCrc.clear();
+            m_durationByTG.setTimestamp(aggregationTimestamp);
+            m_durationByTG.clear();
+            m_callsInProgress.setTimestamp(aggregationTimestamp);
+            m_callsInProgress.clear();
 
             while (Start.getQueueSize() > 0) {
 
@@ -66,8 +70,17 @@ public class EsStoreAggregatedCalls implements IPersistenceClient {
                 aggregate(b);
             }
 
+            PrometheusMetrics.bulkCount.set(m_countByCrc.getTimeSeriesSize());
+
             //CdrMetricRegistry.dumpAllMetrics();
-            sendBulkPost(m_countByCrc.toJsonString());
+            m_callsInProgress.setLabelValues(Start.HOSTNAME).setValue(StorageThread.getNumberOfCallsInProgress());
+            System.out.println("sending metrics: " + m_countByCrc.getName() + ", size: " + m_countByCrc.getTimeSeriesSize());
+            System.out.println("sending metrics: " + m_durationByTG.getName() + ", size: " +  + m_durationByTG.getTimeSeriesSize());
+            System.out.println("sending metrics: " + m_callsInProgress.getName() + ", size: " +  + m_callsInProgress.getTimeSeriesSize());
+
+            EsClient.sendBulkPost(m_countByCrc.toJsonString());
+            EsClient.sendBulkPost(m_durationByTG.toJsonString());
+            EsClient.sendBulkPost(m_callsInProgress.toJsonString());
 
             tempList.clear();
 
@@ -77,9 +90,23 @@ public class EsStoreAggregatedCalls implements IPersistenceClient {
 
     private void aggregate(CdrBean cdrBean) {
 
-        int crc = cdrBean.getCause();
+        // prometheus metrics
+        countByCrc.labels(cdrBean.getNodeId(), toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
+        if (cdrBean.getCause() == 16) {
+            countByDuration.labels(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
+        }
+
+        // cdrpr metrics
+        m_countByCrc.setLabelValues(cdrBean.getNodeId(), toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
+        if (cdrBean.getCause() == 16)
+            m_durationByTG.setLabelValues(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
+
+    }
+
+
+    private String toCauseString(int cause) {
         String newCrc = "";
-        switch (crc) {
+        switch (cause) {
             case 16:
                 newCrc = "Answered";
                 break;
@@ -104,57 +131,9 @@ public class EsStoreAggregatedCalls implements IPersistenceClient {
             default:
                 newCrc = "Other";
         }
-
-        // prometheus metrics
-        countByCrc.labels(cdrBean.getNodeId(), newCrc, cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
-        if (crc == 16) {
-            countByDuration.labels(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
-        }
-
-        // cdrpr metrics
-        m_countByCrc.setLabelValues(cdrBean.getNodeId(), newCrc, cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
-
+        return newCrc;
     }
 
-    public void sendBulkPost(String body) {
 
-        System.out.println("sending metrics: " + m_countByCrc.getTimeSeriesSize());
-        PrometheusMetrics.bulkCount.set(m_countByCrc.getTimeSeriesSize());
-
-        Request request = new Request.Builder()
-                .url(Start.ES_URL)
-                .addHeader("User-Agent", "OkHttp Bot")
-//                .addHeader("Content-Type", "application/json")
-                .post(RequestBody.create(body, MEDIA_TYPE_JSON))
-                .build();
-
-        executeHttpRequest(request);
-
-    }
-
-    private void executeHttpRequest(Request request) {
-        try {
-
-            Response response = httpClient.newCall(request).execute();
-            while (!response.isSuccessful()) {
-                Thread.sleep(1500);
-                response = httpClient.newCall(request).execute();
-                PrometheusMetrics.elasticPostsResent.labels(threadId + "").inc();
-            }
-            PrometheusMetrics.elasticPostsSent.labels(threadId + "").inc();
-
-            if (!response.isSuccessful()) System.out.println("EsStoreAggregatedCalls[" + threadId + "]: Unexpected code: " + response);
-
-            response.close();
-
-//        System.out.println(response.body().string());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("EsStoreAggregatedCalls[" + threadId + "]: Recursive call.");
-            PrometheusMetrics.elasticPostsResent.labels(threadId + "").inc();
-            executeHttpRequest(request);
-        }
-    }
 
 }

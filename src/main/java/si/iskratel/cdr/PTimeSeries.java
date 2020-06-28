@@ -2,7 +2,7 @@ package si.iskratel.cdr;
 
 import java.util.Arrays;
 
-public class CdrTimeSeries {
+public class PTimeSeries {
 
     private String[] labelValues;
     private double value;

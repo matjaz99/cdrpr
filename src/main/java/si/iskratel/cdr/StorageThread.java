@@ -35,6 +35,10 @@ public class StorageThread extends Thread {
         return false;
     }
 
+    public static int getNumberOfCallsInProgress() {
+        return callsInProgress.size();
+    }
+
     private static synchronized void clearMap() {
         // clean subscribers that are not in the call anymore
         long now = System.currentTimeMillis();

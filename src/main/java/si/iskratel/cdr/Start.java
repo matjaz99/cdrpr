@@ -11,6 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Start {
 
+    public static String HOSTNAME = "localhost0";
     public static int BULK_SIZE = 100;
     public static int SIMULATOR_NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
@@ -49,7 +50,7 @@ public class Start {
 //        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk?pretty";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "96"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "128"));
         SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "Ljubljana, Berlin, London, Moscow, " +
                 "Paris, Copenhagen, Madrid, Rome, Zurich, Lisbon, Warsaw, Helsinki, Prague, Vienna, " +
                 "Budapest, Zagreb, Belgrade, Kiev, Amsterdam, Brussels");
@@ -72,8 +73,11 @@ public class Start {
         ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
         EXIT_AT_THE_END = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
 
+        try {
+            HOSTNAME = InetAddress.getLocalHost().getHostName();
+        } catch (Exception e) {}
 
-        System.out.println("HOSTNAME: " + InetAddress.getLocalHost().getHostName());
+        System.out.println("HOSTNAME: " + HOSTNAME);
         System.out.println("NUM_OF_THREADS: " + SIMULATOR_NUM_OF_THREADS);
         System.out.println("BULK_SIZE: " + BULK_SIZE);
         System.out.println("ES_URL: " + ES_URL);
