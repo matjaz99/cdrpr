@@ -50,10 +50,12 @@ public class Start {
 //        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk?pretty";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "128"));
-        SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "Ljubljana, Berlin, London, Moscow, " +
-                "Paris, Copenhagen, Madrid, Rome, Zurich, Lisbon, Warsaw, Helsinki, Prague, Vienna, " +
-                "Budapest, Zagreb, Belgrade, Kiev, Amsterdam, Brussels");
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "64"));
+        SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "Moscow, Ljubljana, Berlin, " +
+                "London, Moscow, Rome, " +
+                "Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, " +
+                "Vienna, London, Paris, " +
+                "Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris");
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "10000000"));

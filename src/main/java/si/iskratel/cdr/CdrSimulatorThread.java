@@ -118,9 +118,9 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setEndTime(d2);
 
         cdrBean.setInTrunkId(getRandomGaussian(4, 8));
-        cdrBean.setInTrunkGroupId(9970 + getRandomGaussian(5, 10));
+        cdrBean.setInTrunkGroupId(9970 + getRandomGaussian(5, 15));
         cdrBean.setOutTrunkId(getRandomGaussian(2, 3));
-        cdrBean.setOutTrunkGroupId(8830 + getRandomGaussian(6, 10));
+        cdrBean.setOutTrunkGroupId(8830 + getRandomGaussian(6, 13));
 
         if (duration > 0) {
             StorageThread.addCall(a, et);
