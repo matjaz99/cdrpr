@@ -1,8 +1,7 @@
-package si.iskratel.cdr;
+package si.iskratel.monitoring;
 
 import okhttp3.*;
-
-import java.net.InetAddress;
+import si.iskratel.simulator.Start;
 
 public class EsClient {
 

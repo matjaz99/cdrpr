@@ -1,4 +1,6 @@
-package si.iskratel.cdr;
+package si.iskratel.monitoring;
+
+import si.iskratel.monitoring.PMetric;
 
 import java.util.HashMap;
 import java.util.Map;

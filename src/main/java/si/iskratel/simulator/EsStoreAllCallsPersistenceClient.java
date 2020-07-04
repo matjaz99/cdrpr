@@ -1,7 +1,8 @@
-package si.iskratel.cdr;
+package si.iskratel.simulator;
 
 import okhttp3.*;
 import si.iskratel.cdr.parser.CdrBean;
+import si.iskratel.monitoring.PrometheusMetrics;
 
 public class EsStoreAllCallsPersistenceClient implements IPersistenceClient {
 

@@ -1,7 +1,10 @@
-package si.iskratel.cdr;
+package si.iskratel.simulator;
 
 import io.prometheus.client.Gauge;
 import si.iskratel.cdr.parser.CdrBean;
+import si.iskratel.monitoring.EsClient;
+import si.iskratel.monitoring.PrometheusMetrics;
+import si.iskratel.monitoring.PMetric;
 
 import java.util.ArrayList;
 import java.util.List;

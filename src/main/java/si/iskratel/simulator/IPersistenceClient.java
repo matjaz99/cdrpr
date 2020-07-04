@@ -1,4 +1,4 @@
-package si.iskratel.cdr;
+package si.iskratel.simulator;
 
 public interface IPersistenceClient extends Runnable {
 

@@ -1,4 +1,4 @@
-package si.iskratel.cdr;
+package si.iskratel.simulator;
 
 public class TheShutdownHook extends Thread {
 	

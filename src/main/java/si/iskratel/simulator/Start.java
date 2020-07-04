@@ -1,7 +1,8 @@
-package si.iskratel.cdr;
+package si.iskratel.simulator;
 
 
 import si.iskratel.cdr.parser.*;
+import si.iskratel.monitoring.PrometheusMetrics;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class Start {
 //        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk?pretty";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "64"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "128"));
         SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "Moscow, Ljubljana, Berlin, " +
                 "London, Moscow, Rome, " +
                 "Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, " +

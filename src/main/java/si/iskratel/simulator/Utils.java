@@ -1,4 +1,4 @@
-package si.iskratel.cdr;
+package si.iskratel.simulator;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

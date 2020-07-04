@@ -1,4 +1,4 @@
-package si.iskratel.cdr;
+package si.iskratel.simulator;
 
 import org.apache.commons.io.IOUtils;
 import si.iskratel.cdr.manager.BadCdrRecordException;

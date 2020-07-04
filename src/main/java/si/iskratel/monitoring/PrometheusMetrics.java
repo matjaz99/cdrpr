@@ -1,4 +1,4 @@
-package si.iskratel.cdr;
+package si.iskratel.monitoring;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
