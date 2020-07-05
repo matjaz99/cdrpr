@@ -1,4 +1,4 @@
-package si.iskratel.monitoring;
+package si.iskratel.simulator;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
@@ -16,8 +16,6 @@ import java.io.IOException;
 
 public class PrometheusMetrics {
 
-	public static final Counter requests = Counter.build().name("hello_world_requests_total")
-			.help("Number of hello world requests served.").register();
 	public static final Gauge defaultBulkSize = Gauge.build().name("cdrpr_default_bulk_size")
 			.help("Default bulk size.").register();
 	public static final Gauge bulkSize = Gauge.build().name("cdrpr_bulk_size")
@@ -41,34 +39,6 @@ public class PrometheusMetrics {
 	public static final Counter callsInProgressRemoved = Counter.build().name("cdrpr_calls_in_progress_removed")
 			.help("Number of calls removed from progress (call ended).").register();
 
-	static class HelloServlet extends HttpServlet {
 
-		@Override
-		protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
-				throws ServletException, IOException {
-			resp.getWriter().println("Hello World!");
-			// Increment the number of requests.
-			requests.inc();
-		}
-	}
-
-	public static void startJetty() throws Exception {
-
-		Server server = new Server(9099);
-		ServletContextHandler context = new ServletContextHandler();
-		context.setContextPath("/");
-		server.setHandler(context);
-		// Expose our example servlet.
-		context.addServlet(new ServletHolder(new HelloServlet()), "/");
-		// Expose Prometheus metrics.
-		context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
-		// Add metrics about CPU, JVM memory etc.
-		DefaultExports.initialize();
-
-		// Start the webserver.
-		server.start();
-		//server.join();
-
-	}
 
 }

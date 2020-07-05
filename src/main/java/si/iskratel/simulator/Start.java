@@ -2,7 +2,7 @@ package si.iskratel.simulator;
 
 
 import si.iskratel.cdr.parser.*;
-import si.iskratel.monitoring.PrometheusMetrics;
+import si.iskratel.monitoring.JettyServer;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +17,10 @@ public class Start {
     public static int SIMULATOR_NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
     public static String ES_URL;
+    public static String PG_URL;
+    public static String PG_USER;
+    public static String PG_PASS;
+    public static boolean PG_CREATE_TABLES_ON_START = true;
     public static boolean EXIT_AT_THE_END = false;
     public static String SIMULATOR_MODE;
     public static String SIMULATOR_STORAGE_TYPE;
@@ -49,14 +53,10 @@ public class Start {
 //        String testUrl = "http://pgcentos:9200/cdraggs/_bulk?pretty";
         String testUrl = "http://elasticvm:9200/cdraggs/_bulk?pretty";
 //        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk?pretty";
+        String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "128"));
-        SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "Moscow, Ljubljana, Berlin, " +
-                "London, Moscow, Rome, " +
-                "Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, " +
-                "Vienna, London, Paris, " +
-                "Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris");
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "64"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "10000000"));
@@ -64,16 +64,23 @@ public class Start {
         SIMULATOR_BNUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_START", "80000000"));
         SIMULATOR_BNUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_RANGE", "9999999"));
         SIMULATOR_MINIMUM_DATA = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_SIMULATOR_MINIMUM_DATA", "false"));
+        SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "" +
+                "Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, " +
+                "Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, " +
+                "Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris");
 
-        // possible values
-//        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "STORE_ALL_CALLS");
+        // possible values: STORE_ALL_CALLS, STORE_AGGREGATED_CALLS
         SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "STORE_AGGREGATED_CALLS");
-        SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
-//        SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "POSTGRES");
+        // possible values: ELASTICSEARCH, POSTGRES
+        SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "POSTGRES");
 
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
+        PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
+        PG_USER = getenv.getOrDefault("CDRPR_PG_USER", "postgres");
+        PG_PASS = getenv.getOrDefault("CDRPR_PG_PASS", "object00");
+        PG_CREATE_TABLES_ON_START = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_PG_CREATE_TABLES_ON_START", "false"));
         EXIT_AT_THE_END = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
 
         try {
@@ -84,6 +91,7 @@ public class Start {
         System.out.println("NUM_OF_THREADS: " + SIMULATOR_NUM_OF_THREADS);
         System.out.println("BULK_SIZE: " + BULK_SIZE);
         System.out.println("ES_URL: " + ES_URL);
+        System.out.println("PG_URL: " + PG_URL);
         System.out.println("SIMULATOR_NODEID: " + SIMULATOR_NODEID);
         System.out.println("SIMULATOR_DELAY: " + SIMULATOR_CALL_DELAY);
         System.out.println("SIMULATOR_CALL_REASON: " + SIMULATOR_CALL_REASON);
@@ -95,7 +103,7 @@ public class Start {
             System.err.println("IOException: " + e.getMessage());
         }
 
-        PrometheusMetrics.startJetty();
+        JettyServer.startJetty();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
 
@@ -109,23 +117,15 @@ public class Start {
         StorageThread ct = new StorageThread();
         ct.start();
 
-        IPersistenceClient persistenceClient = null;
+        Runnable persistenceClient = null;
 
-        if (SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
 
-            if (SIMULATOR_MODE.equalsIgnoreCase("STORE_ALL_CALLS")) {
-                persistenceClient = new EsStoreAllCallsPersistenceClient(1);
-            }
-            if (SIMULATOR_MODE.equalsIgnoreCase("STORE_AGGREGATED_CALLS")) {
-                persistenceClient = new EsStoreAggregatedCalls(1);
-            }
 
+        if (SIMULATOR_MODE.equalsIgnoreCase("STORE_ALL_CALLS")) {
+            persistenceClient = new AllCallData(1);
         }
-
-        if (SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
-
-            // TODO
-
+        if (SIMULATOR_MODE.equalsIgnoreCase("STORE_AGGREGATED_CALLS")) {
+            persistenceClient = new AggregatedCalls(1);
         }
 
         Thread t = new Thread(persistenceClient);

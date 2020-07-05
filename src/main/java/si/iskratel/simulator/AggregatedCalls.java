@@ -3,13 +3,14 @@ package si.iskratel.simulator;
 import io.prometheus.client.Gauge;
 import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.monitoring.EsClient;
-import si.iskratel.monitoring.PrometheusMetrics;
+import si.iskratel.monitoring.PgClient;
 import si.iskratel.monitoring.PMetric;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EsStoreAggregatedCalls implements IPersistenceClient {
+public class AggregatedCalls implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
@@ -19,25 +20,24 @@ public class EsStoreAggregatedCalls implements IPersistenceClient {
     private List<CdrBean> tempList = new ArrayList<>();
 
 
+    // prometheus metrics
     public static final Gauge countByCrc = Gauge.build().name("cdrpr_agg_byCrc_total")
             .labelNames("nodeId", "releaseCause", "incTG", "outTG").help("Number of calls by crc").register();
     public static final Gauge countByDuration = Gauge.build().name("cdrpr_agg_byDuration_total")
             .labelNames("nodeId", "incTG", "outTG").help("Total duration").register();
 
-    public static PMetric m_countByCrc = PMetric.build().setName("m_countByCrc")
-            .setLabelNames("nodeId", "cause", "incTG", "outTG").register();
-    public static PMetric m_durationByTG = PMetric.build().setName("m_durationByTG")
-            .setLabelNames("nodeId", "incTG", "outTG").register();
-    public static PMetric m_callsInProgress = PMetric.build().setName("m_callsInProgress")
-            .setLabelNames("host").register();
+    // pmetrics
+    public static PMetric m_countByCrc = PMetric.build().name("m_countByCrc")
+            .labelNames("nodeId", "cause", "incTG", "outTG").register();
+    public static PMetric m_durationByTG = PMetric.build().name("m_durationByTG")
+            .labelNames("nodeId", "incTG", "outTG").register();
+    public static PMetric m_callsInProgress = PMetric.build().name("m_callsInProgress")
+            .labelNames("host").register();
 
-    public EsStoreAggregatedCalls(int id) {
+    public AggregatedCalls(int id) {
         threadId = id;
     }
 
-    @Override
-    public void send() {
-    }
 
     @Override
     public void run() {
@@ -76,14 +76,32 @@ public class EsStoreAggregatedCalls implements IPersistenceClient {
             PrometheusMetrics.bulkCount.set(m_countByCrc.getTimeSeriesSize());
 
             //CdrMetricRegistry.dumpAllMetrics();
-            m_callsInProgress.setLabelValues(Start.HOSTNAME).setValue(StorageThread.getNumberOfCallsInProgress());
+            m_callsInProgress.labelValues(Start.HOSTNAME).setValue(1.0 * StorageThread.getNumberOfCallsInProgress());
             System.out.println("sending metrics: " + m_countByCrc.getName() + ", size: " + m_countByCrc.getTimeSeriesSize());
             System.out.println("sending metrics: " + m_durationByTG.getName() + ", size: " +  + m_durationByTG.getTimeSeriesSize());
             System.out.println("sending metrics: " + m_callsInProgress.getName() + ", size: " +  + m_callsInProgress.getTimeSeriesSize());
 
-            EsClient.sendBulkPost(m_countByCrc.toJsonString());
-            EsClient.sendBulkPost(m_durationByTG.toJsonString());
-            EsClient.sendBulkPost(m_callsInProgress.toJsonString());
+            if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
+                EsClient.sendBulkPost(m_countByCrc.toEsBulkJsonString());
+                EsClient.sendBulkPost(m_durationByTG.toEsBulkJsonString());
+                EsClient.sendBulkPost(m_callsInProgress.toEsBulkJsonString());
+            }
+
+            if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
+                if (Start.PG_CREATE_TABLES_ON_START) {
+                    try {
+                        PgClient.createTable(m_countByCrc.toPgCreateTableString());
+                        PgClient.createTable(m_durationByTG.toPgCreateTableString());
+                        PgClient.createTable(m_callsInProgress.toPgCreateTableString());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    Start.PG_CREATE_TABLES_ON_START = false;
+                }
+                PgClient.sendBulk(m_countByCrc);
+                PgClient.sendBulk(m_durationByTG);
+                PgClient.sendBulk(m_callsInProgress);
+            }
 
             tempList.clear();
 
@@ -94,48 +112,18 @@ public class EsStoreAggregatedCalls implements IPersistenceClient {
     private void aggregate(CdrBean cdrBean) {
 
         // prometheus metrics
-        countByCrc.labels(cdrBean.getNodeId(), toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
+        countByCrc.labels(cdrBean.getNodeId(), Utils.toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
         if (cdrBean.getCause() == 16) {
             countByDuration.labels(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
         }
 
         // cdrpr metrics
-        m_countByCrc.setLabelValues(cdrBean.getNodeId(), toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
+        m_countByCrc.labelValues(cdrBean.getNodeId(), Utils.toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
         if (cdrBean.getCause() == 16)
-            m_durationByTG.setLabelValues(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
+            m_durationByTG.labelValues(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
 
     }
 
-
-    private String toCauseString(int cause) {
-        String newCrc = "";
-        switch (cause) {
-            case 16:
-                newCrc = "Answered";
-                break;
-            case 17:
-                newCrc = "Busy";
-                break;
-            case 19:
-                newCrc = "No answer";
-                break;
-            case 21:
-                newCrc = "Rejected";
-                break;
-            case 38:
-                newCrc = "Network out of order";
-                break;
-            case 6:
-                newCrc = "Channel unacceptable";
-                break;
-            case 3:
-                newCrc = "No route to destination";
-                break;
-            default:
-                newCrc = "Other";
-        }
-        return newCrc;
-    }
 
 
 

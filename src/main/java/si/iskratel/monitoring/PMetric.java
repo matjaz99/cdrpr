@@ -1,7 +1,6 @@
 package si.iskratel.monitoring;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PMetric {
 
@@ -14,12 +13,16 @@ public class PMetric {
         this.timestamp = timestamp;
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
     public static PMetric build() {
         PMetric m = new PMetric();
         return m;
     }
 
-    public PMetric setName(String name) {
+    public PMetric name(String name) {
         this.name = name;
         return this;
     }
@@ -28,12 +31,16 @@ public class PMetric {
         return name;
     }
 
-    public PMetric setLabelNames(String... labels) {
+    public PMetric labelNames(String... labels) {
         labelNames = labels;
         return this;
     }
 
-    public PTimeSeries setLabelValues(String... values) {
+    public String[] getLabelNames() {
+        return labelNames;
+    }
+
+    public PTimeSeries labelValues(String... values) {
         String tsId = "";
         for (int i = 0; i < values.length; i++) {
             tsId += values[i];
@@ -57,6 +64,10 @@ public class PMetric {
         return timeSeries.size();
     }
 
+    public List<PTimeSeries> getTimeSeries() {
+        return new ArrayList<PTimeSeries>(timeSeries.values());
+    }
+
     @Override
     public String toString() {
         String s = "CdrMetric{" + "timestamp=" + timestamp + ", name=" + name + ", timeseries={\n";
@@ -66,7 +77,7 @@ public class PMetric {
         return s + "}]";
     }
 
-    public String toJsonString() {
+    public String toEsBulkJsonString() {
         StringBuilder sb = new StringBuilder();
 
         for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
@@ -82,5 +93,28 @@ public class PMetric {
         }
 
         return sb.toString();
+    }
+
+    public String toPgCreateTableString() {
+        String createTableSQL = "CREATE TABLE " + name + " (ID BIGSERIAL PRIMARY KEY, ";
+        for (int i = 0; i < labelNames.length; i++) {
+            createTableSQL += labelNames[i] + " VARCHAR(256), ";
+        }
+        createTableSQL += "timestamp BIGINT, value NUMERIC)";
+        return createTableSQL;
+    }
+
+    public String toPgInsertMetricString() {
+//        Example: INSERT INTO m_name (id, name, email, country, password) VALUES (?, ?, ?, ?, ?);
+        String INSERT_SQL = "INSERT INTO " + name + " (";
+        String q = "(";
+        for (int i = 0; i < labelNames.length; i++) {
+            INSERT_SQL += labelNames[i] + ", ";
+            q += "?, ";
+        }
+        INSERT_SQL += "timestamp, value";
+        q += "?, ?";
+        INSERT_SQL += ") VALUES " + q + ");";
+        return INSERT_SQL;
     }
 }

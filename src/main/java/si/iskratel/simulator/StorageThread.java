@@ -1,7 +1,5 @@
 package si.iskratel.simulator;
 
-import si.iskratel.monitoring.PrometheusMetrics;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;

@@ -1,19 +1,21 @@
 package si.iskratel.monitoring;
 
+import si.iskratel.simulator.Start;
+
 import java.sql.*;
 import java.util.Arrays;
 
 public class PgClient {
 
 //    private final String url = "jdbc:postgresql://localhost/mydb";
-private final String url = "jdbc:postgresql://elasticvm:5432/mydb";
+    private final String url = "jdbc:postgresql://elasticvm:5432/mydb";
     private final String user = "postgres";
     private final String password = "object00";
 
     public static void main(String... args) {
         PgClient pg = new PgClient();
 //        try {
-//            pg.createTable();
+//            pg.createTable2();
 //        } catch (SQLException e) {
 //            System.out.println(e.getMessage());
 //        }
@@ -29,7 +31,7 @@ private final String url = "jdbc:postgresql://elasticvm:5432/mydb";
             " PASSWORD VARCHAR(50))";
 
 
-    public void createTable() throws SQLException {
+    public void createTable2() throws SQLException {
 
         System.out.println(createTableSQL);
         // Step 1: Establishing a Connection
@@ -123,6 +125,84 @@ private final String url = "jdbc:postgresql://elasticvm:5432/mydb";
                     t = t.getCause();
                 }
             }
+        }
+    }
+
+    public static void createTable(String sql) throws SQLException {
+
+        System.out.println(sql);
+        // Step 1: Establishing a Connection
+        try (Connection connection = DriverManager.getConnection(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
+
+             // Step 2:Create a statement using connection object
+             Statement statement = connection.createStatement();) {
+
+            // Step 3: Execute the query or update query
+            statement.execute(sql);
+        } catch (SQLException e) {
+
+            // print SQL exception information
+            printSQLException(e);
+        }
+    }
+
+    public static void sendBulk(PMetric pMetric) {
+
+        String INSERT_USERS_SQL = pMetric.toPgInsertMetricString();
+        System.out.println(INSERT_USERS_SQL);
+
+        try (Connection connection = DriverManager.getConnection(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
+             // Step 2:Create a statement using connection object
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL)) {
+            connection.setAutoCommit(false);
+
+            for (PTimeSeries ts : pMetric.getTimeSeries()) {
+
+                for (int i = 0; i < pMetric.getLabelNames().length; i++) {
+                    preparedStatement.setString(i + 1, ts.getLabelValues()[i]);
+                }
+                preparedStatement.setLong(pMetric.getLabelNames().length + 1, pMetric.getTimestamp());
+                preparedStatement.setDouble(pMetric.getLabelNames().length + 2, ts.getValue());
+                preparedStatement.addBatch();
+
+            }
+
+//            preparedStatement.setInt(1, 10);
+//            preparedStatement.setString(2, "a");
+//            preparedStatement.setString(3, "a@gmail.com");
+//            preparedStatement.setString(4, "India");
+//            preparedStatement.setString(5, "secret");
+//            preparedStatement.addBatch();
+//
+//            preparedStatement.setInt(1, 11);
+//            preparedStatement.setString(2, "b");
+//            preparedStatement.setString(3, "b@gmail.com");
+//            preparedStatement.setString(4, "India");
+//            preparedStatement.setString(5, "secret");
+//            preparedStatement.addBatch();
+//
+//            preparedStatement.setInt(1, 12);
+//            preparedStatement.setString(2, "c");
+//            preparedStatement.setString(3, "c@gmail.com");
+//            preparedStatement.setString(4, "India");
+//            preparedStatement.setString(5, "secret");
+//            preparedStatement.addBatch();
+//
+//            preparedStatement.setInt(1, 13);
+//            preparedStatement.setString(2, "d");
+//            preparedStatement.setString(3, "d@gmail.com");
+//            preparedStatement.setString(4, "India");
+//            preparedStatement.setString(5, "secret");
+//            preparedStatement.addBatch();
+
+            int[] updateCounts = preparedStatement.executeBatch();
+            System.out.println(Arrays.toString(updateCounts));
+            connection.commit();
+            connection.setAutoCommit(true);
+        } catch (BatchUpdateException batchUpdateException) {
+            printBatchUpdateException(batchUpdateException);
+        } catch (SQLException e) {
+            printSQLException(e);
         }
     }
 

@@ -1,7 +1,6 @@
 package si.iskratel.simulator;
 
 import si.iskratel.cdr.parser.*;
-import si.iskratel.monitoring.PrometheusMetrics;
 
 import java.util.*;
 

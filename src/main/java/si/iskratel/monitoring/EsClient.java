@@ -1,6 +1,7 @@
 package si.iskratel.monitoring;
 
 import okhttp3.*;
+import si.iskratel.simulator.PrometheusMetrics;
 import si.iskratel.simulator.Start;
 
 public class EsClient {

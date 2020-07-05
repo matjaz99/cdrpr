@@ -2,9 +2,8 @@ package si.iskratel.simulator;
 
 import okhttp3.*;
 import si.iskratel.cdr.parser.CdrBean;
-import si.iskratel.monitoring.PrometheusMetrics;
 
-public class EsStoreAllCallsPersistenceClient implements IPersistenceClient {
+public class AllCallData implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
@@ -18,13 +17,10 @@ public class EsStoreAllCallsPersistenceClient implements IPersistenceClient {
 
     private int dynamicBulkSize = Start.BULK_SIZE;
 
-    public EsStoreAllCallsPersistenceClient(int id) {
+    public AllCallData(int id) {
         this.threadId = id;
     }
 
-    @Override
-    public void send() {
-    }
 
     @Override
     public void run() {
