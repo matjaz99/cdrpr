@@ -1,0 +1,38 @@
+version: '3.6'
+
+networks:
+  net:
+    driver: overlay
+    attachable: true
+  es_elastic:
+    external: true
+
+services:
+
+  cdrpr-1:
+    image: matjaz99/cdrpr:2.0
+    networks:
+      - net
+      - es_elastic
+    ports:
+      - 9099:9099
+    environment:
+      - CDRPR_THREADS=64
+      - CDRPR_BULK_SIZE=7000
+      - CDRPR_DEBUG_ENABLED=false
+      - CDRPR_ES_URL=http://172.29.6.6:9200/cdraggs/_bulk?pretty
+      #- CDRPR_ES_URL=http://192.168.1.170:9200/cdraggs/_bulk?pretty
+      - CDRPR_EXIT=false
+      - CDRPR_SIMULATOR_MODE=STORE_AGGREGATED_CALLS
+      - CDRPR_SIMULATOR_STORAGE_TYPE=ELASTICSEARCH
+      - CDRPR_SIMULATOR_NODEID=Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris
+      - CDRPR_SIMULATOR_DELAY=30
+      - CDRPR_SIMULATOR_CALL_REASON=0
+      - CDRPR_SIMULATOR_ANUM_START=10000000
+      - CDRPR_SIMULATOR_ANUM_RANGE=9999999
+      - CDRPR_SIMULATOR_BNUM_START=80000000
+      - CDRPR_SIMULATOR_BNUM_RANGE=9999999
+      - CDRPR_SIMULATOR_MINIMUM_DATA=true
+    deploy:
+      mode: replicated
+      replicas: 1

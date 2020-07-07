@@ -1,0 +1,102 @@
+version: '3.6'
+
+networks:
+  net:
+    driver: overlay
+    attachable: true
+
+volumes:
+  grafana_storage:
+    driver: local
+  pgadmin_storage:
+    driver: local
+
+services:
+
+  cdrpr-pg:
+    image: matjaz99/cdrpr:2.0
+    networks:
+      - net
+    ports:
+      - 9099:9099
+    environment:
+      - CDRPR_THREADS=64
+      - CDRPR_BULK_SIZE=7000
+      - CDRPR_DEBUG_ENABLED=false
+      - CDRPR_ES_URL=http://172.29.6.6:9200/cdraggs/_bulk?pretty
+      #- CDRPR_ES_URL=http://192.168.1.170:9200/cdraggs/_bulk?pretty
+      - CDRPR_EXIT=false
+      - CDRPR_SIMULATOR_MODE=STORE_AGGREGATED_CALLS
+      - CDRPR_SIMULATOR_STORAGE_TYPE=POSTGRES
+      - CDRPR_SIMULATOR_NODEID=Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris
+      - CDRPR_SIMULATOR_DELAY=30
+      - CDRPR_SIMULATOR_CALL_REASON=0
+      - CDRPR_SIMULATOR_ANUM_START=10000000
+      - CDRPR_SIMULATOR_ANUM_RANGE=9999999
+      - CDRPR_SIMULATOR_BNUM_START=80000000
+      - CDRPR_SIMULATOR_BNUM_RANGE=9999999
+      - CDRPR_SIMULATOR_MINIMUM_DATA=true
+      - CDRPR_PG_URL=jdbc:postgresql://172.29.6.6:5432/cdraggs
+      - CDRPR_PG_USER=postgres
+      - CDRPR_PG_PASS=object00
+      - CDRPR_PG_CREATE_TABLES_ON_START=true
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  postgres:
+    image: postgres:11.8
+    networks:
+      - net
+    ports:
+      - 5432:5432
+    volumes:
+      - /storage/postgres/cdraggs_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: cdraggs
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: object00
+    #configs:
+    #  - source: db_config
+    #    target: /docker-entrypoint-initdb.d/01-databases.sql
+    #  - source: my_script
+    #    target: /docker-entrypoint-initdb.d/02-addNewCatalog.sh
+    #    mode: 0777
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        #- node.labels.node-type == storage
+          - node.hostname == mcrk-docker-1
+
+  pgadmin4:
+    image: dpage/pgadmin4:4.23
+    networks:
+      - net
+    ports:
+      - 8081:80
+      - 8443:443
+    environment:
+      PGADMIN_DEFAULT_EMAIL: test@example.com
+      PGADMIN_DEFAULT_PASSWORD: iskratel
+    volumes:
+      #- pgadmin_storage:/root/.pgadmin
+      - pgadmin_storage:/var/lib/pgadmin
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  grafana:
+    image: grafana/grafana:6.7.1
+    networks:
+      - net
+    ports:
+      - 3000:3000
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,corpglory-progresslist-panel,camptocamp-prometheus-alertmanager-datasource,michaeldmoore-multistat-panel,briangann-gauge-panel,flant-statusmap-panel,jdbranham-diagram-panel,natel-discrete-panel,natel-plotly-panel
+    volumes:
+      - grafana_storage:/var/lib/grafana
+    deploy:
+      mode: replicated
+      replicas: 1
