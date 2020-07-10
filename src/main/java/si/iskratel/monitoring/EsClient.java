@@ -22,6 +22,19 @@ public class EsClient {
 
     }
 
+    public static void sendBulkPost(PMetric pMetric) {
+
+        Request request = new Request.Builder()
+                .url(Start.ES_URL)
+                .addHeader("User-Agent", "OkHttp Bot")
+//                .addHeader("Content-Type", "application/json")
+                .post(RequestBody.create(pMetric.toEsBulkJsonString(), MEDIA_TYPE_JSON))
+                .build();
+
+        executeHttpRequest(request);
+
+    }
+
     private static void executeHttpRequest(Request request) {
         try {
 
@@ -30,10 +43,10 @@ public class EsClient {
                 Thread.sleep(1500);
                 System.out.println("EsStoreAggregatedCalls[0]: repeat");
                 response = httpClient.newCall(request).execute();
-                PrometheusMetrics.elasticPostsResent.labels(Start.HOSTNAME).inc();
+                ApplicationMetrics.elasticPostsResent.labels(Start.HOSTNAME).inc();
             }
             System.out.println("EsStoreAggregatedCalls[0]: POST sent");
-            PrometheusMetrics.elasticPostsSent.labels(Start.HOSTNAME).inc();
+            ApplicationMetrics.elasticPostsSent.labels(Start.HOSTNAME).inc();
 
             if (!response.isSuccessful()) System.out.println("EsStoreAggregatedCalls[" + Start.HOSTNAME + "]: Unexpected code: " + response);
 
@@ -44,7 +57,7 @@ public class EsClient {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("EsStoreAggregatedCalls[0]: Recursive call.");
-            PrometheusMetrics.elasticPostsResent.labels(Start.HOSTNAME + "").inc();
+            ApplicationMetrics.elasticPostsResent.labels(Start.HOSTNAME + "").inc();
             executeHttpRequest(request);
         }
     }

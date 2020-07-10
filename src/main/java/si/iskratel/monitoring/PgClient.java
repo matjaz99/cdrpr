@@ -8,19 +8,24 @@ import java.util.Arrays;
 public class PgClient {
 
 //    private final String url = "jdbc:postgresql://localhost/mydb";
-    private final String url = "jdbc:postgresql://elasticvm:5432/mydb";
-    private final String user = "postgres";
-    private final String password = "object00";
+    private String url = "jdbc:postgresql://elasticvm:5432/mydb";
+    private String user = "postgres";
+    private String password = "object00";
+
+    public PgClient(String url, String user, String password) {
+        this.url = url;
+        this.user = user;
+        this.password = password;
+    }
 
     public static void main(String... args) {
-        PgClient pg = new PgClient();
+//        PgClient pg = new PgClient();
 //        try {
 //            pg.createTable2();
 //        } catch (SQLException e) {
 //            System.out.println(e.getMessage());
 //        }
-
-        pg.parameterizedBatchUpdate();
+//        pg.parameterizedBatchUpdate();
     }
 
     private static final String createTableSQL = "CREATE TABLE users " +
@@ -113,6 +118,7 @@ public class PgClient {
     }
 
     public static void printSQLException(SQLException ex) {
+        ApplicationMetrics.postgresExceptionsCount.labels("thread0").inc();
         for (Throwable e: ex) {
             if (e instanceof SQLException) {
                 e.printStackTrace(System.err);
@@ -128,9 +134,9 @@ public class PgClient {
         }
     }
 
-    public static void createTable(String sql) throws SQLException {
+    public void createTable(PMetric pMetric) throws SQLException {
 
-        System.out.println(sql);
+        System.out.println(pMetric.toPgCreateTableString());
         // Step 1: Establishing a Connection
         try (Connection connection = DriverManager.getConnection(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
 
@@ -138,7 +144,7 @@ public class PgClient {
              Statement statement = connection.createStatement();) {
 
             // Step 3: Execute the query or update query
-            statement.execute(sql);
+            statement.execute(pMetric.toPgCreateTableString());
         } catch (SQLException e) {
 
             // print SQL exception information
@@ -146,14 +152,16 @@ public class PgClient {
         }
     }
 
-    public static void sendBulk(PMetric pMetric) {
+    public void sendBulk(PMetric pMetric) {
 
-        String INSERT_USERS_SQL = pMetric.toPgInsertMetricString();
-        System.out.println(INSERT_USERS_SQL);
+        String INSERT_SQL = pMetric.toPgInsertMetricString();
+        System.out.println(INSERT_SQL);
 
-        try (Connection connection = DriverManager.getConnection(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
+        ApplicationMetrics.postgresBulkInsertCount.labels("thread0").inc();
+
+        try (Connection connection = DriverManager.getConnection(url, user, password);
              // Step 2:Create a statement using connection object
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL)) {
             connection.setAutoCommit(false);
 
             for (PTimeSeries ts : pMetric.getTimeSeries()) {
@@ -166,34 +174,6 @@ public class PgClient {
                 preparedStatement.addBatch();
 
             }
-
-//            preparedStatement.setInt(1, 10);
-//            preparedStatement.setString(2, "a");
-//            preparedStatement.setString(3, "a@gmail.com");
-//            preparedStatement.setString(4, "India");
-//            preparedStatement.setString(5, "secret");
-//            preparedStatement.addBatch();
-//
-//            preparedStatement.setInt(1, 11);
-//            preparedStatement.setString(2, "b");
-//            preparedStatement.setString(3, "b@gmail.com");
-//            preparedStatement.setString(4, "India");
-//            preparedStatement.setString(5, "secret");
-//            preparedStatement.addBatch();
-//
-//            preparedStatement.setInt(1, 12);
-//            preparedStatement.setString(2, "c");
-//            preparedStatement.setString(3, "c@gmail.com");
-//            preparedStatement.setString(4, "India");
-//            preparedStatement.setString(5, "secret");
-//            preparedStatement.addBatch();
-//
-//            preparedStatement.setInt(1, 13);
-//            preparedStatement.setString(2, "d");
-//            preparedStatement.setString(3, "d@gmail.com");
-//            preparedStatement.setString(4, "India");
-//            preparedStatement.setString(5, "secret");
-//            preparedStatement.addBatch();
 
             int[] updateCounts = preparedStatement.executeBatch();
             System.out.println(Arrays.toString(updateCounts));

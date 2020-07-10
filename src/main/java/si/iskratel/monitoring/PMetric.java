@@ -6,6 +6,7 @@ public class PMetric {
 
     private long timestamp = System.currentTimeMillis();
     private String name;
+    private String help;
     private String[] labelNames;
     private Map<String, PTimeSeries> timeSeries = new HashMap<>();
 
@@ -20,6 +21,11 @@ public class PMetric {
     public static PMetric build() {
         PMetric m = new PMetric();
         return m;
+    }
+
+    public PMetric help(String help) {
+        this.help = help;
+        return this;
     }
 
     public PMetric name(String name) {
@@ -40,7 +46,8 @@ public class PMetric {
         return labelNames;
     }
 
-    public PTimeSeries labelValues(String... values) {
+    public PTimeSeries labelValues(String... values) throws PMetricException {
+        if (labelNames.length != values.length) throw new PMetricException("Number of label names is different than number of values.");
         String tsId = "";
         for (int i = 0; i < values.length; i++) {
             tsId += values[i];

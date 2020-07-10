@@ -26,10 +26,6 @@ public class PrometheusMetrics {
 			.help("Bulk send interval.").register();
 	public static final Counter totalCdrGenerated = Counter.build().name("cdrpr_cdrs_generated_total")
 			.labelNames("threadId").help("Number of generated cdrs.").register();
-	public static final Counter elasticPostsSent = Counter.build().name("cdrpr_elastic_post_requests_total")
-			.labelNames("threadId").help("Number of POST requests.").register();
-	public static final Counter elasticPostsResent = Counter.build().name("cdrpr_elastic_post_requests_resend_total")
-			.labelNames("threadId").help("Number of resent POST requests.").register();
 	public static final Gauge queueSize = Gauge.build().name("cdrpr_queue_size")
 			.help("Number of cdrs in queue.").register();
 	public static final Gauge maxQueueSize = Gauge.build().name("cdrpr_max_queue_size")

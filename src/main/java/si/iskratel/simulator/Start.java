@@ -2,7 +2,7 @@ package si.iskratel.simulator;
 
 
 import si.iskratel.cdr.parser.*;
-import si.iskratel.monitoring.JettyServer;
+import si.iskratel.monitoring.MetricsLib;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -103,7 +103,7 @@ public class Start {
             System.err.println("IOException: " + e.getMessage());
         }
 
-        JettyServer.startJetty();
+        MetricsLib.startJetty();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
 
@@ -117,18 +117,16 @@ public class Start {
         StorageThread ct = new StorageThread();
         ct.start();
 
-        Runnable persistenceClient = null;
-
-
+        Runnable aggregator = null;
 
         if (SIMULATOR_MODE.equalsIgnoreCase("STORE_ALL_CALLS")) {
-            persistenceClient = new AllCallData(1);
+            aggregator = new AllCallData(1);
         }
         if (SIMULATOR_MODE.equalsIgnoreCase("STORE_AGGREGATED_CALLS")) {
-            persistenceClient = new AggregatedCalls(1);
+            aggregator = new AggregatedCalls(1);
         }
 
-        Thread t = new Thread(persistenceClient);
+        Thread t = new Thread(aggregator);
         t.start();
 
     }

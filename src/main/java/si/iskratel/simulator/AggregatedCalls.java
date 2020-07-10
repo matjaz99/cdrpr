@@ -3,6 +3,7 @@ package si.iskratel.simulator;
 import io.prometheus.client.Gauge;
 import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.monitoring.EsClient;
+import si.iskratel.monitoring.PMetricException;
 import si.iskratel.monitoring.PgClient;
 import si.iskratel.monitoring.PMetric;
 
@@ -16,6 +17,8 @@ public class AggregatedCalls implements Runnable {
     private int threadId = 0;
     private int waitInterval = 60 * 1000;
     private long aggregationTimestamp;
+
+    private PgClient pgClient;
 
     private List<CdrBean> tempList = new ArrayList<>();
 
@@ -36,6 +39,7 @@ public class AggregatedCalls implements Runnable {
 
     public AggregatedCalls(int id) {
         threadId = id;
+        pgClient = new PgClient(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
     }
 
 
@@ -76,31 +80,35 @@ public class AggregatedCalls implements Runnable {
             PrometheusMetrics.bulkCount.set(m_countByCrc.getTimeSeriesSize());
 
             //CdrMetricRegistry.dumpAllMetrics();
-            m_callsInProgress.labelValues(Start.HOSTNAME).setValue(1.0 * StorageThread.getNumberOfCallsInProgress());
+            try {
+                m_callsInProgress.labelValues(Start.HOSTNAME).setValue(1.0 * StorageThread.getNumberOfCallsInProgress());
+            } catch (PMetricException e) {
+                e.printStackTrace();
+            }
             System.out.println("sending metrics: " + m_countByCrc.getName() + ", size: " + m_countByCrc.getTimeSeriesSize());
             System.out.println("sending metrics: " + m_durationByTG.getName() + ", size: " +  + m_durationByTG.getTimeSeriesSize());
             System.out.println("sending metrics: " + m_callsInProgress.getName() + ", size: " +  + m_callsInProgress.getTimeSeriesSize());
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
-                EsClient.sendBulkPost(m_countByCrc.toEsBulkJsonString());
-                EsClient.sendBulkPost(m_durationByTG.toEsBulkJsonString());
-                EsClient.sendBulkPost(m_callsInProgress.toEsBulkJsonString());
+                EsClient.sendBulkPost(m_countByCrc);
+                EsClient.sendBulkPost(m_durationByTG);
+                EsClient.sendBulkPost(m_callsInProgress);
             }
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
                 if (Start.PG_CREATE_TABLES_ON_START) {
                     try {
-                        PgClient.createTable(m_countByCrc.toPgCreateTableString());
-                        PgClient.createTable(m_durationByTG.toPgCreateTableString());
-                        PgClient.createTable(m_callsInProgress.toPgCreateTableString());
+                        pgClient.createTable(m_countByCrc);
+                        pgClient.createTable(m_durationByTG);
+                        pgClient.createTable(m_callsInProgress);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
                     Start.PG_CREATE_TABLES_ON_START = false;
                 }
-                PgClient.sendBulk(m_countByCrc);
-                PgClient.sendBulk(m_durationByTG);
-                PgClient.sendBulk(m_callsInProgress);
+                pgClient.sendBulk(m_countByCrc);
+                pgClient.sendBulk(m_durationByTG);
+                pgClient.sendBulk(m_callsInProgress);
             }
 
             tempList.clear();
@@ -118,9 +126,14 @@ public class AggregatedCalls implements Runnable {
         }
 
         // cdrpr metrics
-        m_countByCrc.labelValues(cdrBean.getNodeId(), Utils.toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
-        if (cdrBean.getCause() == 16)
-            m_durationByTG.labelValues(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
+        try {
+            m_countByCrc.labelValues(cdrBean.getNodeId(), Utils.toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
+            if (cdrBean.getCause() == 16)
+                m_durationByTG.labelValues(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
+        } catch (PMetricException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
