@@ -2,6 +2,7 @@ package si.iskratel.simulator;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import org.eclipse.jetty.server.Server;
@@ -34,7 +35,6 @@ public class PrometheusMetrics {
 			.help("Number of calls in progress.").register();
 	public static final Counter callsInProgressRemoved = Counter.build().name("cdrpr_calls_in_progress_removed")
 			.help("Number of calls removed from progress (call ended).").register();
-
 
 
 }

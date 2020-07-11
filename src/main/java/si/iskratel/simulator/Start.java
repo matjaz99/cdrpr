@@ -2,7 +2,7 @@ package si.iskratel.simulator;
 
 
 import si.iskratel.cdr.parser.*;
-import si.iskratel.monitoring.MetricsLib;
+import si.iskratel.metricslib.MetricsLib;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -103,7 +103,7 @@ public class Start {
             System.err.println("IOException: " + e.getMessage());
         }
 
-        MetricsLib.startJetty();
+        MetricsLib.init();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
 

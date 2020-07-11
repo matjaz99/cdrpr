@@ -1,11 +1,8 @@
-package si.iskratel.monitoring;
+package si.iskratel.metricslib;
 
 import io.prometheus.client.Gauge;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PMetricRegistry {
 
@@ -49,14 +46,21 @@ public class PMetricRegistry {
         return new ArrayList<>(r.metricsMap.values());
     }
 
-    public static void exportToPrometheusMetrics() {
-        exportToPrometheusMetrics("default");
+    public void convertAllMetricsToPrometheusMetrics() {
+        for (PMetricRegistry r : registriesMap.values()) {
+            convertToPrometheusMetrics(r.name);
+        }
     }
 
-    public static void exportToPrometheusMetrics(String registry) {
-        // TODO export from registry and remove from AggregatedCalls
-        for (PMetric m : registriesMap.get(registry).metricsMap.values()){
-
+    public void convertToPrometheusMetrics(String registry) {
+        PMetricRegistry r = registriesMap.get(registry);
+        for (PMetric m : r.metricsMap.values()) {
+            Gauge g = promMetricsMap.get(m.getName());
+            if (g == null) g = Gauge.build().name(m.getName()).labelNames(m.getLabelNames()).help(m.getHelp()).register();
+            for (PTimeSeries ts : m.getTimeSeries()) {
+                g.labels(ts.getLabelValues()).set(ts.getValue());
+            }
+            promMetricsMap.put(m.getName(), g);
         }
     }
 
@@ -68,6 +72,19 @@ public class PMetricRegistry {
             System.out.println(entry.getValue().toString());
         }
 
+
+    }
+
+    public static String describeAllMetrics() {
+        StringBuilder sb = new StringBuilder();
+        for (PMetricRegistry r : registriesMap.values()) {
+            for (PMetric m : r.metricsMap.values()) {
+                sb.append("[").append(r.name).append("] metric_name=").append(m.getName())
+                        .append(", help=").append(m.getHelp()).append(", labels=").append(Arrays.toString(m.getLabelNames())).append("\n");
+            }
+        }
+        System.out.println(sb.toString());
+        return sb.toString();
     }
 
 

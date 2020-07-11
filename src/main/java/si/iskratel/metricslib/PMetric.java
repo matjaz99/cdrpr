@@ -1,4 +1,4 @@
-package si.iskratel.monitoring;
+package si.iskratel.metricslib;
 
 import java.util.*;
 
@@ -23,12 +23,17 @@ public class PMetric {
         return m;
     }
 
-    public PMetric help(String help) {
+    public PMetric setHelp(String help) {
         this.help = help;
         return this;
     }
 
-    public PMetric name(String name) {
+    public String getHelp() {
+        if (help == null) return "Help missing";
+        return help;
+    }
+
+    public PMetric setName(String name) {
         this.name = name;
         return this;
     }
@@ -37,7 +42,7 @@ public class PMetric {
         return name;
     }
 
-    public PMetric labelNames(String... labels) {
+    public PMetric setLabelNames(String... labels) {
         labelNames = labels;
         return this;
     }
@@ -46,7 +51,7 @@ public class PMetric {
         return labelNames;
     }
 
-    public PTimeSeries labelValues(String... values) throws PMetricException {
+    public PTimeSeries setLabelValues(String... values) throws PMetricException {
         if (labelNames.length != values.length) throw new PMetricException("Number of label names is different than number of values.");
         String tsId = "";
         for (int i = 0; i < values.length; i++) {

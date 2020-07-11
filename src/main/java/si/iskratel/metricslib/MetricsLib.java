@@ -1,4 +1,4 @@
-package si.iskratel.monitoring;
+package si.iskratel.metricslib;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.exporter.MetricsServlet;
@@ -15,11 +15,12 @@ import java.io.IOException;
 
 public class MetricsLib {
 
-    public static boolean ENABLE_PROMETHEUS_METRICS = true;
+    private static String METRICSLIB_VERSION = "1.0";
+    public static boolean ENABLE_PROMETHEUS_METRICS = false;
 
-    public static final Counter requests = Counter.build()
-            .name("hello_world_requests_total")
-            .help("Number of hello world requests served.")
+    public static final Counter helloRequests = Counter.build()
+            .name("metricslib_hello_requests_total")
+            .help("Number of hello requests served.")
             .register();
 
     static class HelloServlet extends HttpServlet {
@@ -27,9 +28,11 @@ public class MetricsLib {
         @Override
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
                 throws ServletException, IOException {
-            resp.getWriter().println("Hello World!");
+            resp.getWriter().println("<h1>Hello MetricsLib v" + METRICSLIB_VERSION + "</h1>");
             // Increment the number of requests.
-            requests.inc();
+            helloRequests.inc();
+            resp.getWriter().println("<h3>Describe metrics</h3>");
+            resp.getWriter().println(PMetricRegistry.describeAllMetrics());
         }
     }
 
@@ -40,17 +43,21 @@ public class MetricsLib {
 
             for (PMetricRegistry r : PMetricRegistry.getRegistries()) {
                 for (PMetric m : r.getMetricsList()) {
-                    ApplicationMetrics.metricslib_registry_size.labels(r.getName(), m.getName()).set(m.getTimeSeriesSize());
+                    PromExporter.metricslib_registry_size.labels(r.getName(), m.getName()).set(m.getTimeSeriesSize());
                 }
-            }
-            if (ENABLE_PROMETHEUS_METRICS) {
-                PMetricRegistry.exportToPrometheusMetrics();
+                if (ENABLE_PROMETHEUS_METRICS) {
+                    r.convertAllMetricsToPrometheusMetrics();
+                }
             }
             super.doGet(req, resp);
         }
     }
 
-    public static void startJetty() throws Exception {
+    public static void init() throws Exception {
+        startJetty();
+    }
+
+    private static void startJetty() throws Exception {
 
         Server server = new Server(9099);
         ServletContextHandler context = new ServletContextHandler();

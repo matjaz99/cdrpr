@@ -52,16 +52,11 @@ services:
       - 5432:5432
     volumes:
       - /storage/postgres/cdraggs_data:/var/lib/postgresql/data
+      #- /home/postgres/cdraggs_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: cdraggs
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: object00
-    #configs:
-    #  - source: db_config
-    #    target: /docker-entrypoint-initdb.d/01-databases.sql
-    #  - source: my_script
-    #    target: /docker-entrypoint-initdb.d/02-addNewCatalog.sh
-    #    mode: 0777
     deploy:
       mode: replicated
       replicas: 1

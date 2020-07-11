@@ -1,0 +1,66 @@
+metrics:
+  m_countByCause:
+    registry: default
+    help: "Count number of calls by reason for each inc/out TG"
+    labels:
+      - node
+      - cause
+      - trafficType
+    value: count
+    mappings:
+      cause:
+        - 16=Answered
+        - 17=Busy
+        - 19=No answer
+        - 21=Rejected
+        - 38=Network out of order
+        - 6=Channel unacceptable
+        - 3=No route to destination
+        - x=Other
+  m_countBySuccessBySg:
+    help: "Count number of calls by success for each subscriber group"
+    labels:
+      - nodeId
+      - cause
+      - subscriberGroup
+    value: count
+    mappings:
+      cause:
+        - 16=Successful
+        - 17=Successful
+        - 19=Successful
+        - 21=Successful
+        - x=Unsuccessful
+  m_countByTg:
+    help: "Number of calls by trunk group"
+    labels:
+      - node
+      - trunkGroup
+      - direction
+      - cause
+    value: count
+    mappings:
+      cause:
+        - 16=Answered
+        - 17=Busy
+        - 19=No answer
+        - 21=Rejected
+        - x=Other
+      direction:
+        - 1=Incoming
+        - 2=Outgoing
+        - x=Other
+  m_durationByTg:
+    help: "Sum of call durations for each inc/out TG"
+    labels:
+      - node
+      - trunkGroup
+      - direction
+    value: sum(duration)
+    mappings:
+      direction:
+        - 1=Incoming
+        - 2=Outgoing
+        - x=Other
+
+

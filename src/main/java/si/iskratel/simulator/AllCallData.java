@@ -2,7 +2,7 @@ package si.iskratel.simulator;
 
 import okhttp3.*;
 import si.iskratel.cdr.parser.CdrBean;
-import si.iskratel.monitoring.ApplicationMetrics;
+import si.iskratel.metricslib.PromExporter;
 
 public class AllCallData implements Runnable {
 
@@ -100,9 +100,9 @@ public class AllCallData implements Runnable {
             while (!response.isSuccessful()) {
                 Thread.sleep(1500);
                 response = httpClient.newCall(request).execute();
-                ApplicationMetrics.elasticPostsResent.labels(threadId + "").inc();
+                PromExporter.elasticPostsResent.labels(threadId + "").inc();
             }
-            ApplicationMetrics.elasticPostsSent.labels(threadId + "").inc();
+            PromExporter.elasticPostsSent.labels(threadId + "").inc();
             sb = new StringBuilder();
 
             if (!response.isSuccessful()) System.out.println("ElasticPersistenceClient[" + threadId + "]: Unexpected code: " + response);
@@ -114,7 +114,7 @@ public class AllCallData implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("ElasticPersistenceClient[" + threadId + "]: Recursive call.");
-            ApplicationMetrics.elasticPostsResent.labels(threadId + "").inc();
+            PromExporter.elasticPostsResent.labels(threadId + "").inc();
             executeHttpRequest(request);
         }
     }

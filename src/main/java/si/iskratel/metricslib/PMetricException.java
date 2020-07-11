@@ -1,4 +1,4 @@
-package si.iskratel.monitoring;
+package si.iskratel.metricslib;
 
 public class PMetricException extends Exception {
 

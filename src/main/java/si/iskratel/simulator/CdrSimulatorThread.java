@@ -19,10 +19,12 @@ public class CdrSimulatorThread extends Thread {
 
     public void run() {
 
+        int delay = getRandomGaussian(Start.SIMULATOR_CALL_DELAY, Start.SIMULATOR_CALL_DELAY / 2);
+
         while (running) {
 
             try {
-                Thread.sleep(getRandomGaussian(Start.SIMULATOR_CALL_DELAY, Start.SIMULATOR_CALL_DELAY / 2));
+                Thread.sleep(delay);
             } catch (InterruptedException e) {
             }
 
@@ -118,9 +120,9 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setEndTime(d2);
 
         cdrBean.setInTrunkId(getRandomGaussian(4, 8));
-        cdrBean.setInTrunkGroupId(9970 + getRandomGaussian(5, 15));
+        cdrBean.setInTrunkGroupId(9970 + getRandomGaussian(10, 20));
         cdrBean.setOutTrunkId(getRandomGaussian(2, 3));
-        cdrBean.setOutTrunkGroupId(8830 + getRandomGaussian(6, 13));
+        cdrBean.setOutTrunkGroupId(8830 + getRandomGaussian(15, 30));
 
         if (duration > 0) {
             StorageThread.addCall(a, et);
@@ -155,7 +157,6 @@ public class CdrSimulatorThread extends Thread {
     }
 
     private int getRandomGaussian(int mean, int dev) {
-        // min and max are inclusive
         Random r = new Random();
         double gauss = r.nextGaussian();
         return Math.abs((int) (mean + gauss * dev));

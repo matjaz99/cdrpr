@@ -1,4 +1,4 @@
-package si.iskratel.monitoring;
+package si.iskratel.metricslib;
 
 import java.util.Arrays;
 
@@ -6,6 +6,8 @@ public class PTimeSeries {
 
     private String[] labelValues;
     private double value;
+
+    // TODO if you make countValue and sumValue, you can get two values fields for the same metric
 
     public String[] getLabelValues() {
         return labelValues;

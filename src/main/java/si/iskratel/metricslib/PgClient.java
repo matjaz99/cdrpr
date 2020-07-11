@@ -1,5 +1,6 @@
-package si.iskratel.monitoring;
+package si.iskratel.metricslib;
 
+import io.prometheus.client.Histogram;
 import si.iskratel.simulator.Start;
 
 import java.sql.*;
@@ -18,90 +19,6 @@ public class PgClient {
         this.password = password;
     }
 
-    public static void main(String... args) {
-//        PgClient pg = new PgClient();
-//        try {
-//            pg.createTable2();
-//        } catch (SQLException e) {
-//            System.out.println(e.getMessage());
-//        }
-//        pg.parameterizedBatchUpdate();
-    }
-
-    private static final String createTableSQL = "CREATE TABLE users " +
-            "(ID INT PRIMARY KEY ," +
-            " NAME TEXT, " +
-            " EMAIL VARCHAR(50), " +
-            " COUNTRY VARCHAR(50), " +
-            " PASSWORD VARCHAR(50))";
-
-
-    public void createTable2() throws SQLException {
-
-        System.out.println(createTableSQL);
-        // Step 1: Establishing a Connection
-        try (Connection connection = DriverManager.getConnection(url, user, password);
-
-             // Step 2:Create a statement using connection object
-             Statement statement = connection.createStatement();) {
-
-            // Step 3: Execute the query or update query
-            statement.execute(createTableSQL);
-        } catch (SQLException e) {
-
-            // print SQL exception information
-            printSQLException(e);
-        }
-    }
-
-    private void parameterizedBatchUpdate() {
-
-        String INSERT_USERS_SQL = "INSERT INTO users" + "  (id, name, email, country, password) VALUES " +
-                " (?, ?, ?, ?, ?);";
-
-        try (Connection connection = DriverManager.getConnection(url, user, password);
-             // Step 2:Create a statement using connection object
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL)) {
-            connection.setAutoCommit(false);
-
-            preparedStatement.setInt(1, 10);
-            preparedStatement.setString(2, "a");
-            preparedStatement.setString(3, "a@gmail.com");
-            preparedStatement.setString(4, "India");
-            preparedStatement.setString(5, "secret");
-            preparedStatement.addBatch();
-
-            preparedStatement.setInt(1, 11);
-            preparedStatement.setString(2, "b");
-            preparedStatement.setString(3, "b@gmail.com");
-            preparedStatement.setString(4, "India");
-            preparedStatement.setString(5, "secret");
-            preparedStatement.addBatch();
-
-            preparedStatement.setInt(1, 12);
-            preparedStatement.setString(2, "c");
-            preparedStatement.setString(3, "c@gmail.com");
-            preparedStatement.setString(4, "India");
-            preparedStatement.setString(5, "secret");
-            preparedStatement.addBatch();
-
-            preparedStatement.setInt(1, 13);
-            preparedStatement.setString(2, "d");
-            preparedStatement.setString(3, "d@gmail.com");
-            preparedStatement.setString(4, "India");
-            preparedStatement.setString(5, "secret");
-            preparedStatement.addBatch();
-
-            int[] updateCounts = preparedStatement.executeBatch();
-            System.out.println(Arrays.toString(updateCounts));
-            connection.commit();
-            connection.setAutoCommit(true);
-        } catch (BatchUpdateException batchUpdateException) {
-            printBatchUpdateException(batchUpdateException);
-        } catch (SQLException e) {
-            printSQLException(e);
-        }
-    }
 
     public static void printBatchUpdateException(BatchUpdateException b) {
 
@@ -118,7 +35,7 @@ public class PgClient {
     }
 
     public static void printSQLException(SQLException ex) {
-        ApplicationMetrics.postgresExceptionsCount.labels("thread0").inc();
+        PromExporter.postgresExceptionsCount.labels("thread0").inc();
         for (Throwable e: ex) {
             if (e instanceof SQLException) {
                 e.printStackTrace(System.err);
@@ -154,10 +71,12 @@ public class PgClient {
 
     public void sendBulk(PMetric pMetric) {
 
+        Histogram.Timer t = PromExporter.pgBulkSendHistogram.labels("sendBulk").startTimer();
+
         String INSERT_SQL = pMetric.toPgInsertMetricString();
         System.out.println(INSERT_SQL);
 
-        ApplicationMetrics.postgresBulkInsertCount.labels("thread0").inc();
+        PromExporter.postgresBulkInsertCount.labels("thread0").inc();
 
         try (Connection connection = DriverManager.getConnection(url, user, password);
              // Step 2:Create a statement using connection object
@@ -184,6 +103,8 @@ public class PgClient {
         } catch (SQLException e) {
             printSQLException(e);
         }
+        t.observeDuration();
+        PromExporter.pgBulkSendHistogram.labels("sendBulk").observe(pMetric.getTimeSeriesSize());
     }
 
 }

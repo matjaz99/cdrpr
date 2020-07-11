@@ -11,6 +11,9 @@ docker run -d --network es_elastic -e CDRPR_DIRECTORY=/opt/cdr -e CDRPR_THREADS=
 ```
 
 
-Število zapisov
+Število zapisov če hranimo vse klice:
 
 100k/15m == 400k/h == 9,6M/d == 288M/M == 3,456B/Y
+
+
+

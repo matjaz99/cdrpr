@@ -1,7 +1,6 @@
-package si.iskratel.monitoring;
+package si.iskratel.metricslib;
 
 import okhttp3.*;
-import si.iskratel.simulator.PrometheusMetrics;
 import si.iskratel.simulator.Start;
 
 public class EsClient {
@@ -43,10 +42,10 @@ public class EsClient {
                 Thread.sleep(1500);
                 System.out.println("EsStoreAggregatedCalls[0]: repeat");
                 response = httpClient.newCall(request).execute();
-                ApplicationMetrics.elasticPostsResent.labels(Start.HOSTNAME).inc();
+                PromExporter.elasticPostsResent.labels(Start.HOSTNAME).inc();
             }
             System.out.println("EsStoreAggregatedCalls[0]: POST sent");
-            ApplicationMetrics.elasticPostsSent.labels(Start.HOSTNAME).inc();
+            PromExporter.elasticPostsSent.labels(Start.HOSTNAME).inc();
 
             if (!response.isSuccessful()) System.out.println("EsStoreAggregatedCalls[" + Start.HOSTNAME + "]: Unexpected code: " + response);
 
@@ -57,7 +56,7 @@ public class EsClient {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("EsStoreAggregatedCalls[0]: Recursive call.");
-            ApplicationMetrics.elasticPostsResent.labels(Start.HOSTNAME + "").inc();
+            PromExporter.elasticPostsResent.labels(Start.HOSTNAME + "").inc();
             executeHttpRequest(request);
         }
     }

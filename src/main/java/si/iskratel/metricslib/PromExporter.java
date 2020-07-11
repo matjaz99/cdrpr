@@ -1,9 +1,10 @@
-package si.iskratel.monitoring;
+package si.iskratel.metricslib;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram;
 
-public class ApplicationMetrics {
+public class PromExporter {
 
     // a place for internal metrics
 
@@ -31,6 +32,12 @@ public class ApplicationMetrics {
             .name("metricslib_postgres_exceptions_total")
             .labelNames("threadId")
             .help("Number of errors in postgres.")
+            .register();
+    public static final Histogram pgBulkSendHistogram = Histogram.build()
+            .buckets(1, 5, 10, 30, 50)
+            .name("metricslib_postgres_bulk_request_time")
+            .labelNames("method")
+            .help("my first histogram")
             .register();
 
 }

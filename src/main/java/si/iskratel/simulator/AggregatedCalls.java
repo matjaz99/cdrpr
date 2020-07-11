@@ -1,11 +1,7 @@
 package si.iskratel.simulator;
 
-import io.prometheus.client.Gauge;
 import si.iskratel.cdr.parser.CdrBean;
-import si.iskratel.monitoring.EsClient;
-import si.iskratel.monitoring.PMetricException;
-import si.iskratel.monitoring.PgClient;
-import si.iskratel.monitoring.PMetric;
+import si.iskratel.metricslib.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -15,27 +11,29 @@ public class AggregatedCalls implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
-    private int waitInterval = 60 * 1000;
+    private int waitInterval = 5 * 60 * 1000;
     private long aggregationTimestamp;
 
     private PgClient pgClient;
 
     private List<CdrBean> tempList = new ArrayList<>();
 
-
-    // prometheus metrics
-    public static final Gauge countByCrc = Gauge.build().name("cdrpr_agg_byCrc_total")
-            .labelNames("nodeId", "releaseCause", "incTG", "outTG").help("Number of calls by crc").register();
-    public static final Gauge countByDuration = Gauge.build().name("cdrpr_agg_byDuration_total")
-            .labelNames("nodeId", "incTG", "outTG").help("Total duration").register();
-
-    // pmetrics
-    public static PMetric m_countByCrc = PMetric.build().name("m_countByCrc")
-            .labelNames("nodeId", "cause", "incTG", "outTG").register();
-    public static PMetric m_durationByTG = PMetric.build().name("m_durationByTG")
-            .labelNames("nodeId", "incTG", "outTG").register();
-    public static PMetric m_callsInProgress = PMetric.build().name("m_callsInProgress")
-            .labelNames("host").register();
+    // metrics
+    public static PMetric m_countByCrc = PMetric.build()
+            .setName("m_countByCrc")
+            .setHelp("Count calls by release cause")
+            .setLabelNames("nodeId", "cause", "incTG", "outTG")
+            .register();
+    public static PMetric m_durationByTG = PMetric.build()
+            .setName("m_durationByTG")
+            .setHelp("Total duration of answered calls on trunk groups")
+            .setLabelNames("nodeId", "incTG", "outTG")
+            .register();
+    public static PMetric m_callsInProgress = PMetric.build()
+            .setName("m_callsInProgress")
+            .setHelp("Current number of calls in progress (answered only)")
+            .setLabelNames("host")
+            .register();
 
     public AggregatedCalls(int id) {
         threadId = id;
@@ -79,9 +77,8 @@ public class AggregatedCalls implements Runnable {
 
             PrometheusMetrics.bulkCount.set(m_countByCrc.getTimeSeriesSize());
 
-            //CdrMetricRegistry.dumpAllMetrics();
             try {
-                m_callsInProgress.labelValues(Start.HOSTNAME).setValue(1.0 * StorageThread.getNumberOfCallsInProgress());
+                m_callsInProgress.setLabelValues(Start.HOSTNAME).setValue(1.0 * StorageThread.getNumberOfCallsInProgress());
             } catch (PMetricException e) {
                 e.printStackTrace();
             }
@@ -119,17 +116,11 @@ public class AggregatedCalls implements Runnable {
 
     private void aggregate(CdrBean cdrBean) {
 
-        // prometheus metrics
-        countByCrc.labels(cdrBean.getNodeId(), Utils.toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
-        if (cdrBean.getCause() == 16) {
-            countByDuration.labels(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
-        }
-
-        // cdrpr metrics
+        // fill metrics
         try {
-            m_countByCrc.labelValues(cdrBean.getNodeId(), Utils.toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
+            m_countByCrc.setLabelValues(cdrBean.getNodeId(), Utils.toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
             if (cdrBean.getCause() == 16)
-                m_durationByTG.labelValues(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
+                m_durationByTG.setLabelValues(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
         } catch (PMetricException e) {
             e.printStackTrace();
         }
