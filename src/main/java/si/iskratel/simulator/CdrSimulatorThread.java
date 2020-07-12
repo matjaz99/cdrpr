@@ -28,13 +28,13 @@ public class CdrSimulatorThread extends Thread {
             } catch (InterruptedException e) {
             }
 
-            simulateValues();
+            simulateCall();
 
         }
 
     }
 
-    private void simulateValues() {
+    private void simulateCall() {
 
         CdrBean cdrBean = new CdrBean();
         cdrBean.setId((int) totalCount);
@@ -77,21 +77,6 @@ public class CdrSimulatorThread extends Thread {
 
         int duration = 0;
         if (cdrBean.getCause() == 16) {
-//            if (totalCdrCount % 2 == 0) {
-//                duration = getRandomInRange(100, 900);
-//            } else if (totalCdrCount % 3 == 0) {
-//                duration = getRandomInRange(300, 1200);
-//            } else if (totalCdrCount % 5 == 0) {
-//                duration = getRandomInRange(900, 1800);
-//            } else if (totalCdrCount % 7 == 0) {
-//                duration = getRandomInRange(1200, 2800);
-//            } else if (totalCdrCount % 9 == 0) {
-//                duration = getRandomInRange(1800, 3800);
-//            } else if (totalCdrCount % 11 == 0) {
-//                duration = getRandomInRange(3600, 4800);
-//            } else {
-//                duration = getRandomInRange(200, 4800);
-//            }
             if (totalCount % 2 == 0) {
                 duration = getRandomGaussian(500, 100);
             } else if (totalCount % 3 == 0) {
@@ -119,10 +104,10 @@ public class CdrSimulatorThread extends Thread {
         Date d2 = new Date(et);
         cdrBean.setEndTime(d2);
 
-        cdrBean.setInTrunkId(getRandomGaussian(4, 8));
-        cdrBean.setInTrunkGroupId(9970 + getRandomGaussian(10, 20));
-        cdrBean.setOutTrunkId(getRandomGaussian(2, 3));
-        cdrBean.setOutTrunkGroupId(8830 + getRandomGaussian(15, 30));
+        cdrBean.setInTrunkId(220 + getRandomGaussian(10, 4));
+        cdrBean.setInTrunkGroupId(9940 + getRandomGaussian(10, 5));
+        cdrBean.setOutTrunkId(130 + getRandomGaussian(5, 3));
+        cdrBean.setOutTrunkGroupId(8440 + getRandomGaussian(10, 10));
 
         if (duration > 0) {
             StorageThread.addCall(a, et);

@@ -32,7 +32,7 @@ public class MetricsLib {
             // Increment the number of requests.
             helloRequests.inc();
             resp.getWriter().println("<h3>Describe metrics</h3>");
-            resp.getWriter().println(PMetricRegistry.describeAllMetrics());
+            resp.getWriter().println("<pre>" + PMetricRegistry.describeAllMetrics() + "</pre>");
         }
     }
 
@@ -43,7 +43,7 @@ public class MetricsLib {
 
             for (PMetricRegistry r : PMetricRegistry.getRegistries()) {
                 for (PMetric m : r.getMetricsList()) {
-                    PromExporter.metricslib_registry_size.labels(r.getName(), m.getName()).set(m.getTimeSeriesSize());
+                    PromExporter.prom_metricslib_registry_size.labels(r.getName(), m.getName()).set(m.getTimeSeriesSize());
                 }
                 if (ENABLE_PROMETHEUS_METRICS) {
                     r.convertAllMetricsToPrometheusMetrics();

@@ -42,10 +42,10 @@ public class EsClient {
                 Thread.sleep(1500);
                 System.out.println("EsStoreAggregatedCalls[0]: repeat");
                 response = httpClient.newCall(request).execute();
-                PromExporter.elasticPostsResent.labels(Start.HOSTNAME).inc();
+                PromExporter.prom_elasticPostsResent.labels(Start.HOSTNAME).inc();
             }
             System.out.println("EsStoreAggregatedCalls[0]: POST sent");
-            PromExporter.elasticPostsSent.labels(Start.HOSTNAME).inc();
+            PromExporter.prom_elasticPostsSent.labels(Start.HOSTNAME).inc();
 
             if (!response.isSuccessful()) System.out.println("EsStoreAggregatedCalls[" + Start.HOSTNAME + "]: Unexpected code: " + response);
 
@@ -56,7 +56,7 @@ public class EsClient {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("EsStoreAggregatedCalls[0]: Recursive call.");
-            PromExporter.elasticPostsResent.labels(Start.HOSTNAME + "").inc();
+            PromExporter.prom_elasticPostsResent.labels(Start.HOSTNAME + "").inc();
             executeHttpRequest(request);
         }
     }

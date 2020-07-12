@@ -20,66 +20,27 @@ public class PgClient {
     }
 
 
-    public static void printBatchUpdateException(BatchUpdateException b) {
-
-        System.err.println("----BatchUpdateException----");
-        System.err.println("SQLState:  " + b.getSQLState());
-        System.err.println("Message:  " + b.getMessage());
-        System.err.println("Vendor:  " + b.getErrorCode());
-        System.err.print("Update counts:  ");
-        int[] updateCounts = b.getUpdateCounts();
-
-        for (int i = 0; i < updateCounts.length; i++) {
-            System.err.print(updateCounts[i] + "   ");
-        }
-    }
-
-    public static void printSQLException(SQLException ex) {
-        PromExporter.postgresExceptionsCount.labels("thread0").inc();
-        for (Throwable e: ex) {
-            if (e instanceof SQLException) {
-                e.printStackTrace(System.err);
-                System.err.println("SQLState: " + ((SQLException) e).getSQLState());
-                System.err.println("Error Code: " + ((SQLException) e).getErrorCode());
-                System.err.println("Message: " + e.getMessage());
-                Throwable t = ex.getCause();
-                while (t != null) {
-                    System.out.println("Cause: " + t);
-                    t = t.getCause();
-                }
-            }
-        }
-    }
-
     public void createTable(PMetric pMetric) throws SQLException {
 
         System.out.println(pMetric.toPgCreateTableString());
-        // Step 1: Establishing a Connection
         try (Connection connection = DriverManager.getConnection(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
-
-             // Step 2:Create a statement using connection object
              Statement statement = connection.createStatement();) {
-
-            // Step 3: Execute the query or update query
             statement.execute(pMetric.toPgCreateTableString());
         } catch (SQLException e) {
-
-            // print SQL exception information
             printSQLException(e);
         }
     }
 
     public void sendBulk(PMetric pMetric) {
 
-        Histogram.Timer t = PromExporter.pgBulkSendHistogram.labels("sendBulk").startTimer();
+        Histogram.Timer t = PromExporter.prom_bulkSendHistogram.labels("PgClient", "sendBulk").startTimer();
 
         String INSERT_SQL = pMetric.toPgInsertMetricString();
         System.out.println(INSERT_SQL);
 
-        PromExporter.postgresBulkInsertCount.labels("thread0").inc();
+        PromExporter.prom_postgresBulkInsertCount.labels("thread0").inc();
 
         try (Connection connection = DriverManager.getConnection(url, user, password);
-             // Step 2:Create a statement using connection object
              PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL)) {
             connection.setAutoCommit(false);
 
@@ -95,16 +56,49 @@ public class PgClient {
             }
 
             int[] updateCounts = preparedStatement.executeBatch();
-            System.out.println(Arrays.toString(updateCounts));
+            System.out.println("Inserted: " + updateCounts.length);
             connection.commit();
             connection.setAutoCommit(true);
+
         } catch (BatchUpdateException batchUpdateException) {
             printBatchUpdateException(batchUpdateException);
         } catch (SQLException e) {
             printSQLException(e);
         }
+
         t.observeDuration();
-        PromExporter.pgBulkSendHistogram.labels("sendBulk").observe(pMetric.getTimeSeriesSize());
+        PromExporter.prom_bulkSendHistogram.labels("PgClient", "sendBulk").observe(pMetric.getTimeSeriesSize());
+    }
+
+    public static void printBatchUpdateException(BatchUpdateException b) {
+
+        System.err.println("----BatchUpdateException----");
+        System.err.println("SQLState:  " + b.getSQLState());
+        System.err.println("Message:  " + b.getMessage());
+        System.err.println("Vendor:  " + b.getErrorCode());
+        System.err.print("Update counts:  ");
+        int[] updateCounts = b.getUpdateCounts();
+
+        for (int i = 0; i < updateCounts.length; i++) {
+            System.err.print(updateCounts[i] + "   ");
+        }
+    }
+
+    public static void printSQLException(SQLException ex) {
+        PromExporter.prom_postgresExceptionsCount.labels("thread0").inc();
+        for (Throwable e: ex) {
+            if (e instanceof SQLException) {
+                e.printStackTrace(System.err);
+                System.err.println("SQLState: " + ((SQLException) e).getSQLState());
+                System.err.println("Error Code: " + ((SQLException) e).getErrorCode());
+                System.err.println("Message: " + e.getMessage());
+                Throwable t = ex.getCause();
+                while (t != null) {
+                    System.out.println("Cause: " + t);
+                    t = t.getCause();
+                }
+            }
+        }
     }
 
 }

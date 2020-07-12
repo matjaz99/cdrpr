@@ -100,9 +100,9 @@ public class AllCallData implements Runnable {
             while (!response.isSuccessful()) {
                 Thread.sleep(1500);
                 response = httpClient.newCall(request).execute();
-                PromExporter.elasticPostsResent.labels(threadId + "").inc();
+                PromExporter.prom_elasticPostsResent.labels(threadId + "").inc();
             }
-            PromExporter.elasticPostsSent.labels(threadId + "").inc();
+            PromExporter.prom_elasticPostsSent.labels(threadId + "").inc();
             sb = new StringBuilder();
 
             if (!response.isSuccessful()) System.out.println("ElasticPersistenceClient[" + threadId + "]: Unexpected code: " + response);
@@ -114,7 +114,7 @@ public class AllCallData implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("ElasticPersistenceClient[" + threadId + "]: Recursive call.");
-            PromExporter.elasticPostsResent.labels(threadId + "").inc();
+            PromExporter.prom_elasticPostsResent.labels(threadId + "").inc();
             executeHttpRequest(request);
         }
     }

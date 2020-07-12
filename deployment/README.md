@@ -1,7 +1,6 @@
 # CDRAGGS in PG
 
 https://www.postgresql.org/docs/12/index.html
-
 https://grafana.com/docs/grafana/latest/features/datasources/postgres/
 
 

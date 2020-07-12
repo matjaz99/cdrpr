@@ -108,7 +108,8 @@ public class PMetric {
     }
 
     public String toPgCreateTableString() {
-        String createTableSQL = "CREATE TABLE " + name + " (ID BIGSERIAL PRIMARY KEY, ";
+        String createTableSQL = "CREATE TABLE " + name + " (";
+        createTableSQL += "ID BIGSERIAL PRIMARY KEY, ";
         for (int i = 0; i < labelNames.length; i++) {
             createTableSQL += labelNames[i] + " VARCHAR(256), ";
         }
