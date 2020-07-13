@@ -14,7 +14,7 @@ public class Start {
 
     public static String HOSTNAME = "localhost0";
     public static int BULK_SIZE = 100;
-    public static int SEND_INTERVAL = 60 * 1000;
+    public static int SEND_INTERVAL_SEC = 60;
     public static int SIMULATOR_NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
     public static String ES_URL;
@@ -52,6 +52,7 @@ public class Start {
         Runtime.getRuntime().addShutdownHook(new TheShutdownHook());
 
 //        String testUrl = "http://mcrk-docker-1:9200/cdrs/_bulk?pretty";
+//        String testUrl = "http://mcrk-docker-1:9200/cdraggs/_bulk?pretty";
 //        String testUrl = "http://pgcentos:9200/cdraggs/_bulk?pretty";
         String testUrl = "http://elasticvm:9200/cdraggs/_bulk?pretty";
 //        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk?pretty";
@@ -77,7 +78,7 @@ public class Start {
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "POSTGRES");
 
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
-        SEND_INTERVAL = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL", "60000"));
+        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60000"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
@@ -108,6 +109,7 @@ public class Start {
         }
 
         MetricsLib.init();
+        MetricsLib.ENABLE_PROMETHEUS_METRICS = ENABLE_PROMETHEUS_METRICS;
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
 

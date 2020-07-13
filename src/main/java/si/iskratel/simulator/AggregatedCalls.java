@@ -46,7 +46,7 @@ public class AggregatedCalls implements Runnable {
         while (running) {
 
             try {
-                Thread.sleep(Start.SEND_INTERVAL);
+                Thread.sleep(Start.SEND_INTERVAL_SEC * 1000);
             } catch (InterruptedException e) {
             }
 

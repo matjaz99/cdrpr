@@ -8,7 +8,7 @@ public class AllCallData implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
-    private int sendInterval = 1000;
+    private int sendInterval = Start.SEND_INTERVAL_SEC * 1000;
     private int bulkCount = 0;
 
     private StringBuilder sb = new StringBuilder();
@@ -54,7 +54,7 @@ public class AllCallData implements Runnable {
                 if (dynamicBulkSize > 100000) dynamicBulkSize = 100000;
             }
             if (Start.getQueueSize() < Start.BULK_SIZE) {
-                sendInterval = 1000;
+                sendInterval = Start.SEND_INTERVAL_SEC * 1000;
                 dynamicBulkSize = Start.BULK_SIZE;
             }
 
