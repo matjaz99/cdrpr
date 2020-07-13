@@ -96,20 +96,30 @@ Answer to seizure ratio:
 CREATE INDEX ON m_countbycrc (nodeId, cause);
 ```
 
+## Metric estimation
+
+For CDR:
+100 nodov x 10 causes x 2 directions = 2000 metrics
+
 
 ## Data capacity
 
 m_countByCrc ima polja: id, node, cause, incTg, outTg, timestamp in value
+m_durationbytg ima polja: nodeId, incTG, outTG, timestamp in value
+
+#### ElasticSearch
+
+450M vse metrike skupaj .... docker volume ima 29 GB
+
+#### Postgres
 
 vpisovanje (70k pri 64 thredov, 350k pri 128 thredov)
 
-velikost data direktorija: 24 GB
+m_countByCrc: velikost pg data direktorija: 24 GB
 
 140M vrstic ..... 11 GB
 
-m_durationbytg ima polja: nodeId, incTG, outTG, timestamp in value
-
-56M vrstic ...... 3,3 GB
+m_durationbytg: 56M vrstic ...... 3,3 GB
 
 
 En scrape/bulk vsebuje cca. 70k byCrc, 40k byDuration, skupaj 110k metrik. V fajlu je to 20 MB.

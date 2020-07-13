@@ -14,6 +14,7 @@ public class Start {
 
     public static String HOSTNAME = "localhost0";
     public static int BULK_SIZE = 100;
+    public static int SEND_INTERVAL = 60 * 1000;
     public static int SIMULATOR_NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
     public static String ES_URL;
@@ -32,6 +33,7 @@ public class Start {
     public static int SIMULATOR_BNUM_START = 0;
     public static int SIMULATOR_BNUM_RANGE = 0;
     public static boolean SIMULATOR_MINIMUM_DATA = false;
+    public static boolean ENABLE_PROMETHEUS_METRICS = false;
 
     public static long totalCount = 0;
     public static long badCdrRecordExceptionCount = 0;
@@ -75,6 +77,7 @@ public class Start {
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "POSTGRES");
 
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
+        SEND_INTERVAL = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL", "60000"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
@@ -82,6 +85,7 @@ public class Start {
         PG_PASS = getenv.getOrDefault("CDRPR_PG_PASS", "object00");
         PG_CREATE_TABLES_ON_START = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_PG_CREATE_TABLES_ON_START", "false"));
         EXIT_AT_THE_END = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
+        ENABLE_PROMETHEUS_METRICS = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ENABLE_PROMETHEUS_METRICS", "true"));
 
         try {
             HOSTNAME = InetAddress.getLocalHost().getHostName();

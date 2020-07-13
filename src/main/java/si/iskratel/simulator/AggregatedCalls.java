@@ -11,7 +11,6 @@ public class AggregatedCalls implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
-    private int waitInterval = 5 * 60 * 1000;
     private long aggregationTimestamp;
 
     private PgClient pgClient;
@@ -47,7 +46,7 @@ public class AggregatedCalls implements Runnable {
         while (running) {
 
             try {
-                Thread.sleep(waitInterval);
+                Thread.sleep(Start.SEND_INTERVAL);
             } catch (InterruptedException e) {
             }
 

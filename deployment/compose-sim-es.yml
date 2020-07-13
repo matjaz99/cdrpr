@@ -9,7 +9,7 @@ networks:
 
 services:
 
-  cdrpr-1:
+  cdrsim-es:
     image: matjaz99/cdrpr:2.0
     networks:
       - net
@@ -17,8 +17,9 @@ services:
     ports:
       - 9099:9099
     environment:
-      - CDRPR_THREADS=64
+      - CDRPR_THREADS=16
       - CDRPR_BULK_SIZE=7000
+      - CDRPR_SEND_INTERVAL=300000;
       - CDRPR_DEBUG_ENABLED=false
       - CDRPR_ES_URL=http://172.29.6.6:9200/cdraggs/_bulk?pretty
       #- CDRPR_ES_URL=http://192.168.1.170:9200/cdraggs/_bulk?pretty
@@ -33,6 +34,7 @@ services:
       - CDRPR_SIMULATOR_BNUM_START=80000000
       - CDRPR_SIMULATOR_BNUM_RANGE=9999999
       - CDRPR_SIMULATOR_MINIMUM_DATA=true
+      - CDRPR_ENABLE_PROMETHEUS_METRICS=true
     deploy:
       mode: replicated
       replicas: 1
