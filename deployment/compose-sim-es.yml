@@ -9,6 +9,10 @@ volumes:
   data01:
     driver: local
 
+configs:
+  kibana_config:
+    file: ./kibana.yml
+
 services:
 
   cdrsim-es:
@@ -71,8 +75,11 @@ services:
       - net
     ports:
       - 5601:5601
-    volumes:
-      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    #volumes:
+    #  - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    configs:
+      - source: kibana_config
+        target: /usr/share/kibana/config/kibana.yml
     environment:
       SERVER_NAME: kibana.example.org
       ELASTICSEARCH_HOSTS: http://es01:9200
