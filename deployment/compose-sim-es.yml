@@ -4,8 +4,10 @@ networks:
   net:
     driver: overlay
     attachable: true
-  es_elastic:
-    external: true
+
+volumes:
+  data01:
+    driver: local
 
 services:
 
@@ -13,7 +15,6 @@ services:
     image: matjaz99/cdrpr:2.0
     networks:
       - net
-      - es_elastic
     ports:
       - 9099:9099
     environment:
@@ -38,3 +39,40 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+
+  es01:
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    environment:
+      - discovery.type=single-node
+      #- "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - net
+    deploy:
+      mode: replicated
+      replicas: 1
+      #placement:
+      #  constraints:
+      #  - node.hostname == mcrk-docker-1
+
+    kibana:
+      #image: docker.elastic.co/kibana/kibana:7.4.2
+      image: docker.elastic.co/kibana/kibana:7.8.0
+      networks:
+        - net
+      ports:
+        - 5601:5601
+      volumes:
+        - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+      environment:
+        SERVER_NAME: kibana.example.org
+        ELASTICSEARCH_HOSTS: http://es01:9200

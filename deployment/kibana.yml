@@ -1,0 +1,6 @@
+#server.name: kibana
+#server.host: "0"
+#elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+monitoring.ui.container.elasticsearch.enabled: true
+xpack.encryptedSavedObjects.encryptionKey: d974e095b5716c4640de67a4fdb7d4a286b47dacbde54cdb4b24c73a90692e64
+xpack.actions.enabledActionTypes: [.email, .index, .webhook]

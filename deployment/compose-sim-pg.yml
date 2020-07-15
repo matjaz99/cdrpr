@@ -13,7 +13,7 @@ volumes:
 
 services:
 
-  cdrpr-pg:
+  cdrsim-pg:
     image: matjaz99/cdrpr:2.0
     networks:
       - net
