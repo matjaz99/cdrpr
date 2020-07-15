@@ -60,19 +60,19 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      #placement:
-      #  constraints:
-      #  - node.hostname == mcrk-docker-1
+      placement:
+        constraints:
+          - node.hostname == mcrk-docker-1
 
-    kibana:
-      #image: docker.elastic.co/kibana/kibana:7.4.2
-      image: docker.elastic.co/kibana/kibana:7.8.0
-      networks:
-        - net
-      ports:
-        - 5601:5601
-      volumes:
-        - ./kibana.yml:/usr/share/kibana/config/kibana.yml
-      environment:
-        SERVER_NAME: kibana.example.org
-        ELASTICSEARCH_HOSTS: http://es01:9200
+  kibana:
+    #image: docker.elastic.co/kibana/kibana:7.4.2
+    image: docker.elastic.co/kibana/kibana:7.8.0
+    networks:
+      - net
+    ports:
+      - 5601:5601
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    environment:
+      SERVER_NAME: kibana.example.org
+      ELASTICSEARCH_HOSTS: http://es01:9200
