@@ -82,7 +82,7 @@ public class PMetric {
 
     @Override
     public String toString() {
-        String s = "CdrMetric{" + "timestamp=" + timestamp + ", name=" + name + ", timeseries={\n";
+        String s = "PMetric{" + "timestamp=" + timestamp + ", name=" + name + ", timeseries={\n";
         for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
             s += "\t" + entry.getValue().toString() + "\n";
         }

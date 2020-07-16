@@ -23,7 +23,7 @@ public class PgClient {
     public void createTable(PMetric pMetric) throws SQLException {
 
         System.out.println(pMetric.toPgCreateTableString());
-        try (Connection connection = DriverManager.getConnection(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
+        try (Connection connection = DriverManager.getConnection(url, user, password);
              Statement statement = connection.createStatement();) {
             statement.execute(pMetric.toPgCreateTableString());
         } catch (SQLException e) {

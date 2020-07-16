@@ -14,6 +14,7 @@ public class AggregatedCalls implements Runnable {
     private long aggregationTimestamp;
 
     private PgClient pgClient;
+    private EsClient esClient;
 
     private List<CdrBean> tempList = new ArrayList<>();
 
@@ -37,6 +38,7 @@ public class AggregatedCalls implements Runnable {
     public AggregatedCalls(int id) {
         threadId = id;
         pgClient = new PgClient(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
+        esClient = new EsClient(Start.ES_URL);
     }
 
 
@@ -77,7 +79,7 @@ public class AggregatedCalls implements Runnable {
             PrometheusMetrics.bulkCount.set(m_countByCrc.getTimeSeriesSize());
 
             try {
-                m_callsInProgress.setLabelValues(Start.HOSTNAME).setValue(1.0 * StorageThread.getNumberOfCallsInProgress());
+                m_callsInProgress.setLabelValues(Start.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
             } catch (PMetricException e) {
                 e.printStackTrace();
             }
@@ -86,9 +88,9 @@ public class AggregatedCalls implements Runnable {
             System.out.println("-> sending metrics: " + m_callsInProgress.getName() + ", size: " +  + m_callsInProgress.getTimeSeriesSize());
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
-                EsClient.sendBulkPost(m_countByCrc);
-                EsClient.sendBulkPost(m_durationByTG);
-                EsClient.sendBulkPost(m_callsInProgress);
+                esClient.sendBulkPost(m_countByCrc);
+                esClient.sendBulkPost(m_durationByTG);
+                esClient.sendBulkPost(m_callsInProgress);
             }
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {

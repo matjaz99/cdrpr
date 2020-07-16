@@ -21,7 +21,7 @@ public class PTimeSeries {
         return value;
     }
 
-    public void setValue(double value) {
+    public void set(double value) {
         this.value = value;
     }
 
@@ -35,7 +35,7 @@ public class PTimeSeries {
 
     @Override
     public String toString() {
-        return "CdrTimeSeries{" +
+        return "PTimeSeries{" +
                 "labelValues=" + Arrays.toString(labelValues) +
                 ", value=" + value +
                 '}';

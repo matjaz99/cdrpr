@@ -5,13 +5,19 @@ import si.iskratel.simulator.Start;
 
 public class EsClient {
 
+    private String url = "http://mcrk-docker-1:9200/cdraggs/_bulk?pretty";
+
     private static OkHttpClient httpClient = new OkHttpClient();
     private static MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
-    public static void sendBulkPost(String body) {
+    public EsClient(String url) {
+        this.url = url;
+    }
+
+    public void sendBulkPost(String body) {
 
         Request request = new Request.Builder()
-                .url(Start.ES_URL)
+                .url(url)
                 .addHeader("User-Agent", "OkHttp Bot")
 //                .addHeader("Content-Type", "application/json")
                 .post(RequestBody.create(body, MEDIA_TYPE_JSON))
@@ -21,10 +27,10 @@ public class EsClient {
 
     }
 
-    public static void sendBulkPost(PMetric pMetric) {
+    public void sendBulkPost(PMetric pMetric) {
 
         Request request = new Request.Builder()
-                .url(Start.ES_URL)
+                .url(url)
                 .addHeader("User-Agent", "OkHttp Bot")
 //                .addHeader("Content-Type", "application/json")
                 .post(RequestBody.create(pMetric.toEsBulkJsonString(), MEDIA_TYPE_JSON))
@@ -40,14 +46,14 @@ public class EsClient {
             Response response = httpClient.newCall(request).execute();
             while (!response.isSuccessful()) {
                 Thread.sleep(1500);
-                System.out.println("EsStoreAggregatedCalls[0]: repeat");
+                System.out.println("EsClient[0]: repeat");
                 response = httpClient.newCall(request).execute();
                 PromExporter.prom_elasticPostsResent.labels(Start.HOSTNAME).inc();
             }
-            System.out.println("EsStoreAggregatedCalls[0]: POST sent");
+            System.out.println("EsClient[0]: POST sent");
             PromExporter.prom_elasticPostsSent.labels(Start.HOSTNAME).inc();
 
-            if (!response.isSuccessful()) System.out.println("EsStoreAggregatedCalls[" + Start.HOSTNAME + "]: Unexpected code: " + response);
+            if (!response.isSuccessful()) System.out.println("EsClient[" + Start.HOSTNAME + "]: Unexpected code: " + response);
 
             response.close();
 
@@ -55,7 +61,7 @@ public class EsClient {
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("EsStoreAggregatedCalls[0]: Recursive call.");
+            System.out.println("EsClient[0]: Recursive call.");
             PromExporter.prom_elasticPostsResent.labels(Start.HOSTNAME + "").inc();
             executeHttpRequest(request);
         }
