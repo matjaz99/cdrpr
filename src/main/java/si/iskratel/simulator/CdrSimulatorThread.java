@@ -120,7 +120,6 @@ public class CdrSimulatorThread extends Thread {
     }
 
     private String getANumber() {
-        long now = System.currentTimeMillis();
         int a = 0;
         while (true) {
             if (a == 0) {

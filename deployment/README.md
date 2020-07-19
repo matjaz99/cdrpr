@@ -1,18 +1,14 @@
 # CDRAGGS in PG
 
 https://www.postgresql.org/docs/12/index.html
-https://grafana.com/docs/grafana/latest/features/datasources/postgres/
-
 
 visualization for PG:
 https://chartio.com/product/data-sources/postgresql/
 
 
-Deploy PG with pgadmin and grafana:
+https://docs.timescale.com/latest/getting-started
 
-```
-docker stack deploy -c compose-cdraggs-with-pg.yml pg
-```
+## Using Postgres
 
 Connect to PG:
 
@@ -25,7 +21,24 @@ SELECT COUNT(*) FROM public.m_countbycrc;
 SELECT NOW() as time, COUNT(*) FROM public.m_countbycrc
 ```
 
-## Queriying metrics
+
+## Grafana built-in macros
+
+https://grafana.com/docs/grafana/latest/features/datasources/postgres/
+
+Grafana provides some built-in macros that make time operations much simpler.
+
+```sql
+SELECT $__time(timestamp), COUNT(*) AS count FROM public.m_durationbytg WHERE $__unixEpochFilter("timestamp"/1000) GROUP BY time
+```
+
+`$__time(timestamp)` equals to `timestamp AS time` and timestamp is a column in milliseconds
+
+`$__unixEpochFilter("timestamp"/1000)` function works with unix time in seconds, so you need to convert millis to 
+seconds to make use of this function
+
+
+## Querying metrics
 
 Number of rows in table:
 

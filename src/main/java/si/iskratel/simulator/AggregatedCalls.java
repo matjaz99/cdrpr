@@ -4,8 +4,6 @@ import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.metricslib.*;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AggregatedCalls implements Runnable {
 
@@ -15,8 +13,6 @@ public class AggregatedCalls implements Runnable {
 
     private PgClient pgClient;
     private EsClient esClient;
-
-    private List<CdrBean> tempList = new ArrayList<>();
 
     // metrics
     public static PMetric m_countByCrc = PMetric.build()
@@ -52,7 +48,7 @@ public class AggregatedCalls implements Runnable {
             } catch (InterruptedException e) {
             }
 
-            // TODO reset metrics
+            // reset metrics: clear all time-series data and restart timestamp
             aggregationTimestamp = System.currentTimeMillis();
             m_countByCrc.setTimestamp(aggregationTimestamp);
             m_countByCrc.clear();
@@ -65,15 +61,11 @@ public class AggregatedCalls implements Runnable {
 
                 CdrBean c = Start.pollCdr();
                 if (c != null) {
-                    tempList.add(c);
+                    aggregate(c);
                 } else {
                     break;
                 }
 
-            }
-
-            for (CdrBean b : tempList) {
-                aggregate(b);
             }
 
             PrometheusMetrics.bulkCount.set(m_countByCrc.getTimeSeriesSize());
@@ -109,7 +101,6 @@ public class AggregatedCalls implements Runnable {
                 pgClient.sendBulk(m_callsInProgress);
             }
 
-            tempList.clear();
 
         }
 

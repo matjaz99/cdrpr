@@ -5,24 +5,16 @@ networks:
     driver: overlay
     attachable: true
 
-volumes:
-  data01:
-    driver: local
-
-configs:
-  kibana_config:
-    file: ./kibana.yml
-
 services:
 
-  cdrsim-es:
+  cdrsim:
     image: matjaz99/cdrpr:2.0
     networks:
       - net
     ports:
       - 9099:9099
     environment:
-      - CDRPR_THREADS=16
+      - CDRPR_THREADS=64
       - CDRPR_BULK_SIZE=7000
       - CDRPR_SEND_INTERVAL_SEC=300
       - CDRPR_DEBUG_ENABLED=false
@@ -30,7 +22,7 @@ services:
       #- CDRPR_ES_URL=http://192.168.1.170:9200/cdraggs/_bulk?pretty
       - CDRPR_EXIT=false
       - CDRPR_SIMULATOR_MODE=STORE_AGGREGATED_CALLS
-      - CDRPR_SIMULATOR_STORAGE_TYPE=ELASTICSEARCH
+      - CDRPR_SIMULATOR_STORAGE_TYPE=POSTGRES
       - CDRPR_SIMULATOR_NODEID=Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris
       - CDRPR_SIMULATOR_DELAY=30
       - CDRPR_SIMULATOR_CALL_REASON=0
@@ -39,47 +31,12 @@ services:
       - CDRPR_SIMULATOR_BNUM_START=80000000
       - CDRPR_SIMULATOR_BNUM_RANGE=9999999
       - CDRPR_SIMULATOR_MINIMUM_DATA=true
+      - CDRPR_PG_URL=jdbc:postgresql://172.29.6.6:5432/cdraggs
+      - CDRPR_PG_USER=postgres
+      - CDRPR_PG_PASS=object00
+      - CDRPR_PG_CREATE_TABLES_ON_START=true
       - CDRPR_ENABLE_PROMETHEUS_METRICS=true
     deploy:
       mode: replicated
       replicas: 1
 
-  es01:
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
-    environment:
-      - discovery.type=single-node
-      #- "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data01:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
-    networks:
-      - net
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.hostname == mcrk-docker-1
-
-  kibana:
-    #image: docker.elastic.co/kibana/kibana:7.4.2
-    image: docker.elastic.co/kibana/kibana:7.8.0
-    networks:
-      - net
-    ports:
-      - 5601:5601
-    #volumes:
-    #  - ./kibana.yml:/usr/share/kibana/config/kibana.yml
-    configs:
-      - source: kibana_config
-        target: /usr/share/kibana/config/kibana.yml
-    environment:
-      SERVER_NAME: kibana.example.org
-      ELASTICSEARCH_HOSTS: http://es01:9200

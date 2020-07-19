@@ -78,7 +78,7 @@ public class Start {
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "POSTGRES");
 
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
-        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60000"));
+        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
