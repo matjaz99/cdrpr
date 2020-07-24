@@ -16,7 +16,7 @@ import java.io.IOException;
 public class MetricsLib {
 
     private static String METRICSLIB_VERSION = "1.0";
-    public static boolean ENABLE_PROMETHEUS_METRICS = false;
+    public static boolean ENABLE_PROMETHEUS_METRICS = true;
 
     public static final Counter helloRequests = Counter.build()
             .name("metricslib_hello_requests_total")
@@ -54,12 +54,16 @@ public class MetricsLib {
     }
 
     public static void init() throws Exception {
-        startJetty();
+        init(9099);
     }
 
-    private static void startJetty() throws Exception {
+    public static void init(int port) throws Exception {
+        startJetty(port);
+    }
 
-        Server server = new Server(9099);
+    private static void startJetty(int port) throws Exception {
+
+        Server server = new Server(port);
         ServletContextHandler context = new ServletContextHandler();
         context.setContextPath("/");
         server.setHandler(context);

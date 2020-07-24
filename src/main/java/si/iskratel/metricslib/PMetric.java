@@ -68,6 +68,11 @@ public class PMetric {
         return this;
     }
 
+    public PMetric register(String registryName) {
+        PMetricRegistry.registerMetric(registryName,this);
+        return this;
+    }
+
     public void clear() {
         timeSeries.clear();
     }

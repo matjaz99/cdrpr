@@ -31,6 +31,7 @@ public class PMetricRegistry {
     public static void registerMetric(String registry, PMetric metric) {
         PMetricRegistry r = registriesMap.getOrDefault(registry, new PMetricRegistry(registry));
         r.metricsMap.put(metric.getName(), metric);
+        registriesMap.put(metric.getName(), r);
     }
 
     public static List<PMetricRegistry> getRegistries() {

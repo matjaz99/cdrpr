@@ -3,6 +3,9 @@ package si.iskratel.metricslib;
 import okhttp3.*;
 import si.iskratel.simulator.Start;
 
+/**
+ * This is client to push metrics into ElasticSearch in bulks.
+ */
 public class EsClient {
 
     private String url = "http://mcrk-docker-1:9200/cdraggs/_bulk?pretty";
