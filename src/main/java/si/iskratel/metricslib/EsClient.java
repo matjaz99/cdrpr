@@ -36,7 +36,7 @@ public class EsClient {
                 .url(url)
                 .addHeader("User-Agent", "OkHttp Bot")
 //                .addHeader("Content-Type", "application/json")
-                .post(RequestBody.create(pMetric.toEsBulkJsonString(), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(pMetric.toEsNdJsonBulkString(), MEDIA_TYPE_JSON))
                 .build();
 
         executeHttpRequest(request);

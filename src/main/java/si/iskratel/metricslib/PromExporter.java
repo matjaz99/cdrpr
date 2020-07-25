@@ -8,10 +8,10 @@ public class PromExporter {
 
     // a place for internal metrics
 
-    public static final Gauge prom_metricslib_registry_size = Gauge.build()
-            .name("metricslib_registry_size")
+    public static final Gauge prom_metricslib_metrics_total = Gauge.build()
+            .name("metricslib_metrics_total")
             .labelNames("registry", "metric")
-            .help("Number time-series in each metric in registry")
+            .help("Number of time-series in each metric in registry")
             .register();
     public static final Counter prom_elasticPostsSent = Counter.build()
             .name("metricslib_elastic_post_requests_total")

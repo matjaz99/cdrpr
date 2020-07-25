@@ -29,10 +29,14 @@ public class MetricsLib {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
                 throws ServletException, IOException {
             resp.getWriter().println("<h1>Hello MetricsLib v" + METRICSLIB_VERSION + "</h1>");
-            // Increment the number of requests.
             helloRequests.inc();
-            resp.getWriter().println("<h3>Describe metrics</h3>");
-            resp.getWriter().println("<pre>" + PMetricRegistry.describeAllMetrics() + "</pre>");
+            resp.getWriter().println("<h3>Registries</h3>");
+            for (PMetricRegistry r : PMetricRegistry.getRegistries()) {
+                resp.getWriter().println("<pre>" + r.getName() + "</pre>");
+            }
+            resp.getWriter().println("<h3>Metrics</h3>");
+            resp.getWriter().println("<pre>" + PMetricRegistry.describeMetrics() + "</pre>");
+            resp.getWriter().println("<a href=\"http://localhost:9099/metrics\">/metrics</a>");
         }
     }
 
@@ -41,12 +45,12 @@ public class MetricsLib {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-            for (PMetricRegistry r : PMetricRegistry.getRegistries()) {
-                for (PMetric m : r.getMetricsList()) {
-                    PromExporter.prom_metricslib_registry_size.labels(r.getName(), m.getName()).set(m.getTimeSeriesSize());
+            for (PMetricRegistry reg : PMetricRegistry.getRegistries()) {
+                for (PMetric m : reg.getMetricsList()) {
+                    PromExporter.prom_metricslib_metrics_total.labels(reg.getName(), m.getName()).set(m.getTimeSeriesSize());
                 }
                 if (ENABLE_PROMETHEUS_METRICS) {
-                    r.convertAllMetricsToPrometheusMetrics();
+                    reg.exportToPrometheus(reg.getName());
                 }
             }
             super.doGet(req, resp);

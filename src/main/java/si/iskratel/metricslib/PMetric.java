@@ -10,14 +10,6 @@ public class PMetric {
     private String[] labelNames;
     private Map<String, PTimeSeries> timeSeries = new HashMap<>();
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
     public static PMetric build() {
         PMetric m = new PMetric();
         return m;
@@ -63,8 +55,16 @@ public class PMetric {
         return ts;
     }
 
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
     public PMetric register() {
-        PMetricRegistry.registerMetric(this);
+        PMetricRegistry.registerMetric("default",this);
         return this;
     }
 
@@ -82,19 +82,23 @@ public class PMetric {
     }
 
     public List<PTimeSeries> getTimeSeries() {
-        return new ArrayList<PTimeSeries>(timeSeries.values());
+        return new ArrayList<>(timeSeries.values());
     }
 
     @Override
     public String toString() {
-        String s = "PMetric{" + "timestamp=" + timestamp + ", name=" + name + ", timeseries={\n";
+        return "m_name=" + name + ", help=" + help + ", labels=" + Arrays.toString(labelNames);
+    }
+
+    public String toStringDetail() {
+        String s = "PMetric[" + "timestamp=" + timestamp + ", m_name=" + name + ", timeseries=\n";
         for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
             s += "\t" + entry.getValue().toString() + "\n";
         }
-        return s + "}]";
+        return s + "]";
     }
 
-    public String toEsBulkJsonString() {
+    public String toEsNdJsonBulkString() {
         StringBuilder sb = new StringBuilder();
 
         for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {

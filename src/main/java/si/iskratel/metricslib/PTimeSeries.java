@@ -35,7 +35,7 @@ public class PTimeSeries {
 
     @Override
     public String toString() {
-        return "PTimeSeries{" +
+        return "{" +
                 "labelValues=" + Arrays.toString(labelValues) +
                 ", value=" + value +
                 '}';

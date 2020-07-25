@@ -190,7 +190,7 @@ public static PMetric icecream_sold_total = PMetric.build()
     .register("iceRegistry");
 ```
 
-
+> **Important:** metric names must be unique throughout all registries!
 
 ## Exporter
 

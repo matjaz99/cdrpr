@@ -12,9 +12,6 @@ public class PMetricRegistry {
     private Map<String, PMetric> metricsMap = new HashMap<>();
     private Map<String, Gauge> promMetricsMap = new HashMap<>();
 
-    static {
-        registriesMap.put("default", new PMetricRegistry("default"));
-    }
 
     public PMetricRegistry(String name) {
         this.name = name;
@@ -24,14 +21,11 @@ public class PMetricRegistry {
         return name;
     }
 
-    public static void registerMetric(PMetric metric) {
-        registerMetric("default", metric);
-    }
 
-    public static void registerMetric(String registry, PMetric metric) {
-        PMetricRegistry r = registriesMap.getOrDefault(registry, new PMetricRegistry(registry));
+    public static void registerMetric(String registryName, PMetric metric) {
+        PMetricRegistry r = registriesMap.getOrDefault(registryName, new PMetricRegistry(registryName));
         r.metricsMap.put(metric.getName(), metric);
-        registriesMap.put(metric.getName(), r);
+        registriesMap.put(registryName, r);
     }
 
     public static List<PMetricRegistry> getRegistries() {
@@ -39,21 +33,10 @@ public class PMetricRegistry {
     }
 
     public List<PMetric> getMetricsList() {
-        return getMetricsList("default");
+        return new ArrayList<>(metricsMap.values());
     }
 
-    public List<PMetric> getMetricsList(String registry) {
-        PMetricRegistry r = registriesMap.get(registry);
-        return new ArrayList<>(r.metricsMap.values());
-    }
-
-    public void convertAllMetricsToPrometheusMetrics() {
-        for (PMetricRegistry r : registriesMap.values()) {
-            convertToPrometheusMetrics(r.name);
-        }
-    }
-
-    public void convertToPrometheusMetrics(String registry) {
+    public void exportToPrometheus(String registry) {
         PMetricRegistry r = registriesMap.get(registry);
         for (PMetric m : r.metricsMap.values()) {
             Gauge g = promMetricsMap.get(m.getName());
@@ -65,7 +48,7 @@ public class PMetricRegistry {
         }
     }
 
-    public static void dumpAllMetrics() {
+    public static void dumpMetrics() {
 
         System.out.println("Metrics map size: " + registriesMap.get("default").metricsMap.size());
         for (Map.Entry<String, PMetric> entry : registriesMap.get("default").metricsMap.entrySet()) {
@@ -76,12 +59,11 @@ public class PMetricRegistry {
 
     }
 
-    public static String describeAllMetrics() {
+    public static String describeMetrics() {
         StringBuilder sb = new StringBuilder();
         for (PMetricRegistry r : registriesMap.values()) {
             for (PMetric m : r.metricsMap.values()) {
-                sb.append("[").append(r.name).append("] metric_name=").append(m.getName())
-                        .append(", help=").append(m.getHelp()).append(", labels=").append(Arrays.toString(m.getLabelNames())).append("\n");
+                sb.append("[").append(r.name).append("] ").append(m.toString()).append("\n");
             }
         }
         System.out.println(sb.toString());
