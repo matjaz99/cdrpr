@@ -15,8 +15,8 @@ import java.io.IOException;
 
 public class MetricsLib {
 
-    private static String METRICSLIB_VERSION = "1.0";
-    public static boolean ENABLE_PROMETHEUS_METRICS = true;
+    public static String METRICSLIB_VERSION = "1.0";
+    public static boolean EXPORT_PROMETHEUS_METRICS = true;
 
     public static final Counter helloRequests = Counter.build()
             .name("metricslib_hello_requests_total")
@@ -31,9 +31,11 @@ public class MetricsLib {
             resp.getWriter().println("<h1>Hello MetricsLib v" + METRICSLIB_VERSION + "</h1>");
             helloRequests.inc();
             resp.getWriter().println("<h3>Registries</h3>");
+            resp.getWriter().println("<pre>");
             for (PMetricRegistry r : PMetricRegistry.getRegistries()) {
-                resp.getWriter().println("<pre>" + r.getName() + "</pre>");
+                resp.getWriter().println(r.getName());
             }
+            resp.getWriter().println("</pre>");
             resp.getWriter().println("<h3>Metrics</h3>");
             resp.getWriter().println("<pre>" + PMetricRegistry.describeMetrics() + "</pre>");
             resp.getWriter().println("<a href=\"http://localhost:9099/metrics\">/metrics</a>");
@@ -49,8 +51,8 @@ public class MetricsLib {
                 for (PMetric m : reg.getMetricsList()) {
                     PromExporter.prom_metricslib_metrics_total.labels(reg.getName(), m.getName()).set(m.getTimeSeriesSize());
                 }
-                if (ENABLE_PROMETHEUS_METRICS) {
-                    reg.exportToPrometheus(reg.getName());
+                if (EXPORT_PROMETHEUS_METRICS) {
+                    reg.collectPrometheusMetrics(reg.getName());
                 }
             }
             super.doGet(req, resp);

@@ -109,7 +109,7 @@ public class Start {
         }
 
         MetricsLib.init();
-        MetricsLib.ENABLE_PROMETHEUS_METRICS = ENABLE_PROMETHEUS_METRICS;
+        MetricsLib.EXPORT_PROMETHEUS_METRICS = ENABLE_PROMETHEUS_METRICS;
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
 

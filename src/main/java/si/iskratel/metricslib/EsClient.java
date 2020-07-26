@@ -1,11 +1,8 @@
 package si.iskratel.metricslib;
 
+import io.prometheus.client.Histogram;
 import okhttp3.*;
-import si.iskratel.simulator.Start;
 
-/**
- * This is client to push metrics into ElasticSearch in bulks.
- */
 public class EsClient {
 
     private String url = "http://mcrk-docker-1:9200/cdraggs/_bulk?pretty";
@@ -21,8 +18,7 @@ public class EsClient {
 
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", "OkHttp Bot")
-//                .addHeader("Content-Type", "application/json")
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .post(RequestBody.create(body, MEDIA_TYPE_JSON))
                 .build();
 
@@ -32,42 +28,45 @@ public class EsClient {
 
     public void sendBulkPost(PMetric pMetric) {
 
+        Histogram.Timer t = PromExporter.prom_bulkSendHistogram.labels("EsClient", url, "executeHttpRequest").startTimer();
+
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", "OkHttp Bot")
-//                .addHeader("Content-Type", "application/json")
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .post(RequestBody.create(pMetric.toEsNdJsonBulkString(), MEDIA_TYPE_JSON))
                 .build();
 
         executeHttpRequest(request);
 
+        t.observeDuration();
+        PromExporter.prom_bulkSendHistogram.labels("EsClient", url, "executeHttpRequest").observe(pMetric.getTimeSeriesSize());
+
     }
 
-    private static void executeHttpRequest(Request request) {
+    private void executeHttpRequest(Request request) {
+
         try {
 
+            PromExporter.prom_metricslib_attempted_requests_total.labels("EsClient", url).inc();
             Response response = httpClient.newCall(request).execute();
             while (!response.isSuccessful()) {
+                System.out.println("EsClient[0]: repeat, unexpected code: " + response);
+                PromExporter.prom_metricslib_failed_requests_total.labels("EsClient", url, "" + response.code()).inc();
+                PromExporter.prom_metricslib_attempted_requests_total.labels("EsClient", url).inc();
                 Thread.sleep(1500);
-                System.out.println("EsClient[0]: repeat");
                 response = httpClient.newCall(request).execute();
-                PromExporter.prom_elasticPostsResent.labels(Start.HOSTNAME).inc();
             }
             System.out.println("EsClient[0]: POST sent");
-            PromExporter.prom_elasticPostsSent.labels(Start.HOSTNAME).inc();
-
-            if (!response.isSuccessful()) System.out.println("EsClient[" + Start.HOSTNAME + "]: Unexpected code: " + response);
 
             response.close();
-
-//        System.out.println(response.body().string());
 
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("EsClient[0]: Recursive call.");
-            PromExporter.prom_elasticPostsResent.labels(Start.HOSTNAME + "").inc();
+            PromExporter.prom_metricslib_failed_requests_total.labels("EsClient", url, "Exception").inc();
             executeHttpRequest(request);
         }
+
     }
 
 }

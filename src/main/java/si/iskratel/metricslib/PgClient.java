@@ -1,10 +1,8 @@
 package si.iskratel.metricslib;
 
 import io.prometheus.client.Histogram;
-import si.iskratel.simulator.Start;
 
 import java.sql.*;
-import java.util.Arrays;
 
 public class PgClient {
 
@@ -33,12 +31,12 @@ public class PgClient {
 
     public void sendBulk(PMetric pMetric) {
 
-        Histogram.Timer t = PromExporter.prom_bulkSendHistogram.labels("PgClient", "sendBulk").startTimer();
+        Histogram.Timer t = PromExporter.prom_bulkSendHistogram.labels("PgClient", url, "sendBulk").startTimer();
 
         String INSERT_SQL = pMetric.toPgInsertMetricString();
         System.out.println(INSERT_SQL);
 
-        PromExporter.prom_postgresBulkInsertCount.labels("thread0").inc();
+        PromExporter.prom_metricslib_attempted_requests_total.labels("PgClient", url).inc();
 
         try (Connection connection = DriverManager.getConnection(url, user, password);
              PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL)) {
@@ -67,11 +65,11 @@ public class PgClient {
         }
 
         t.observeDuration();
-        PromExporter.prom_bulkSendHistogram.labels("PgClient", "sendBulk").observe(pMetric.getTimeSeriesSize());
+        PromExporter.prom_bulkSendHistogram.labels("PgClient", url, "sendBulk").observe(pMetric.getTimeSeriesSize());
     }
 
-    public static void printBatchUpdateException(BatchUpdateException b) {
-
+    private void printBatchUpdateException(BatchUpdateException b) {
+        PromExporter.prom_metricslib_failed_requests_total.labels("PgClient", url, "BatchUpdateException").inc();
         System.err.println("----BatchUpdateException----");
         System.err.println("SQLState:  " + b.getSQLState());
         System.err.println("Message:  " + b.getMessage());
@@ -84,8 +82,8 @@ public class PgClient {
         }
     }
 
-    public static void printSQLException(SQLException ex) {
-        PromExporter.prom_postgresExceptionsCount.labels("thread0").inc();
+    private void printSQLException(SQLException ex) {
+        PromExporter.prom_metricslib_failed_requests_total.labels("PgClient", url, "SQLException").inc();
         for (Throwable e: ex) {
             if (e instanceof SQLException) {
                 e.printStackTrace(System.err);

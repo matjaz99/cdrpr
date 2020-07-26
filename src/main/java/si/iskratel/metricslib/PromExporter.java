@@ -13,30 +13,20 @@ public class PromExporter {
             .labelNames("registry", "metric")
             .help("Number of time-series in each metric in registry")
             .register();
-    public static final Counter prom_elasticPostsSent = Counter.build()
-            .name("metricslib_elastic_post_requests_total")
-            .labelNames("threadId")
-            .help("Number of POST requests.")
+    public static final Counter prom_metricslib_attempted_requests_total = Counter.build()
+            .name("metricslib_attempted_requests_total")
+            .labelNames("client", "endpoint")
+            .help("Number of attempts to do bulk insert.")
             .register();
-    public static final Counter prom_elasticPostsResent = Counter.build()
-            .name("metricslib_elastic_post_requests_resend_total")
-            .labelNames("threadId")
-            .help("Number of resent POST requests.")
-            .register();
-    public static final Counter prom_postgresBulkInsertCount = Counter.build()
-            .name("metricslib_postgres_bulk_inserts_total")
-            .labelNames("threadId")
-            .help("Number of INSERT requests in Postgres.")
-            .register();
-    public static final Counter prom_postgresExceptionsCount = Counter.build()
-            .name("metricslib_postgres_exceptions_total")
-            .labelNames("threadId")
-            .help("Number of errors in postgres.")
+    public static final Counter prom_metricslib_failed_requests_total = Counter.build()
+            .name("metricslib_failed_requests_total")
+            .labelNames("client", "endpoint", "error")
+            .help("Number of failed attempts to do bulk insert.")
             .register();
     public static final Histogram prom_bulkSendHistogram = Histogram.build()
             .buckets(1, 5, 10, 30, 50)
             .name("metricslib_bulk_request_time")
-            .labelNames("client", "method")
+            .labelNames("client", "endpoint", "method")
             .help("my first histogram")
             .register();
 

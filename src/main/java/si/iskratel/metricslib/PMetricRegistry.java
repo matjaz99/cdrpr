@@ -36,7 +36,7 @@ public class PMetricRegistry {
         return new ArrayList<>(metricsMap.values());
     }
 
-    public void exportToPrometheus(String registry) {
+    public void collectPrometheusMetrics(String registry) {
         PMetricRegistry r = registriesMap.get(registry);
         for (PMetric m : r.metricsMap.values()) {
             Gauge g = promMetricsMap.get(m.getName());

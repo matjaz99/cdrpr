@@ -109,7 +109,6 @@ public class PgTest {
     }
 
     public static void printSQLException(SQLException ex) {
-        PromExporter.prom_postgresExceptionsCount.labels("thread0").inc();
         for (Throwable e: ex) {
             if (e instanceof SQLException) {
                 e.printStackTrace(System.err);

@@ -9,6 +9,8 @@ public class PMetric {
     private String help;
     private String[] labelNames;
     private Map<String, PTimeSeries> timeSeries = new HashMap<>();
+    // use this as value in case when metric has no labels
+    private double value;
 
     public static PMetric build() {
         PMetric m = new PMetric();
@@ -61,6 +63,22 @@ public class PMetric {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public void set(double value) {
+        this.value = value;
+    }
+
+    public void inc() {
+        value += 1.0;
+    }
+
+    public void inc(double d) {
+        value += d;
     }
 
     public PMetric register() {
