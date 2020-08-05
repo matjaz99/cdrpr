@@ -1,0 +1,9 @@
+{
+  "metric_name":  "pmon_sc_attsessions_orig",
+  "nodeId":   "1150",
+  "elementType":   "S-CSCF",
+  "measInfoId":   "Subscriber Statistics",
+  "jobId":   "Subscriber Statistics",
+  "timestamp":   15324568722,
+  "value":   0
+}

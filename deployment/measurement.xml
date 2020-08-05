@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<measCollecFile xmlns="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec">
+    <fileHeader fileFormatVersion="1.0" vendorName="Iskratel" dnPrefix="">
+        <fileSender elementType="S-CSCF" localDn="1150"/>
+        <measCollec beginTime="2017-12-21T12:30:00+0100"/>
+    </fileHeader>
+    <measData>
+        <managedElement localDn="1150"/>
+        <measInfo measInfoId="Subscriber statistics">
+            <job jobId="Subscriber statistics"/>
+            <granPeriod endTime="2017-12-21T12:30:00+0100" duration="PT900S"/>
+            <repPeriod duration="PT1800S"/>
+            <measTypes>SC.AttSessions.orig IT.SUBS.OrigIncmpl SC.FailSession.404 IT.SUBS.OrgUnsuccOther SC.FailSession.486.orig SC.RelAfterRing.orig SC.AnsSession.orig IT.SUBS.OrgTraffic SC.AttSessions.term SC.FailSession.486.term SC.RelAfterRing.term SC.AnsSession.term IT.SUBS.TermUnsuccOther IT.SUBS.TermTraffic</measTypes>
+            <measValue measObjLdn="1">
+                <measResults>0 0 0 0 0 0 0 0 968 0 0 43 925 3544 </measResults>
+            </measValue>
+        </measInfo>
+        <measInfo measInfoId="DIAMETER Statistics - general">
+            <job jobId="DIAMETER Statistics - general"/>
+            <granPeriod endTime="2017-12-21T12:30:00+0100" duration="PT900S"/>
+            <repPeriod duration="PT1800S"/>
+            <measTypes>IT.DIAMETERGeneral_UnSentMsg IT.DIAMETERGeneral_ConnNotFound</measTypes>
+            <measValue measObjLdn="3">
+                <measResults>1 0 </measResults>
+            </measValue>
+        </measInfo>
+        <measInfo measInfoId="IMS Statistics - registration, deregistration">
+            <job jobId="IMS Statistics - registration, deregistration"/>
+            <granPeriod endTime="2017-12-21T12:30:00+0100" duration="PT900S"/>
+            <repPeriod duration="PT1800S"/>
+            <measTypes>UR.AttInitReg UR.SuccInitReg UR.AttReReg UR.SuccReReg UR.AttDeRegUe UR.SuccDeRegUe UR.AttDeRegHss UR.SuccDeRegHss UR.Att3rdPartyReg UR.Succ3rdPartyReg UR.AttUAR UR.SuccUAA.2001 UR.SuccUAA.2002 UR.AttSAR UR.SuccSAA</measTypes>
+            <measValue measObjLdn="6">
+                <measResults>76 76 5 5 0 0 0 0 147 147 0 0 0 81 81 </measResults>
+            </measValue>
+        </measInfo>
+    </measData>
+    <fileFooter>
+        <measCollec endTime="2017-12-21T12:45:00+0100"/>
+    </fileFooter>
+</measCollecFile>
