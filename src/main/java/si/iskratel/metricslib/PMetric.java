@@ -10,7 +10,7 @@ public class PMetric {
     private String[] labelNames;
     private Map<String, PTimeSeries> timeSeries = new HashMap<>();
     // use this as value in case when metric has no labels
-    private double value;
+    private Double value;
 
     public static PMetric build() {
         PMetric m = new PMetric();
@@ -48,6 +48,7 @@ public class PMetric {
     public PTimeSeries setLabelValues(String... values) throws PMetricException {
         if (labelNames.length != values.length) throw new PMetricException("Number of label names is different than number of values.");
         String tsId = "";
+        // ID of timeseries is concatenation of all label values
         for (int i = 0; i < values.length; i++) {
             tsId += values[i];
         }
@@ -65,19 +66,21 @@ public class PMetric {
         return timestamp;
     }
 
-    public double getValue() {
+    public Double getValue() {
         return value;
     }
 
     public void set(double value) {
-        this.value = value;
+        this.value = new Double(value);
     }
 
     public void inc() {
+        if (value == null) value = new Double(0);
         value += 1.0;
     }
 
     public void inc(double d) {
+        if (value == null) value = new Double(0);
         value += d;
     }
 

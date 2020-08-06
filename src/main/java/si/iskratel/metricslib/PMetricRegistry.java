@@ -39,6 +39,10 @@ public class PMetricRegistry {
     public void collectPrometheusMetrics(String registry) {
         PMetricRegistry r = registriesMap.get(registry);
         for (PMetric m : r.metricsMap.values()) {
+            if (m.getTimeSeriesSize() == 0) {
+                System.out.println("WARN: Metric " + m.getName() + " contains no time-series points. It will be ignored.");
+                continue;
+            }
             Gauge g = promMetricsMap.get(m.getName());
             if (g == null) g = Gauge.build().name(m.getName()).labelNames(m.getLabelNames()).help(m.getHelp()).register();
             for (PTimeSeries ts : m.getTimeSeries()) {

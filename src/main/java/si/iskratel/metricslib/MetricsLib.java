@@ -17,6 +17,7 @@ public class MetricsLib {
 
     public static String METRICSLIB_VERSION = "1.0";
     public static boolean EXPORT_PROMETHEUS_METRICS = true;
+    public static int RETRIES = 3;
 
     public static final Counter helloRequests = Counter.build()
             .name("metricslib_hello_requests_total")
@@ -28,8 +29,11 @@ public class MetricsLib {
         @Override
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
                 throws ServletException, IOException {
-            resp.getWriter().println("<h1>Hello MetricsLib v" + METRICSLIB_VERSION + "</h1>");
+            resp.getWriter().println("<h1>MetricsLib v" + METRICSLIB_VERSION + "</h1>");
             helloRequests.inc();
+            resp.getWriter().println("<h3>Configuration</h3>");
+            resp.getWriter().println("<pre>EXPORT_PROMETHEUS_METRICS=" + EXPORT_PROMETHEUS_METRICS + "\n"
+                    + "NUMBER_OF_RETRIS=" + RETRIES + "</pre>");
             resp.getWriter().println("<h3>Registries</h3>");
             resp.getWriter().println("<pre>");
             for (PMetricRegistry r : PMetricRegistry.getRegistries()) {

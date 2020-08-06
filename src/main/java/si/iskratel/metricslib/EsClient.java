@@ -28,6 +28,11 @@ public class EsClient {
 
     public void sendBulkPost(PMetric pMetric) {
 
+        if (pMetric.getTimeSeriesSize() == 0) {
+            System.out.println("WARN: Metric " + pMetric.getName() + " contains no time-series points. It will be ignored.");
+            return;
+        }
+
         Histogram.Timer t = PromExporter.prom_bulkSendHistogram.labels("EsClient", url, "executeHttpRequest").startTimer();
 
         Request request = new Request.Builder()
