@@ -63,4 +63,13 @@ metrics:
         - 1=Incoming
         - 2=Outgoing
         - x=Other
+  pmon_cdr_ctx_calls:
+    help: "asasd"
+    labels:
+      - nodeId
+      - nodeName
+      - ctxCallingNumber
+    value: sum(duration)
+
+
 
