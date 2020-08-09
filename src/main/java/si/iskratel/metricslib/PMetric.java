@@ -125,7 +125,7 @@ public class PMetric {
         for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
             sb.append("{ \"index\":{} }\n");
             sb.append("{");
-            sb.append("\"name\":\"").append(name).append("\",");
+            sb.append("\"m_name\":\"").append(name).append("\",");
             for (int i = 0; i < labelNames.length; i++) {
                 sb.append("\"").append(labelNames[i]).append("\":\"").append(entry.getValue().getLabelValues()[i]).append("\",");
             }

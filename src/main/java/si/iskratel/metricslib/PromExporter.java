@@ -8,6 +8,10 @@ public class PromExporter {
 
     // a place for internal metrics
 
+    public static final Counter helloRequests = Counter.build()
+            .name("metricslib_hello_requests_total")
+            .help("Number of hello requests served.")
+            .register();
     public static final Gauge prom_metricslib_metrics_total = Gauge.build()
             .name("metricslib_metrics_total")
             .labelNames("registry", "metric")

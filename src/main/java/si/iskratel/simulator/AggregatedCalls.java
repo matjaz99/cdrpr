@@ -16,19 +16,19 @@ public class AggregatedCalls implements Runnable {
 
     // metrics
     public static PMetric m_countByCrc = PMetric.build()
-            .setName("m_countByCrc")
+            .setName("pmon_count_by_cause")
             .setHelp("Count calls by release cause")
-            .setLabelNames("nodeId", "cause", "incTG", "outTG")
+            .setLabelNames("node", "cause", "incTG", "outTG")
             .register();
     public static PMetric m_durationByTG = PMetric.build()
-            .setName("m_durationByTG")
+            .setName("pmon_duration_by_tg")
             .setHelp("Total duration of answered calls on trunk groups")
-            .setLabelNames("nodeId", "incTG", "outTG")
+            .setLabelNames("node", "incTG", "outTG")
             .register();
     public static PMetric m_callsInProgress = PMetric.build()
-            .setName("m_callsInProgress")
+            .setName("pmon_calls_in_progress")
             .setHelp("Current number of calls in progress (answered only)")
-            .setLabelNames("host")
+            .setLabelNames("node")
             .register();
 
     public AggregatedCalls(int id) {
