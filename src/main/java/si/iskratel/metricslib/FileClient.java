@@ -17,15 +17,15 @@ public class FileClient {
 
     public static String readFile(File file) {
 
-        String s = "";
+        StringBuilder sb = new StringBuilder();
         try {
             String currentLine;
             BufferedReader reader = new BufferedReader(new FileReader(file));
             while ((currentLine = reader.readLine()) != null) {
-                s += currentLine + "\n";
+                sb.append(currentLine).append("\n");
             }
             reader.close();
-            return s;
+            return sb.toString();
         } catch (IOException e) {
             e.printStackTrace();
         }

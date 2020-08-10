@@ -19,7 +19,7 @@ public class MetricsLib {
     public static boolean EXPORT_PROMETHEUS_METRICS = true;
     public static int RETRIES = 3;
     public static String DUMP_DIRECTORY = "dump/";
-    public static boolean DUMP_TO_FILE_ENABLED = true;
+    public static boolean DUMP_TO_FILE_ENABLED = false;
 
     static class HelloServlet extends HttpServlet {
 
@@ -33,6 +33,7 @@ public class MetricsLib {
             resp.getWriter().println("<h3>Configuration</h3>");
             resp.getWriter().println("<pre>metricslib.client.prometheus.export=" + EXPORT_PROMETHEUS_METRICS + "\n"
                     + "metricslib.client.retry=" + RETRIES + "\n"
+                    + "metricslib.client.dump.enabled=" + DUMP_TO_FILE_ENABLED + "\n"
                     + "metricslib.client.dump.directory=" + DUMP_DIRECTORY + "</pre>");
 
             resp.getWriter().println("<h3>Registries</h3>");

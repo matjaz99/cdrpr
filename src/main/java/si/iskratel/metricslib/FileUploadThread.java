@@ -30,7 +30,8 @@ public class FileUploadThread extends Thread {
             for (int i = 0; i < bkpFiles.length; i++) {
                 System.out.println("Reading file: " + bkpFiles[i].getAbsolutePath());
                 String s = FileClient.readFile(bkpFiles[i]);
-                System.out.println("From file: \n" + s);
+                System.out.println("Reading file complete: " + bkpFiles[i].getAbsolutePath());
+                //System.out.println("From file: \n" + s);
                 boolean b = esClient.sendBulkPost(s);
                 System.out.println("sendBulkPost result=" + b + " for file: " + bkpFiles[i].getName());
                 if (b) {
