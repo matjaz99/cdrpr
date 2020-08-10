@@ -32,6 +32,10 @@ public class PMetricRegistry {
         return new ArrayList<>(registriesMap.values());
     }
 
+    public static PMetricRegistry getRegistry(String registryName) {
+        return registriesMap.get(registryName);
+    }
+
     public List<PMetric> getMetricsList() {
         return new ArrayList<>(metricsMap.values());
     }
@@ -72,6 +76,13 @@ public class PMetricRegistry {
         }
         System.out.println(sb.toString());
         return sb.toString();
+    }
+
+    public void clearTimeSeriesInMetrics(Long timestamp) {
+        for (PMetric m : metricsMap.values()) {
+            m.clear();
+            if (timestamp != null) m.setTimestamp(timestamp);
+        }
     }
 
 

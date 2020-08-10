@@ -109,6 +109,13 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setOutTrunkId(130 + getRandomGaussian(5, 3));
         cdrBean.setOutTrunkGroupId(8440 + getRandomGaussian(10, 10));
 
+        cdrBean.setBgidOrig(getRandomInRange(1, 9));
+        cdrBean.setBgidTerm(getRandomInRange(10, 19));
+        cdrBean.setCgidOrig(getRandomInRange(50, 59));
+        cdrBean.setCgidTerm(getRandomInRange(60, 69));
+        cdrBean.setCtxCall(getRandomGaussian(100, 10));
+        cdrBean.setCentrexCallType(getRandomInRange(1,4));
+
         if (duration > 0) {
             StorageThread.addCall(a, et);
         }

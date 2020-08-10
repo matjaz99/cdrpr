@@ -16,7 +16,7 @@ public class StorageThread extends Thread {
             clearMap();
 
             try {
-                sleep(2000);
+                sleep(5000);
             } catch (InterruptedException e) {
             }
 

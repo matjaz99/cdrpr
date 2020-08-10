@@ -9,7 +9,6 @@ public class AggregatedCalls implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
-    private long aggregationTimestamp;
 
     private PgClient pgClient;
     private EsClient esClient;
@@ -30,6 +29,26 @@ public class AggregatedCalls implements Runnable {
             .setHelp("Current number of calls in progress (answered only)")
             .setLabelNames("node")
             .register();
+    public static PMetric m_timeBeforeRing = PMetric.build()
+            .setName("pmon_time_before_ring")
+            .setHelp("pmon_time_before_ring")
+            .setLabelNames("node")
+            .register();
+    public static PMetric m_timeBeforeAns = PMetric.build()
+            .setName("pmon_time_before_ans")
+            .setHelp("pmon_time_before_ans")
+            .setLabelNames("node")
+            .register();
+    public static PMetric m_bgCalls = PMetric.build()
+            .setName("pmon_bg_calls")
+            .setHelp("BG calls")
+            .setLabelNames("node", "bgidOrig", "bgidTerm")
+            .register();
+    public static PMetric m_cgCalls = PMetric.build()
+            .setName("pmon_cg_calls")
+            .setHelp("CG calls")
+            .setLabelNames("node", "cgidOrig", "cgidTerm", "centrexCallType", "ctxCall")
+            .register();
 
     public AggregatedCalls(int id) {
         threadId = id;
@@ -49,13 +68,7 @@ public class AggregatedCalls implements Runnable {
             }
 
             // reset metrics: clear all time-series data and restart timestamp
-            aggregationTimestamp = System.currentTimeMillis();
-            m_countByCrc.setTimestamp(aggregationTimestamp);
-            m_countByCrc.clear();
-            m_durationByTG.setTimestamp(aggregationTimestamp);
-            m_durationByTG.clear();
-            m_callsInProgress.setTimestamp(aggregationTimestamp);
-            m_callsInProgress.clear();
+            PMetricRegistry.getRegistry("default").clearTimeSeriesInMetrics(System.currentTimeMillis());
 
             while (Start.getQueueSize() > 0) {
 
@@ -75,14 +88,15 @@ public class AggregatedCalls implements Runnable {
             } catch (PMetricException e) {
                 e.printStackTrace();
             }
-            System.out.println("-> sending metrics: " + m_countByCrc.getName() + ", size: " + m_countByCrc.getTimeSeriesSize());
-            System.out.println("-> sending metrics: " + m_durationByTG.getName() + ", size: " +  + m_durationByTG.getTimeSeriesSize());
-            System.out.println("-> sending metrics: " + m_callsInProgress.getName() + ", size: " +  + m_callsInProgress.getTimeSeriesSize());
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
                 esClient.sendBulkPost(m_countByCrc);
                 esClient.sendBulkPost(m_durationByTG);
                 esClient.sendBulkPost(m_callsInProgress);
+                esClient.sendBulkPost(m_timeBeforeRing);
+                esClient.sendBulkPost(m_timeBeforeAns);
+                esClient.sendBulkPost(m_bgCalls);
+                esClient.sendBulkPost(m_cgCalls);
             }
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
@@ -113,6 +127,10 @@ public class AggregatedCalls implements Runnable {
             m_countByCrc.setLabelValues(cdrBean.getNodeId(), Utils.toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
             if (cdrBean.getCause() == 16)
                 m_durationByTG.setLabelValues(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
+            m_timeBeforeRing.setLabelValues(cdrBean.getNodeId()).inc(cdrBean.getCdrTimeBeforeRinging());
+            m_timeBeforeAns.setLabelValues(cdrBean.getNodeId()).inc(cdrBean.getCdrRingingTimeBeforeAnsw());
+            m_bgCalls.setLabelValues(cdrBean.getNodeId(), cdrBean.getBgidOrig() + "", cdrBean.getBgidTerm() + "").inc();
+            m_cgCalls.setLabelValues(cdrBean.getNodeId(), cdrBean.getCgidOrig() + "", cdrBean.getCgidTerm() + "", cdrBean.getCentrexCallType() + "", cdrBean.getCtxCall() + "").inc();
         } catch (PMetricException e) {
             e.printStackTrace();
         }

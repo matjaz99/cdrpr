@@ -52,9 +52,9 @@ public class Start {
         Runtime.getRuntime().addShutdownHook(new TheShutdownHook());
 
 //        String testUrl = "http://mcrk-docker-1:9200/cdrs/_bulk";
-        String testUrl = "http://mcrk-docker-1:9200/cdraggs/_bulk";
+//        String testUrl = "http://mcrk-docker-1:9200/cdraggs/_bulk";
 //        String testUrl = "http://pgcentos:9200/cdraggs/_bulk";
-//        String testUrl = "http://elasticvm:9200/cdraggs/_bulk";
+        String testUrl = "http://elasticvm:9200/cdraggs/_bulk";
 //        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk";
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 

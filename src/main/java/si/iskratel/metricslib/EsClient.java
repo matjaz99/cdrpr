@@ -5,6 +5,7 @@ import okhttp3.*;
 
 import java.net.ConnectException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 public class EsClient {
 
@@ -49,6 +50,8 @@ public class EsClient {
             System.out.println("WARN: Metric " + pMetric.getName() + " contains no time-series points. It will be ignored.");
             return success;
         }
+
+        System.out.println("-> sending metrics: " + pMetric.getName() + ", size: " + pMetric.getTimeSeriesSize());
 
         Histogram.Timer t = PromExporter.prom_bulkSendHistogram.labels("EsClient", url, "executeHttpRequest").startTimer();
 
@@ -104,8 +107,11 @@ public class EsClient {
             response.close();
             return true;
 
+        } catch (SocketTimeoutException e) {
+            System.err.println("SocketTimeoutException: " + e.getMessage());
+            PromExporter.prom_metricslib_failed_requests_total.labels("EsClient", url, "SocketTimeoutException").inc();
         } catch (SocketException e) {
-            System.err.println(e.getMessage());
+            System.err.println("SocketException: " + e.getMessage());
             PromExporter.prom_metricslib_failed_requests_total.labels("EsClient", url, "SocketException").inc();
         } catch (Exception e) {
             e.printStackTrace();
