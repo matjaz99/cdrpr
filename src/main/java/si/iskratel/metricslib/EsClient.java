@@ -19,8 +19,11 @@ public class EsClient {
 
     public EsClient(String url) {
         this.url = url;
-        fut = new FileUploadThread(this);
-        fut.start();
+        if (MetricsLib.DUMP_TO_FILE_ENABLED) {
+            fut = new FileUploadThread(this);
+            fut.start();
+        }
+
     }
 
     public boolean sendBulkPost(String body) {

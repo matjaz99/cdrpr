@@ -16,8 +16,12 @@ public class FileUploadThread extends Thread {
 
         while (true) {
 
-            File simDir = new File(MetricsLib.DUMP_DIRECTORY);
-            File[] bkpFiles = simDir.listFiles(new FileFilter() {
+            File dumpDir = new File(MetricsLib.DUMP_DIRECTORY);
+            if (!dumpDir.exists()) {
+                System.out.println("WARN: directory does not exist: " + dumpDir.getAbsolutePath());
+                continue;
+            }
+            File[] bkpFiles = dumpDir.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File f) {
                     if (f.getName().startsWith("es_")) return true;
@@ -31,7 +35,6 @@ public class FileUploadThread extends Thread {
                 System.out.println("Reading file: " + bkpFiles[i].getAbsolutePath());
                 String s = FileClient.readFile(bkpFiles[i]);
                 System.out.println("Reading file complete: " + bkpFiles[i].getAbsolutePath());
-                //System.out.println("From file: \n" + s);
                 boolean b = esClient.sendBulkPost(s);
                 System.out.println("sendBulkPost result=" + b + " for file: " + bkpFiles[i].getName());
                 if (b) {
