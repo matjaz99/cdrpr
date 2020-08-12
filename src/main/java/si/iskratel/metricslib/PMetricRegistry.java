@@ -64,7 +64,6 @@ public class PMetricRegistry {
             System.out.println(entry.getValue().toString());
         }
 
-
     }
 
     public static String describeMetrics() {
@@ -74,7 +73,6 @@ public class PMetricRegistry {
                 sb.append("[").append(r.name).append("] ").append(m.toString()).append("\n");
             }
         }
-        System.out.println(sb.toString());
         return sb.toString();
     }
 

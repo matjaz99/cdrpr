@@ -26,6 +26,12 @@ public class EsClient {
 
     }
 
+    public void sendBulkPost(PMetricRegistry registry) {
+        for (PMetric m : registry.getMetricsList()) {
+            sendBulkPost(m);
+        }
+    }
+
     public boolean sendBulkPost(String body) {
 
         if (body == null) {

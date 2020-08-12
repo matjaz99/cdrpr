@@ -49,6 +49,26 @@ public class AggregatedCalls implements Runnable {
             .setHelp("CG calls")
             .setLabelNames("node", "cgidOrig", "cgidTerm", "centrexCallType", "ctxCall")
             .register();
+    public static PMetric m_suppServ = PMetric.build()
+            .setName("pmon_supp_service")
+            .setHelp("Supplementary services")
+            .setLabelNames("node", "servId", "servIdOrig", "servIdTerm")
+            .register();
+    public static PMetric m_subscrGrpCalls = PMetric.build()
+            .setName("pmon_subscriber_group_calls")
+            .setHelp("Subscriber group calls")
+            .setLabelNames("node", "callingSubscrGroup", "calledSubscrGroup")
+            .register();
+    public static PMetric m_voipRxCodec = PMetric.build()
+            .setName("pmon_voip_rx_codec")
+            .setHelp("VOIP rx codec")
+            .setLabelNames("codec")
+            .register();
+    public static PMetric m_voipTxCodec = PMetric.build()
+            .setName("pmon_voip_tx_codec")
+            .setHelp("VOIP tx codec")
+            .setLabelNames("codec")
+            .register();
 
     public AggregatedCalls(int id) {
         threadId = id;
@@ -90,13 +110,7 @@ public class AggregatedCalls implements Runnable {
             }
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
-                esClient.sendBulkPost(m_countByCrc);
-                esClient.sendBulkPost(m_durationByTG);
-                esClient.sendBulkPost(m_callsInProgress);
-                esClient.sendBulkPost(m_timeBeforeRing);
-                esClient.sendBulkPost(m_timeBeforeAns);
-                esClient.sendBulkPost(m_bgCalls);
-                esClient.sendBulkPost(m_cgCalls);
+                esClient.sendBulkPost(PMetricRegistry.getRegistry("default"));
             }
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
@@ -120,17 +134,21 @@ public class AggregatedCalls implements Runnable {
 
     }
 
-    private void aggregate(CdrBean cdrBean) {
+    private void aggregate(CdrBean cdr) {
 
         // fill metrics
         try {
-            m_countByCrc.setLabelValues(cdrBean.getNodeId(), Utils.toCauseString(cdrBean.getCause()), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc();
-            if (cdrBean.getCause() == 16)
-                m_durationByTG.setLabelValues(cdrBean.getNodeId(), cdrBean.getInTrunkGroupId() + "", cdrBean.getOutTrunkGroupId() + "").inc(cdrBean.getDuration());
-            m_timeBeforeRing.setLabelValues(cdrBean.getNodeId()).inc(cdrBean.getCdrTimeBeforeRinging());
-            m_timeBeforeAns.setLabelValues(cdrBean.getNodeId()).inc(cdrBean.getCdrRingingTimeBeforeAnsw());
-            m_bgCalls.setLabelValues(cdrBean.getNodeId(), cdrBean.getBgidOrig() + "", cdrBean.getBgidTerm() + "").inc();
-            m_cgCalls.setLabelValues(cdrBean.getNodeId(), cdrBean.getCgidOrig() + "", cdrBean.getCgidTerm() + "", cdrBean.getCentrexCallType() + "", cdrBean.getCtxCall() + "").inc();
+            m_countByCrc.setLabelValues(cdr.getNodeId(), Utils.toCauseString(cdr.getCause()), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc();
+            if (cdr.getCause() == 16)
+                m_durationByTG.setLabelValues(cdr.getNodeId(), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc(cdr.getDuration());
+            m_timeBeforeRing.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrTimeBeforeRinging());
+            m_timeBeforeAns.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrRingingTimeBeforeAnsw());
+            m_bgCalls.setLabelValues(cdr.getNodeId(), cdr.getBgidOrig() + "", cdr.getBgidTerm() + "").inc();
+            m_cgCalls.setLabelValues(cdr.getNodeId(), cdr.getCgidOrig() + "", cdr.getCgidTerm() + "", cdr.getCentrexCallType() + "", cdr.getCtxCall() + "").inc();
+            m_suppServ.setLabelValues(cdr.getNodeId(), cdr.getServId() + "", cdr.getServIdOrig() + "", cdr.getServIdTerm() + "").inc();
+            m_subscrGrpCalls.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
+            m_voipRxCodec.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
+            m_voipTxCodec.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
         } catch (PMetricException e) {
             e.printStackTrace();
         }

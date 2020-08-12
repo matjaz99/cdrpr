@@ -14,15 +14,15 @@ services:
     ports:
       - 9099:9099
     environment:
-      - CDRPR_THREADS=64
+      - CDRPR_THREADS=32
       - CDRPR_BULK_SIZE=7000
-      - CDRPR_SEND_INTERVAL_SEC=300
+      - CDRPR_SEND_INTERVAL_SEC=900
       - CDRPR_DEBUG_ENABLED=false
-      - CDRPR_ES_URL=http://172.29.6.6:9200/cdraggs/_bulk?pretty
-      #- CDRPR_ES_URL=http://192.168.1.170:9200/cdraggs/_bulk?pretty
+      - CDRPR_ES_URL=http://172.29.6.6:9200/cdraggs/_bulk
+      #- CDRPR_ES_URL=http://192.168.1.170:9200/cdraggs/_bulk
       - CDRPR_EXIT=false
       - CDRPR_SIMULATOR_MODE=STORE_AGGREGATED_CALLS
-      - CDRPR_SIMULATOR_STORAGE_TYPE=POSTGRES
+      - CDRPR_SIMULATOR_STORAGE_TYPE=ELASTICSEARCH
       - CDRPR_SIMULATOR_NODEID=Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris
       - CDRPR_SIMULATOR_DELAY=30
       - CDRPR_SIMULATOR_CALL_REASON=0

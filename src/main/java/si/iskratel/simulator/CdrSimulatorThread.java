@@ -48,10 +48,7 @@ public class CdrSimulatorThread extends Thread {
         String b = "" + getRandomInRange(Start.SIMULATOR_BNUM_START, Start.SIMULATOR_BNUM_START + Start.SIMULATOR_BNUM_RANGE);
         cdrBean.setCalledNumber(b);
 
-        timeBeforeRinging = getRandomGaussian(timeBeforeRinging, 100);
-        if (timeBeforeRinging < 300) timeBeforeRinging = 2500;
-        if (timeBeforeRinging > 5000) timeBeforeRinging = 2500;
-        cdrBean.setCdrTimeBeforeRinging(timeBeforeRinging);
+        cdrBean.setCdrTimeBeforeRinging(getRandomGaussian(2500, 100));
         cdrBean.setCdrRingingTimeBeforeAnsw(0);
 
         cdrBean.setCause(Start.SIMULATOR_CALL_REASON);
@@ -92,7 +89,7 @@ public class CdrSimulatorThread extends Thread {
             } else {
                 duration = getRandomInRange(200, 4800);
             }
-            cdrBean.setCdrRingingTimeBeforeAnsw(getRandomGaussian(15000, 10000));
+            cdrBean.setCdrRingingTimeBeforeAnsw(getRandomGaussian(15000, 5000));
         }
         duration = duration * 1000; // to millis
         cdrBean.setDuration(duration);
@@ -111,10 +108,17 @@ public class CdrSimulatorThread extends Thread {
 
         cdrBean.setBgidOrig(getRandomInRange(1, 9));
         cdrBean.setBgidTerm(getRandomInRange(10, 19));
-        cdrBean.setCgidOrig(getRandomInRange(50, 59));
-        cdrBean.setCgidTerm(getRandomInRange(60, 69));
-        cdrBean.setCtxCall(getRandomGaussian(100, 10));
-        cdrBean.setCentrexCallType(getRandomInRange(1,4));
+        cdrBean.setCgidOrig(getRandomInRange(50, 54));
+        cdrBean.setCgidTerm(getRandomInRange(60, 64));
+        cdrBean.setCtxCall(getRandomGaussian(100, 2));
+        cdrBean.setCentrexCallType(getRandomInRange(1,2));
+        cdrBean.setServId((short) getRandomInRange(1, 19));
+        cdrBean.setServIdOrig((short) getRandomInRange(1, 3));
+        cdrBean.setServIdTerm((short) getRandomInRange(1, 3));
+        cdrBean.setCallingSubscriberGroup(getRandomInRange(100, 109));
+        cdrBean.setCalledSubscriberGroup(getRandomInRange(200, 229));
+        cdrBean.setVoipRxCodecType(getRandomInRange(1, 7));
+        cdrBean.setVoipTxCodecType(getRandomInRange(1, 7));
 
         if (duration > 0) {
             StorageThread.addCall(a, et);
