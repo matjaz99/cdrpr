@@ -92,6 +92,7 @@ public class Test {
     public static void aggregateCalls() throws PMetricException {
 
         callsList.add(new CdrBean("node1", "Answered"));
+        callsList.add(new CdrBean("node1", "Answered"));
         callsList.add(new CdrBean("node1", "Busy"));
         callsList.add(new CdrBean("node1", "Error"));
 //        callsList.add(new CdrBean("node2", "Answered"));
@@ -109,7 +110,7 @@ public class Test {
         }
         pmon_cdr_calls_by_cause.setTimestamp(System.currentTimeMillis());
 
-        EsClient e = new EsClient("mcrk-docker-1", 9200, "cdraggs");
+        EsClient e = new EsClient("elasticvm", 9200, "cdraggs");
 //        e.sendBulkPost(pmon_cdr_calls_by_cause);
         e.sendBulkPost(PMetricRegistry.getRegistry("cdraggs"));
 

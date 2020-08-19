@@ -18,7 +18,7 @@ public class FileUploadThread extends Thread {
 
             File dumpDir = new File(MetricsLib.DUMP_DIRECTORY);
             if (!dumpDir.exists()) {
-                System.out.println("WARN: directory does not exist: " + dumpDir.getAbsolutePath());
+                System.out.println("WARN: dump directory does not exist: " + dumpDir.getAbsolutePath());
                 continue;
             }
             File[] bkpFiles = dumpDir.listFiles(new FileFilter() {
