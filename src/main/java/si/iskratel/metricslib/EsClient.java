@@ -17,6 +17,15 @@ public class EsClient {
     private int retryCount = 0;
     private FileUploadThread fut;
 
+    public EsClient(String host, int port, String index) {
+        this.url = "http://" + host + ":" + port + "/" + index + "/_bulk";
+        if (MetricsLib.DUMP_TO_FILE_ENABLED) {
+            fut = new FileUploadThread(this);
+            fut.start();
+        }
+
+    }
+
     public EsClient(String url) {
         this.url = url;
         if (MetricsLib.DUMP_TO_FILE_ENABLED) {

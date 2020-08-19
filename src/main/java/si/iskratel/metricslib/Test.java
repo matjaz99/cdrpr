@@ -1,11 +1,17 @@
 package si.iskratel.metricslib;
 
+import si.iskratel.cdr.parser.CdrBean;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Test {
 
     public static void main(String... args) throws Exception {
 
-        testMultipleRegistries();
+//        testMultipleRegistries();
 //        testMetrics();
+        aggregateCalls();
 
     }
 
@@ -78,6 +84,37 @@ public class Test {
 
 
     }
+
+
+
+    private static List<CdrBean> callsList = new ArrayList<>();
+
+    public static void aggregateCalls() throws PMetricException {
+
+        callsList.add(new CdrBean("node1", "Answered"));
+        callsList.add(new CdrBean("node1", "Busy"));
+        callsList.add(new CdrBean("node1", "Error"));
+//        callsList.add(new CdrBean("node2", "Answered"));
+//        callsList.add(new CdrBean("node2", "Busy"));
+//        callsList.add(new CdrBean("node2", "Busy"));
+
+        PMetric pmon_cdr_calls_by_cause = PMetric.build()
+                .setName("pmon_cdr_calls_by_cause")
+                .setHelp("Counting calls by cause")
+                .setLabelNames("nodeId", "cause")
+                .register("cdraggs");
+
+        for (CdrBean c : callsList) {
+            pmon_cdr_calls_by_cause.setLabelValues(c.getNodeId(), c.getCauseString()).inc();
+        }
+        pmon_cdr_calls_by_cause.setTimestamp(System.currentTimeMillis());
+
+        EsClient e = new EsClient("mcrk-docker-1", 9200, "cdraggs");
+//        e.sendBulkPost(pmon_cdr_calls_by_cause);
+        e.sendBulkPost(PMetricRegistry.getRegistry("cdraggs"));
+
+    }
+
 
 
 }

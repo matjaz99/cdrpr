@@ -5,6 +5,7 @@ import java.util.*;
 public class CdrBean {
 
   protected String nodeId;
+  protected String causeString;
 
   protected int id;
   protected long callid = 0;
@@ -82,12 +83,28 @@ public class CdrBean {
   protected Integer voipFaxPagesTransferred = null;
   protected Integer voipFaxPagesRepeated = null;
 
+  public CdrBean() {
+  }
+
+  public CdrBean(String nodeId, String cause) {
+    this.nodeId = nodeId;
+    this.causeString = cause;
+  }
+
   public String getNodeId() {
     return nodeId;
   }
 
   public void setNodeId(String nodeId) {
     this.nodeId = nodeId;
+  }
+
+  public String getCauseString() {
+    return causeString;
+  }
+
+  public void setCauseString(String causeString) {
+    this.causeString = causeString;
   }
 
   public void setId(int id) {
