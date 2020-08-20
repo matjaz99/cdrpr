@@ -1,4 +1,11 @@
 metrics:
+  pmon_calls_by_cause:
+    registry: cdraggs
+    help: "Count number"
+    labels:
+      - node
+      - cause
+      - callingSubscriberGroup
   m_countByCause:
     registry: default
     help: "Count number of calls by reason for each inc/out TG"
@@ -66,10 +73,27 @@ metrics:
   pmon_cdr_ctx_calls:
     help: "asasd"
     labels:
-      - nodeId
-      - nodeName
       - ctxCallingNumber
     value: sum(duration)
+
+  pmon_sc_attsessions_orig:
+    help: "asf"
+    labels:
+      - nodeId
+      - elementType
+      - measInfoId
+      - jobId
+  pmon_sc_succsessions_orig:
+    help: "asf"
+    labels:
+      - nodeId
+      - elementType
+      - measInfoId
+      - jobId
+
+
+
+
 
 
 

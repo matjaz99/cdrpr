@@ -86,9 +86,10 @@ public class CdrBean {
   public CdrBean() {
   }
 
-  public CdrBean(String nodeId, String cause) {
+  public CdrBean(String nodeId, String cause, int duration) {
     this.nodeId = nodeId;
     this.causeString = cause;
+    this.duration = duration;
   }
 
   public String getNodeId() {

@@ -35,6 +35,19 @@ public class EsClient {
 
     }
 
+    public void setMapping() {
+
+        String s = "{\n" +
+                "  \"mappings\": {\n" +
+                "    \"properties\": {\n" +
+                "      \"value\": {\"type\": \"double\"},\n" +
+                "    \t\"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+        // TODO send PUT request
+    }
+
     public void sendBulkPost(PMetricRegistry registry) {
         for (PMetric m : registry.getMetricsList()) {
             sendBulkPost(m);

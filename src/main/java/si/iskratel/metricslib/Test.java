@@ -89,30 +89,55 @@ public class Test {
 
     private static List<CdrBean> callsList = new ArrayList<>();
 
-    public static void aggregateCalls() throws PMetricException {
+    public static void aggregateCalls() throws Exception {
 
-        callsList.add(new CdrBean("node1", "Answered"));
-        callsList.add(new CdrBean("node1", "Answered"));
-        callsList.add(new CdrBean("node1", "Busy"));
-        callsList.add(new CdrBean("node1", "Error"));
-//        callsList.add(new CdrBean("node2", "Answered"));
-//        callsList.add(new CdrBean("node2", "Busy"));
-//        callsList.add(new CdrBean("node2", "Busy"));
+        callsList.add(new CdrBean("Skopje", "Answered", 500));
+        callsList.add(new CdrBean("Skopje", "Answered", 500));
+        callsList.add(new CdrBean("Skopje", "Answered", 500));
+        callsList.add(new CdrBean("Skopje", "Busy", 500));
+        callsList.add(new CdrBean("Skopje", "Rejected", 500));
+        callsList.add(new CdrBean("Ljubljana", "Answered", 500));
+        callsList.add(new CdrBean("Ljubljana", "Busy", 0));
+        callsList.add(new CdrBean("Ljubljana", "Busy", 0));
+        callsList.add(new CdrBean("Ljubljana", "Rejected", 0));
 
-        PMetric pmon_cdr_calls_by_cause = PMetric.build()
-                .setName("pmon_cdr_calls_by_cause")
+        MetricsLib.init(9099);
+        EsClient e = new EsClient("http://mcrk-docker-1:9200/cdraggs/_bulk");
+        EsClient e2 = new EsClient("http://xy:9200/xml/_bulk");
+
+        PMetric pmon_calls_by_cause = PMetric.build()
+                .setName("pmon_calls_by_cause")
                 .setHelp("Counting calls by cause")
-                .setLabelNames("nodeId", "cause")
+                .setLabelNames("node", "cause")
+                .register("cdraggs");
+
+        PMetric pmon_calls_by_duration = PMetric.build()
+                .setName("pmon_calls_by_duration")
+                .setHelp("Total duration of all calls")
+                .setLabelNames("node")
                 .register("cdraggs");
 
         for (CdrBean c : callsList) {
-            pmon_cdr_calls_by_cause.setLabelValues(c.getNodeId(), c.getCauseString()).inc();
-        }
-        pmon_cdr_calls_by_cause.setTimestamp(System.currentTimeMillis());
+            pmon_calls_by_cause.setLabelValues(c.getNodeId(), c.getCauseString()).inc();
+            pmon_calls_by_cause.setTimestamp(System.currentTimeMillis());
 
-        EsClient e = new EsClient("elasticvm", 9200, "cdraggs");
-//        e.sendBulkPost(pmon_cdr_calls_by_cause);
+            pmon_calls_by_duration.setLabelValues(c.getNodeId()).inc(c.getDuration());
+            pmon_calls_by_duration.setTimestamp(System.currentTimeMillis());
+
+
+        }
         e.sendBulkPost(PMetricRegistry.getRegistry("cdraggs"));
+
+
+        PMetric pmon_xml_calls_by_duration = PMetric.build()
+                .setName("pmon_xml_calls_by_duration")
+                .setHelp("Total duration of all calls")
+                .setLabelNames("node")
+                .register("pmon_xml");
+
+        PMetricRegistry.getRegistry("pmon_xml").clearTimeSeriesInMetrics(0L);
+        pmon_xml_calls_by_duration.setLabelValues("ime noda").set(123); // set value from xml metric
+
 
     }
 
