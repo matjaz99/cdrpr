@@ -1,7 +1,5 @@
 package si.iskratel.metricslib;
 
-import si.iskratel.cdr.parser.CdrBean;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,19 +85,19 @@ public class Test {
 
 
 
-    private static List<CdrBean> callsList = new ArrayList<>();
+    private static List<TestCall> callsList = new ArrayList<>();
 
     public static void aggregateCalls() throws Exception {
 
-        callsList.add(new CdrBean("Skopje", "Answered", 500));
-        callsList.add(new CdrBean("Skopje", "Answered", 500));
-        callsList.add(new CdrBean("Skopje", "Answered", 500));
-        callsList.add(new CdrBean("Skopje", "Busy", 500));
-        callsList.add(new CdrBean("Skopje", "Rejected", 500));
-        callsList.add(new CdrBean("Ljubljana", "Answered", 500));
-        callsList.add(new CdrBean("Ljubljana", "Busy", 0));
-        callsList.add(new CdrBean("Ljubljana", "Busy", 0));
-        callsList.add(new CdrBean("Ljubljana", "Rejected", 0));
+        callsList.add(new TestCall("Skopje", "Answered", 500));
+        callsList.add(new TestCall("Skopje", "Answered", 500));
+        callsList.add(new TestCall("Skopje", "Answered", 500));
+        callsList.add(new TestCall("Skopje", "Busy", 500));
+        callsList.add(new TestCall("Skopje", "Rejected", 500));
+        callsList.add(new TestCall("Ljubljana", "Answered", 500));
+        callsList.add(new TestCall("Ljubljana", "Busy", 0));
+        callsList.add(new TestCall("Ljubljana", "Busy", 0));
+        callsList.add(new TestCall("Ljubljana", "Rejected", 0));
 
         MetricsLib.init(9099);
         EsClient e = new EsClient("http://mcrk-docker-1:9200/cdraggs/_bulk");
@@ -117,11 +115,11 @@ public class Test {
                 .setLabelNames("node")
                 .register("cdraggs");
 
-        for (CdrBean c : callsList) {
-            pmon_calls_by_cause.setLabelValues(c.getNodeId(), c.getCauseString()).inc();
+        for (TestCall c : callsList) {
+            pmon_calls_by_cause.setLabelValues(c.node, c.cause).inc();
             pmon_calls_by_cause.setTimestamp(System.currentTimeMillis());
 
-            pmon_calls_by_duration.setLabelValues(c.getNodeId()).inc(c.getDuration());
+            pmon_calls_by_duration.setLabelValues(c.node).inc(c.duration);
             pmon_calls_by_duration.setTimestamp(System.currentTimeMillis());
 
 
@@ -144,3 +142,5 @@ public class Test {
 
 
 }
+
+
