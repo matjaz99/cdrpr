@@ -52,14 +52,14 @@ public class Start {
         Runtime.getRuntime().addShutdownHook(new TheShutdownHook());
 
 //        String testUrl = "http://mcrk-docker-1:9200/cdrs/_bulk";
-        String testUrl = "http://mcrk-docker-1:9200/cdraggs/_bulk";
+//        String testUrl = "http://mcrk-docker-1:9200/cdraggs/_bulk";
 //        String testUrl = "http://pgcentos:9200/cdraggs/_bulk";
-//        String testUrl = "http://elasticvm:9200/cdraggs/_bulk";
+        String testUrl = "http://elasticvm:9200/cdraggs/_bulk";
 //        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk";
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "32"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "8"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));

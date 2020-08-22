@@ -4,6 +4,11 @@ import io.prometheus.client.Gauge;
 
 import java.util.*;
 
+/**
+ * This class contains a (static) list of all registries. Each registry has a name and
+ * and a list of metrics. Each metric contains a list of time-series points (labels and value).
+ * Special case is "default" registry, which is always automatically created at startup.
+ */
 public class PMetricRegistry {
 
     private static Map<String, PMetricRegistry> registriesMap = new HashMap<>();
@@ -22,6 +27,11 @@ public class PMetricRegistry {
     }
 
 
+    /**
+     * This method creates new registry if it does not exist yet and adds a new metric to the list of metrics.
+     * @param registryName
+     * @param metric
+     */
     public static void registerMetric(String registryName, PMetric metric) {
         PMetricRegistry r = registriesMap.getOrDefault(registryName, new PMetricRegistry(registryName));
         r.metricsMap.put(metric.getName(), metric);
@@ -32,6 +42,10 @@ public class PMetricRegistry {
         return new ArrayList<>(registriesMap.values());
     }
 
+    public static PMetricRegistry getDefaultRegistry() {
+        return registriesMap.get("default");
+    }
+
     public static PMetricRegistry getRegistry(String registryName) {
         return registriesMap.get(registryName);
     }
@@ -40,8 +54,13 @@ public class PMetricRegistry {
         return new ArrayList<>(metricsMap.values());
     }
 
-    public void collectPrometheusMetrics(String registry) {
-        PMetricRegistry r = registriesMap.get(registry);
+    /**
+     * Convert all metrics in given registry to Prometheus format. Prometheus metrics are available
+     * at /metrics endpoint.
+     * @param registryName
+     */
+    public void collectPrometheusMetrics(String registryName) {
+        PMetricRegistry r = registriesMap.get(registryName);
         for (PMetric m : r.metricsMap.values()) {
             if (m.getTimeSeriesSize() == 0) {
                 System.out.println("WARN: Metric " + m.getName() + " contains no time-series points. It will be ignored.");

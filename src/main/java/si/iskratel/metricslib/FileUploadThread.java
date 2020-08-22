@@ -3,6 +3,9 @@ package si.iskratel.metricslib;
 import java.io.File;
 import java.io.FileFilter;
 
+/**
+ * This thread periodically checks the dump directory, if there are any files waiting to be uploaded to ElasticSearch.
+ */
 public class FileUploadThread extends Thread {
 
     private EsClient esClient;
@@ -32,9 +35,7 @@ public class FileUploadThread extends Thread {
             System.out.println("Uploading files: " + bkpFiles.length);
 
             for (int i = 0; i < bkpFiles.length; i++) {
-                System.out.println("Reading file: " + bkpFiles[i].getAbsolutePath());
                 String s = FileClient.readFile(bkpFiles[i]);
-                System.out.println("Reading file complete: " + bkpFiles[i].getAbsolutePath());
                 boolean b = esClient.sendBulkPost(s);
                 System.out.println("sendBulkPost result=" + b + " for file: " + bkpFiles[i].getName());
                 if (b) {

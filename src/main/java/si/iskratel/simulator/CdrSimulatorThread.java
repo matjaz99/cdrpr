@@ -106,17 +106,17 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setOutTrunkId(130 + getRandomGaussian(5, 3));
         cdrBean.setOutTrunkGroupId(8440 + getRandomGaussian(10, 10));
 
-        cdrBean.setBgidOrig(getRandomInRange(1, 9));
-        cdrBean.setBgidTerm(getRandomInRange(10, 19));
+        cdrBean.setBgidOrig(getRandomInRange(1, 4));
+        cdrBean.setBgidTerm(getRandomInRange(10, 15));
         cdrBean.setCgidOrig(getRandomInRange(50, 54));
         cdrBean.setCgidTerm(getRandomInRange(60, 64));
         cdrBean.setCtxCall(getRandomGaussian(100, 2));
         cdrBean.setCentrexCallType(getRandomInRange(1,2));
-        cdrBean.setServId((short) getRandomInRange(1, 19));
+        cdrBean.setServId((short) getRandomInRange(1, 9));
         cdrBean.setServIdOrig((short) getRandomInRange(1, 3));
         cdrBean.setServIdTerm((short) getRandomInRange(1, 3));
-        cdrBean.setCallingSubscriberGroup(getRandomInRange(100, 109));
-        cdrBean.setCalledSubscriberGroup(getRandomInRange(200, 229));
+        cdrBean.setCallingSubscriberGroup(getRandomInRange(100, 105));
+        cdrBean.setCalledSubscriberGroup(getRandomInRange(200, 225));
         cdrBean.setVoipRxCodecType(getRandomInRange(1, 7));
         cdrBean.setVoipTxCodecType(getRandomInRange(1, 7));
 

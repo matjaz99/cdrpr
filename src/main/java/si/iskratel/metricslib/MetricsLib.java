@@ -81,7 +81,7 @@ public class MetricsLib {
         if (dd.length() > 0 && !dd.endsWith("/")) dd += "/";
         DUMP_DIRECTORY = dd;
         DUMP_TO_FILE_ENABLED = Boolean.parseBoolean((String) props.getOrDefault("metricslib.client.dump.enabled", "true"));
-        startJetty(port);
+        if (port > 0) startJetty(port);
     }
 
     private static void startJetty(int port) throws Exception {
