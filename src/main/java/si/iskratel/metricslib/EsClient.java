@@ -12,35 +12,26 @@ public class EsClient {
     private String url = "http://mcrk-docker-1:9200/cdraggs/_bulk";
     private String host;
     private int port;
-    private String index;
+//    private String index;
 
     private OkHttpClient httpClient = new OkHttpClient();
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
     private int retryCount = 0;
-    private FileUploadThread fut;
 
     public EsClient(String host, int port, String index) {
         this.host = host;
         this.port = port;
-        this.index = index;
+//        this.index = index;
 //        this.url = "http://" + host + ":" + port + "/" + index + "/_bulk";
         this.url = "http://" + host + ":" + port + "/_bulk";
-        if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-            fut = new FileUploadThread(this);
-            fut.start();
-        }
+
 
     }
 
     @Deprecated
     public EsClient(String url) {
         this.url = url;
-        if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-            fut = new FileUploadThread(this);
-            fut.start();
-        }
-
     }
 
     public void setMapping() {

@@ -29,6 +29,7 @@ public class MetricsLib {
     public static int UPLOAD_INTERVAL = 16;
     public static String defaultEsHost;
     public static int defaultEsPort;
+    private static FileUploadThread fut;
 
     static class HelloServlet extends HttpServlet {
 
@@ -125,6 +126,11 @@ public class MetricsLib {
 
         server.start();
         //server.join();
+
+        if (MetricsLib.DUMP_TO_FILE_ENABLED) {
+            fut = new FileUploadThread(new EsClient(defaultEsHost, defaultEsPort, null));
+            fut.start();
+        }
 
     }
 
