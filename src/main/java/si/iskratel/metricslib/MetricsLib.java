@@ -15,18 +15,27 @@ import java.util.Properties;
 
 public class MetricsLib {
 
-    public static String METRICSLIB_VERSION = "1.0";
+    /** Just a version */
+    public static String METRICSLIB_VERSION = "1.1";
+    /** Enable exporting collected metrics in prometheus format on /metrics endpoint. Does not apply to MetricsLib internal metrics. */
     public static boolean EXPORT_PROMETHEUS_METRICS = true;
+    /** Number of retries if sending fails */
     public static int RETRIES = 3;
+    /** If still failing, then dump metrics to this directory */
     public static String DUMP_DIRECTORY = "dump/";
+    /** Only if dumping is enabled */
     public static boolean DUMP_TO_FILE_ENABLED = false;
+    /** Interval for uploading dumped files */
+    public static int UPLOAD_INTERVAL = 16;
+    public static String defaultEsHost;
+    public static int defaultEsPort;
 
     static class HelloServlet extends HttpServlet {
 
         @Override
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
                 throws ServletException, IOException {
-            PromExporter.helloRequests.inc();
+            PromExporter.metricslib_hello_requests_total.inc();
 
             resp.getWriter().println("<h1>MetricsLib v" + METRICSLIB_VERSION + "</h1>");
 
@@ -46,6 +55,22 @@ public class MetricsLib {
             resp.getWriter().println("<h3>Metrics</h3>");
             resp.getWriter().println("<pre>" + PMetricRegistry.describeMetrics() + "</pre>");
             resp.getWriter().println("<a href=\"http://localhost:9099/metrics\">/metrics</a>");
+            resp.getWriter().println("<a href=\"http://localhost:9099/indices\">/indices</a>");
+        }
+    }
+
+    static class IndicesServlet extends HttpServlet {
+
+        @Override
+        protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
+                throws ServletException, IOException {
+
+            EsClient e = new EsClient(defaultEsHost, defaultEsPort, null);
+            String s = e.sendGetIndices();
+
+            resp.getWriter().println("<h1>Elasticsearch indices<h1>");
+            resp.getWriter().println("<pre>" + s + "</pre>");
+
         }
     }
 
@@ -56,7 +81,7 @@ public class MetricsLib {
 
             for (PMetricRegistry reg : PMetricRegistry.getRegistries()) {
                 for (PMetric m : reg.getMetricsList()) {
-                    PromExporter.prom_metricslib_metrics_total.labels(reg.getName(), m.getName()).set(m.getTimeSeriesSize());
+                    PromExporter.metricslib_metrics_total.labels(reg.getName(), m.getName()).set(m.getTimeSeriesSize());
                 }
                 if (EXPORT_PROMETHEUS_METRICS) {
                     reg.collectPrometheusMetrics(reg.getName());
@@ -93,6 +118,7 @@ public class MetricsLib {
         HelloServlet hs = new HelloServlet();
         context.addServlet(new ServletHolder(hs), "/");
         context.addServlet(new ServletHolder(hs), "/hello");
+        context.addServlet(new ServletHolder(new IndicesServlet()), "/indices");
         context.addServlet(new ServletHolder(new MetricsServletExtended()), "/metrics");
         // Add metrics about CPU, JVM memory etc.
         DefaultExports.initialize();

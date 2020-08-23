@@ -8,7 +8,7 @@ public class FileClient {
     public static void dumpToFile(EsClient esClient, PMetric metric) {
         try {
             FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + "es_" + metric.getName() + "_" + System.currentTimeMillis() + ".txt");
-            myWriter.write(metric.toEsNdJsonBulkString());
+            myWriter.write(PMetricFormatter.toEsNdJsonString(metric, metric.getParentRegistry()));
             myWriter.close();
         } catch (IOException e) {
             e.printStackTrace();

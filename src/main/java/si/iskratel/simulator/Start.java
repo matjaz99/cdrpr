@@ -18,6 +18,9 @@ public class Start {
     public static int SIMULATOR_NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
     public static String ES_URL;
+    public static String ES_HOST;
+    public static int ES_PORT;
+    public static String ES_INDEX;
     public static String PG_URL;
     public static String PG_USER;
     public static String PG_PASS;
@@ -59,7 +62,7 @@ public class Start {
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "8"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "24"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
@@ -80,7 +83,10 @@ public class Start {
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
         SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
-        ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
+//        ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
+        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
+        ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
+        ES_INDEX = getenv.getOrDefault("CDRPR_ES_INDEX", "cdraggs");
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
         PG_USER = getenv.getOrDefault("CDRPR_PG_USER", "postgres");
         PG_PASS = getenv.getOrDefault("CDRPR_PG_PASS", "object00");

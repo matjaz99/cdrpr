@@ -11,6 +11,8 @@ public class PMetric {
     private Map<String, PTimeSeries> timeSeries = new HashMap<>();
     // use this as value in case when metric has no labels
     private Double value;
+    // the name of registry that this metric belongs to
+    private String parentRegistry;
 
     public static PMetric build() {
         PMetric m = new PMetric();
@@ -34,6 +36,10 @@ public class PMetric {
 
     public String getName() {
         return name;
+    }
+
+    public String getParentRegistry() {
+        return parentRegistry;
     }
 
     public PMetric setLabelNames(String... labels) {
@@ -71,26 +77,28 @@ public class PMetric {
     }
 
     public void set(double value) {
-        this.value = new Double(value);
+        this.value = value;
     }
 
     public void inc() {
-        if (value == null) value = new Double(0);
+        if (value == null) value = 0.0;
         value += 1.0;
     }
 
     public void inc(double d) {
-        if (value == null) value = new Double(0);
+        if (value == null) value = 0.0;
         value += d;
     }
 
     public PMetric register() {
         PMetricRegistry.registerMetric("default",this);
+        this.parentRegistry = "default";
         return this;
     }
 
     public PMetric register(String registryName) {
         PMetricRegistry.registerMetric(registryName,this);
+        this.parentRegistry = registryName;
         return this;
     }
 
@@ -119,45 +127,23 @@ public class PMetric {
         return s + "]";
     }
 
-    public String toEsNdJsonBulkString() {
-        StringBuilder sb = new StringBuilder();
+//    public String toEsNdJsonBulkString(String index) {
+//        StringBuilder sb = new StringBuilder();
+//
+//        for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
+//            sb.append("{ \"index\":{ \"_index\":\"").append(index).append("\"} }\n");
+//            sb.append("{");
+//            sb.append("\"m_name\":\"").append(name).append("\",");
+//            for (int i = 0; i < labelNames.length; i++) {
+//                sb.append("\"").append(labelNames[i]).append("\":\"").append(entry.getValue().getLabelValues()[i]).append("\",");
+//            }
+//            sb.append("\"value\":").append(entry.getValue().getValue()).append(",");
+//            sb.append("\"timestamp\":").append(timestamp);
+//            sb.append("}\n");
+//        }
+//
+//        return sb.toString();
+//    }
 
-        for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
-            sb.append("{ \"index\":{} }\n");
-            sb.append("{");
-            sb.append("\"m_name\":\"").append(name).append("\",");
-            for (int i = 0; i < labelNames.length; i++) {
-                sb.append("\"").append(labelNames[i]).append("\":\"").append(entry.getValue().getLabelValues()[i]).append("\",");
-            }
-            sb.append("\"value\":").append(entry.getValue().getValue()).append(",");
-            sb.append("\"timestamp\":").append(timestamp);
-            sb.append("}\n");
-        }
 
-        return sb.toString();
-    }
-
-    public String toPgCreateTableString() {
-        String createTableSQL = "CREATE TABLE " + name + " (";
-        createTableSQL += "ID BIGSERIAL PRIMARY KEY, ";
-        for (int i = 0; i < labelNames.length; i++) {
-            createTableSQL += labelNames[i] + " VARCHAR(256), ";
-        }
-        createTableSQL += "timestamp BIGINT, value NUMERIC)";
-        return createTableSQL;
-    }
-
-    public String toPgInsertMetricString() {
-//        Example: INSERT INTO m_name (id, name, email, country, password) VALUES (?, ?, ?, ?, ?);
-        String INSERT_SQL = "INSERT INTO " + name + " (";
-        String q = "(";
-        for (int i = 0; i < labelNames.length; i++) {
-            INSERT_SQL += labelNames[i] + ", ";
-            q += "?, ";
-        }
-        INSERT_SQL += "timestamp, value";
-        q += "?, ?";
-        INSERT_SQL += ") VALUES " + q + ");";
-        return INSERT_SQL;
-    }
 }

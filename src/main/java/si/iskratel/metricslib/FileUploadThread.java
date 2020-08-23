@@ -32,21 +32,22 @@ public class FileUploadThread extends Thread {
                 }
             });
 
-            System.out.println("Uploading files: " + bkpFiles.length);
+            System.out.println("Files to be uploaded: " + bkpFiles.length);
 
             for (int i = 0; i < bkpFiles.length; i++) {
                 String s = FileClient.readFile(bkpFiles[i]);
                 boolean b = esClient.sendBulkPost(s);
-                System.out.println("sendBulkPost result=" + b + " for file: " + bkpFiles[i].getName());
+                System.out.println("sending result=" + b + " for file: " + bkpFiles[i].getName());
                 if (b) {
                     bkpFiles[i].delete();
+                    PromExporter.metricslib_dump_files_uploads_total.labels("EsClient").inc();
                 } else {
                     break;
                 }
             }
 
             try {
-                Thread.sleep(16 * 1000);
+                Thread.sleep(MetricsLib.UPLOAD_INTERVAL * 1000);
             } catch (InterruptedException e) {
             }
 

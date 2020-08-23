@@ -3,7 +3,7 @@ package si.iskratel.metricslib;
 import io.prometheus.client.Histogram;
 import okhttp3.*;
 
-import java.net.ConnectException;
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
@@ -24,7 +24,8 @@ public class EsClient {
         this.host = host;
         this.port = port;
         this.index = index;
-        this.url = "http://" + host + ":" + port + "/" + index + "/_bulk";
+//        this.url = "http://" + host + ":" + port + "/" + index + "/_bulk";
+        this.url = "http://" + host + ":" + port + "/_bulk";
         if (MetricsLib.DUMP_TO_FILE_ENABLED) {
             fut = new FileUploadThread(this);
             fut.start();
@@ -55,16 +56,16 @@ public class EsClient {
         // TODO send PUT request
     }
 
-    public void sendBulkPost(PMetricRegistry registry) {
-        for (PMetric m : registry.getMetricsList()) {
-            sendBulkPost(m);
-        }
-    }
 
+    /**
+     * Send any custom JSON body to ElasticSearch.
+     * @param body
+     * @return success
+     */
     public boolean sendBulkPost(String body) {
 
         if (body == null) {
-            System.out.println("WARN: Body is null. It will be ignored.");
+            System.out.println("WARN: Body is null. Request will be ignored.");
             return false;
         }
 
@@ -79,6 +80,22 @@ public class EsClient {
 
     }
 
+    /**
+     * Send all metrics in given registry to ElasticSearch.
+     * @param registry
+     */
+    public void sendBulkPost(PMetricRegistry registry) {
+        for (PMetric m : registry.getMetricsList()) {
+            sendBulkPost(m);
+        }
+    }
+
+    /**
+     * Send given metric to ElasticSearch. Method will retry to send the metric until max retries (configurable) is reached.
+     * Then it will dump the metrics to file in 'dump' directory.
+     * @param pMetric
+     * @return success
+     */
     public boolean sendBulkPost(PMetric pMetric) {
 
         boolean success = false;
@@ -89,14 +106,14 @@ public class EsClient {
             return success;
         }
 
-        System.out.println("-> sending metrics: " + pMetric.getName() + ", size: " + pMetric.getTimeSeriesSize());
+        System.out.println("sending metrics: " + pMetric.getName() + ", size: " + pMetric.getTimeSeriesSize());
 
-        Histogram.Timer t = PromExporter.prom_bulkSendHistogram.labels("EsClient", url, "executeHttpRequest").startTimer();
+        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient", url, "executeHttpRequest").startTimer();
 
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .post(RequestBody.create(pMetric.toEsNdJsonBulkString(), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(pMetric, pMetric.getParentRegistry()), MEDIA_TYPE_JSON))
                 .build();
 
         try {
@@ -113,6 +130,7 @@ public class EsClient {
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
                     System.out.println("EsClient[0]: Dumping to file");
                     FileClient.dumpToFile(this, pMetric);
+                    PromExporter.metricslib_dump_to_file_total.labels("EsClient").inc();
                 }
             }
 
@@ -123,41 +141,64 @@ public class EsClient {
 
 
         t.observeDuration();
-        PromExporter.prom_bulkSendHistogram.labels("EsClient", url, "executeHttpRequest").observe(pMetric.getTimeSeriesSize());
+        PromExporter.metricslib_bulk_request_time.labels("EsClient", url, "executeHttpRequest").observe(pMetric.getTimeSeriesSize());
 
         return success;
 
     }
 
+    /**
+     * This method actually sends the HTTP request and does all the error handling.
+     * @param request
+     * @return success
+     */
     private boolean executeHttpRequest(Request request) {
 
         try {
 
-            PromExporter.prom_metricslib_attempted_requests_total.labels("EsClient", url).inc();
+            PromExporter.metricslib_attempted_requests_total.labels("EsClient", url).inc();
             Response response = httpClient.newCall(request).execute();
             if (!response.isSuccessful()) {
                 System.out.println("EsClient[0]: unexpected code: " + response);
-                PromExporter.prom_metricslib_failed_requests_total.labels("EsClient", url, "" + response.code()).inc();
+                PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "" + response.code()).inc();
                 response.close();
                 return false;
             }
-            System.out.println("EsClient[0]: POST successfully sent");
+            System.out.println("--> EsClient[0]: POST successfully sent");
             response.close();
             return true;
 
         } catch (SocketTimeoutException e) {
             System.err.println("SocketTimeoutException: " + e.getMessage());
-            PromExporter.prom_metricslib_failed_requests_total.labels("EsClient", url, "SocketTimeoutException").inc();
+            PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "SocketTimeoutException").inc();
         } catch (SocketException e) {
             System.err.println("SocketException: " + e.getMessage());
-            PromExporter.prom_metricslib_failed_requests_total.labels("EsClient", url, "SocketException").inc();
+            PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "SocketException").inc();
         } catch (Exception e) {
             e.printStackTrace();
-            PromExporter.prom_metricslib_failed_requests_total.labels("EsClient", url, "Exception").inc();
+            PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "Exception").inc();
         }
 
         return false;
 
+    }
+
+//    public String getIndex() {
+//        return index;
+//    }
+
+    public String sendGetIndices() {
+        Request request = new Request.Builder()
+                .url("http://" + host + ":" + port + "/_cat/indices?v")
+                .build();
+        Response response = null;
+        try {
+            response = httpClient.newCall(request).execute();
+            return response.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

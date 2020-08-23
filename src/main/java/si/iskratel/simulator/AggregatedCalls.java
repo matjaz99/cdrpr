@@ -13,67 +13,82 @@ public class AggregatedCalls implements Runnable {
     private PgClient pgClient;
     private EsClient esClient;
 
+    private static final String INDEX_CDR = "pmon_cdr_aggs";
+    private static final String INDEX_CDR_VOIP = "pmon_cdr_voip";
+    private static final String INDEX_XML = "pmon_xml";
+
     // metrics
     public static PMetric m_countByCrc = PMetric.build()
             .setName("pmon_count_by_cause")
             .setHelp("Count calls by release cause")
             .setLabelNames("node", "cause", "incTG", "outTG")
-            .register();
+            .register(INDEX_CDR);
     public static PMetric m_durationByTG = PMetric.build()
             .setName("pmon_duration_by_tg")
             .setHelp("Total duration of answered calls on trunk groups")
             .setLabelNames("node", "incTG", "outTG")
-            .register();
+            .register(INDEX_CDR);
     public static PMetric m_callsInProgress = PMetric.build()
             .setName("pmon_calls_in_progress")
             .setHelp("Current number of calls in progress (answered only)")
             .setLabelNames("node")
-            .register();
+            .register(INDEX_CDR);
     public static PMetric m_timeBeforeRing = PMetric.build()
             .setName("pmon_time_before_ring")
             .setHelp("pmon_time_before_ring")
             .setLabelNames("node")
-            .register();
+            .register(INDEX_CDR);
     public static PMetric m_timeBeforeAns = PMetric.build()
             .setName("pmon_time_before_ans")
             .setHelp("pmon_time_before_ans")
             .setLabelNames("node")
-            .register();
+            .register(INDEX_CDR);
     public static PMetric m_bgCalls = PMetric.build()
             .setName("pmon_bg_calls")
             .setHelp("BG calls")
             .setLabelNames("node", "bgidOrig", "bgidTerm")
-            .register();
+            .register(INDEX_CDR);
     public static PMetric m_cgCalls = PMetric.build()
             .setName("pmon_cg_calls")
             .setHelp("CG calls")
             .setLabelNames("node", "cgidOrig", "cgidTerm", "centrexCallType", "ctxCall")
-            .register();
+            .register(INDEX_CDR);
     public static PMetric m_suppServ = PMetric.build()
             .setName("pmon_supp_service")
             .setHelp("Supplementary services")
             .setLabelNames("node", "servId", "servIdOrig", "servIdTerm")
-            .register();
+            .register(INDEX_CDR);
     public static PMetric m_subscrGrpCalls = PMetric.build()
             .setName("pmon_subscriber_group_calls")
             .setHelp("Subscriber group calls")
             .setLabelNames("node", "callingSubscrGroup", "calledSubscrGroup")
-            .register();
+            .register(INDEX_CDR);
     public static PMetric m_voipRxCodec = PMetric.build()
             .setName("pmon_voip_rx_codec")
             .setHelp("VOIP rx codec")
             .setLabelNames("codec")
-            .register();
+            .register(INDEX_CDR_VOIP);
     public static PMetric m_voipTxCodec = PMetric.build()
             .setName("pmon_voip_tx_codec")
             .setHelp("VOIP tx codec")
             .setLabelNames("codec")
-            .register();
+            .register(INDEX_CDR_VOIP);
+    public static PMetric m_voipTxRxCodec = PMetric.build()
+            .setName("pmon_voip_tx_rx_codec")
+            .setHelp("VOIP tx codec")
+            .setLabelNames("rxCodec", "txCodec")
+            .register(INDEX_CDR_VOIP);
+    public static PMetric m_xml_test_1 = PMetric.build()
+            .setName("pmon_xml_test_1")
+            .setHelp("xml_test_1")
+            .setLabelNames("elementType", "node")
+            .register(INDEX_XML);
 
     public AggregatedCalls(int id) {
         threadId = id;
         pgClient = new PgClient(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
-        esClient = new EsClient(Start.ES_URL);
+//        esClient = new EsClient(Start.ES_URL);
+        esClient = new EsClient(Start.ES_HOST, Start.ES_PORT, Start.ES_INDEX);
     }
 
 
@@ -88,7 +103,9 @@ public class AggregatedCalls implements Runnable {
             }
 
             // reset metrics: clear all time-series data and restart timestamp
-            PMetricRegistry.getRegistry("default").clearTimeSeriesInMetrics(System.currentTimeMillis());
+            PMetricRegistry.getRegistry(INDEX_CDR).clearTimeSeriesInMetrics(System.currentTimeMillis());
+            PMetricRegistry.getRegistry(INDEX_CDR_VOIP).clearTimeSeriesInMetrics(System.currentTimeMillis());
+            PMetricRegistry.getRegistry(INDEX_XML).clearTimeSeriesInMetrics(System.currentTimeMillis());
 
             while (Start.getQueueSize() > 0) {
 
@@ -110,7 +127,9 @@ public class AggregatedCalls implements Runnable {
             }
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
-                esClient.sendBulkPost(PMetricRegistry.getRegistry("default"));
+                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR));
+                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_VOIP));
+                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_XML));
             }
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
@@ -149,6 +168,7 @@ public class AggregatedCalls implements Runnable {
             m_subscrGrpCalls.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
             m_voipRxCodec.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
             m_voipTxCodec.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
+            m_voipTxRxCodec.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "");
         } catch (PMetricException e) {
             e.printStackTrace();
         }
