@@ -25,8 +25,6 @@ public class EsClient {
 //        this.index = index;
 //        this.url = "http://" + host + ":" + port + "/" + index + "/_bulk";
         this.url = "http://" + host + ":" + port + "/_bulk";
-
-
     }
 
     @Deprecated
