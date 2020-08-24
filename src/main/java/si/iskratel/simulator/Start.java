@@ -144,6 +144,9 @@ public class Start {
         Thread t = new Thread(aggregator);
         t.start();
 
+        XmlSimulatorThread xst = new XmlSimulatorThread();
+        xst.start();
+
     }
 
 

@@ -15,7 +15,6 @@ public class AggregatedCalls implements Runnable {
 
     private static final String INDEX_CDR = "pmon_cdr_aggs";
     private static final String INDEX_CDR_VOIP = "pmon_cdr_voip";
-    private static final String INDEX_XML = "pmon_xml";
 
     // metrics
     public static PMetric m_countByCrc = PMetric.build()
@@ -78,17 +77,12 @@ public class AggregatedCalls implements Runnable {
             .setHelp("VOIP tx codec")
             .setLabelNames("rxCodec", "txCodec")
             .register(INDEX_CDR_VOIP);
-    public static PMetric m_xml_test_1 = PMetric.build()
-            .setName("pmon_xml_test_1")
-            .setHelp("xml_test_1")
-            .setLabelNames("elementType", "node")
-            .register(INDEX_XML);
 
     public AggregatedCalls(int id) {
         threadId = id;
         pgClient = new PgClient(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
 //        esClient = new EsClient(Start.ES_URL);
-        esClient = new EsClient(Start.ES_HOST, Start.ES_PORT, Start.ES_INDEX);
+        esClient = new EsClient(Start.ES_HOST, Start.ES_PORT);
     }
 
 
@@ -103,9 +97,8 @@ public class AggregatedCalls implements Runnable {
             }
 
             // reset metrics: clear all time-series data and restart timestamp
-            PMetricRegistry.getRegistry(INDEX_CDR).clearTimeSeriesInMetrics(System.currentTimeMillis());
-            PMetricRegistry.getRegistry(INDEX_CDR_VOIP).clearTimeSeriesInMetrics(System.currentTimeMillis());
-            PMetricRegistry.getRegistry(INDEX_XML).clearTimeSeriesInMetrics(System.currentTimeMillis());
+            PMetricRegistry.getRegistry(INDEX_CDR).resetMetrics();
+            PMetricRegistry.getRegistry(INDEX_CDR_VOIP).resetMetrics();
 
             while (Start.getQueueSize() > 0) {
 
@@ -129,7 +122,6 @@ public class AggregatedCalls implements Runnable {
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_VOIP));
-                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_XML));
             }
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
@@ -173,10 +165,6 @@ public class AggregatedCalls implements Runnable {
             e.printStackTrace();
         }
 
-
     }
-
-
-
 
 }

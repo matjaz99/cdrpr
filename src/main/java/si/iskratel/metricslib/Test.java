@@ -133,7 +133,7 @@ public class Test {
                 .setLabelNames("node")
                 .register("pmon_xml");
 
-        PMetricRegistry.getRegistry("pmon_xml").clearTimeSeriesInMetrics(0L);
+        PMetricRegistry.getRegistry("pmon_xml").resetMetrics();
         pmon_xml_calls_by_duration.setLabelValues("ime noda").set(123); // set value from xml metric
 
 

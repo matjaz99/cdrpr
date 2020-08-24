@@ -117,8 +117,8 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setServIdTerm((short) getRandomInRange(1, 3));
         cdrBean.setCallingSubscriberGroup(getRandomInRange(100, 105));
         cdrBean.setCalledSubscriberGroup(getRandomInRange(200, 225));
-        cdrBean.setVoipRxCodecType(getRandomInRange(1, 7));
-        cdrBean.setVoipTxCodecType(getRandomInRange(1, 7));
+        cdrBean.setVoipRxCodecType(getRandomInRange(1, 17));
+        cdrBean.setVoipTxCodecType(getRandomInRange(11, 27));
 
         if (duration > 0) {
             StorageThread.addCall(a, et);

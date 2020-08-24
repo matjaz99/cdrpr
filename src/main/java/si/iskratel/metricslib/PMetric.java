@@ -4,7 +4,7 @@ import java.util.*;
 
 public class PMetric {
 
-    private long timestamp = System.currentTimeMillis();
+    private long timestamp = 0;
     private String name;
     private String help;
     private String[] labelNames;
@@ -126,24 +126,5 @@ public class PMetric {
         }
         return s + "]";
     }
-
-//    public String toEsNdJsonBulkString(String index) {
-//        StringBuilder sb = new StringBuilder();
-//
-//        for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
-//            sb.append("{ \"index\":{ \"_index\":\"").append(index).append("\"} }\n");
-//            sb.append("{");
-//            sb.append("\"m_name\":\"").append(name).append("\",");
-//            for (int i = 0; i < labelNames.length; i++) {
-//                sb.append("\"").append(labelNames[i]).append("\":\"").append(entry.getValue().getLabelValues()[i]).append("\",");
-//            }
-//            sb.append("\"value\":").append(entry.getValue().getValue()).append(",");
-//            sb.append("\"timestamp\":").append(timestamp);
-//            sb.append("}\n");
-//        }
-//
-//        return sb.toString();
-//    }
-
 
 }

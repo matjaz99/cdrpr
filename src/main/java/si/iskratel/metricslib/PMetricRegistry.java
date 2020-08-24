@@ -95,10 +95,16 @@ public class PMetricRegistry {
         return sb.toString();
     }
 
-    public void clearTimeSeriesInMetrics(Long timestamp) {
+    /**
+     * Reset all metrics in registry. This will not unregister metric from registry, but it will clear all time series
+     * in the metric. No worries, they will be automatically added back in next iteration when you fill the metrics
+     * again. The timestamp will be reset to 0, so you have to set it again when metric is collected.
+     * One more thing: never reset a metric if you intend to use it as a Counter!
+     */
+    public void resetMetrics() {
         for (PMetric m : metricsMap.values()) {
             m.clear();
-            if (timestamp != null) m.setTimestamp(timestamp);
+            m.setTimestamp(0);
         }
     }
 

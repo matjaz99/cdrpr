@@ -26,6 +26,8 @@ public class FileClient {
             }
             reader.close();
             return sb.toString();
+        } catch (FileNotFoundException e) {
+            System.err.println("ERROR: FileNotFoundException: file not found: " + file.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }

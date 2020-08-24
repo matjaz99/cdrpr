@@ -12,7 +12,6 @@ public class EsClient {
     private String url = "http://mcrk-docker-1:9200/cdraggs/_bulk";
     private String host;
     private int port;
-//    private String index;
 
     private OkHttpClient httpClient = new OkHttpClient();
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
@@ -24,12 +23,10 @@ public class EsClient {
      * Index will be used from the name of metrics registry. This client can handle all indices on given host:port.
      * @param host
      * @param port
-     * @param index
      */
-    public EsClient(String host, int port, String index) {
+    public EsClient(String host, int port) {
         this.host = host;
         this.port = port;
-//        this.index = index;
 //        this.url = "http://" + host + ":" + port + "/" + index + "/_bulk";
         this.url = "http://" + host + ":" + port + "/_bulk";
     }
@@ -77,7 +74,7 @@ public class EsClient {
                 .build();
         System.out.println("Executing request on url: " + url);
 
-        return executeHttpRequest(request);
+        return executeHttpRequest(request, "-");
 
     }
 
@@ -94,33 +91,35 @@ public class EsClient {
     /**
      * Send given metric to ElasticSearch. Method will retry to send the metric until max retries (configurable) is reached.
      * Then it will dump the metrics to file in 'dump' directory.
-     * @param pMetric
-     * @return success
+     * @param metric
+     * @return true if successful, false if it fails
      */
-    public boolean sendBulkPost(PMetric pMetric) {
+    public boolean sendBulkPost(PMetric metric) {
 
         boolean success = false;
         retryCount = 0;
 
-        if (pMetric.getTimeSeriesSize() == 0) {
-            System.out.println("WARN: Metric " + pMetric.getName() + " contains no time-series points. It will be ignored.");
-            return success;
+        if (metric.getTimeSeriesSize() == 0) {
+            System.out.println("WARN: Metric " + metric.getName() + " contains no time-series points. It will be ignored.");
+            return false;
         }
 
-        System.out.println("sending metrics: " + pMetric.getName() + ", size: " + pMetric.getTimeSeriesSize());
+        if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
+
+        System.out.println("sending metrics: " + metric.getName() + ", size: " + metric.getTimeSeriesSize());
 
         Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient", url, "executeHttpRequest").startTimer();
 
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(pMetric, pMetric.getParentRegistry()), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric, metric.getParentRegistry()), MEDIA_TYPE_JSON))
                 .build();
 
         try {
 
             while (retryCount < MetricsLib.RETRIES) {
-                success = executeHttpRequest(request);
+                success = executeHttpRequest(request, metric.getName());
                 if (success) break;
                 retryCount++;
                 Thread.sleep(1500);
@@ -129,8 +128,8 @@ public class EsClient {
             if (!success) {
                 System.out.println("WARN: EsClient[0]: ...retrying failed!");
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    System.out.println("EsClient[0]: Dumping to file");
-                    FileClient.dumpToFile(this, pMetric);
+                    System.out.println("EsClient[0]: Dumping to file: " + metric.getName());
+                    FileClient.dumpToFile(this, metric);
                     PromExporter.metricslib_dump_to_file_total.labels("EsClient").inc();
                 }
             }
@@ -142,7 +141,9 @@ public class EsClient {
 
 
         t.observeDuration();
-        PromExporter.metricslib_bulk_request_time.labels("EsClient", url, "executeHttpRequest").observe(pMetric.getTimeSeriesSize());
+        PromExporter.metricslib_bulk_request_time.labels("EsClient", url, "executeHttpRequest").observe(metric.getTimeSeriesSize());
+
+        metric.setTimestamp(0);
 
         return success;
 
@@ -153,7 +154,7 @@ public class EsClient {
      * @param request
      * @return success
      */
-    private boolean executeHttpRequest(Request request) {
+    private boolean executeHttpRequest(Request request, String reqId) {
 
         try {
 
@@ -165,7 +166,7 @@ public class EsClient {
                 response.close();
                 return false;
             }
-            System.out.println("--> EsClient[0]: POST successfully sent");
+            System.out.println("--> EsClient[0]: " + reqId + " POST successfully sent");
             response.close();
             return true;
 

@@ -31,6 +31,13 @@ public class PgClient {
 
     public void sendBulk(PMetric pMetric) {
 
+        if (pMetric.getTimeSeriesSize() == 0) {
+            System.out.println("WARN: Metric " + pMetric.getName() + " contains no time-series points. It will be ignored.");
+            return;
+        }
+
+        if (pMetric.getTimestamp() == 0) pMetric.setTimestamp(System.currentTimeMillis());
+
         Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("PgClient", url, "sendBulk").startTimer();
 
         String INSERT_SQL = PMetricFormatter.toPgInsertMetricString(pMetric);

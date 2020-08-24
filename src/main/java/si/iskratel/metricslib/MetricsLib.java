@@ -16,12 +16,13 @@ import java.util.Properties;
 public class MetricsLib {
 
     /** Just a version */
-    public static String METRICSLIB_VERSION = "1.1";
+    public static String METRICSLIB_VERSION = "1.0";
     /** Enable exporting collected metrics in prometheus format on /metrics endpoint. Does not apply to MetricsLib internal metrics. */
     public static boolean EXPORT_PROMETHEUS_METRICS = true;
     /** Number of retries if sending fails */
     public static int RETRIES = 3;
     public static int RETRY_INTERVAL = 1500;
+    public static int BULK_SIZE = 50000;
     /** If still failing, then dump metrics to this directory */
     public static String DUMP_DIRECTORY = "dump/";
     /** Only if dumping is enabled */
@@ -44,8 +45,14 @@ public class MetricsLib {
             resp.getWriter().println("<h3>Configuration</h3>");
             resp.getWriter().println("<pre>metricslib.client.prometheus.export=" + EXPORT_PROMETHEUS_METRICS + "\n"
                     + "metricslib.client.retry=" + RETRIES + "\n"
+                    + "metricslib.client.retry.interval.millis=" + RETRY_INTERVAL + "\n"
+                    + "metricslib.client.bulk.size=" + BULK_SIZE + "\n"
                     + "metricslib.client.dump.enabled=" + DUMP_TO_FILE_ENABLED + "\n"
-                    + "metricslib.client.dump.directory=" + DUMP_DIRECTORY + "</pre>");
+                    + "metricslib.client.dump.directory=" + DUMP_DIRECTORY + "\n"
+                    + "metricslib.upload.interval.seconds=" + UPLOAD_INTERVAL + "\n"
+                    + "metricslib.client.elasticsearch.default.host=" + DEFAULT_ES_HOST + "\n"
+                    + "metricslib.client.elasticsearch.default.port=" + DEFAULT_ES_PORT + "\n"
+                    + "</pre>");
 
             resp.getWriter().println("<h3>Registries</h3>");
             resp.getWriter().println("<pre>");
@@ -67,10 +74,11 @@ public class MetricsLib {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
                 throws ServletException, IOException {
 
-            EsClient e = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT, null);
+            EsClient e = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT);
             String s = e.sendGetIndices();
 
-            resp.getWriter().println("<h1>Elasticsearch indices<h1>");
+            resp.getWriter().println("<h1>Elasticsearch indices</h1>");
+            resp.getWriter().println("<h3>" + DEFAULT_ES_HOST + ":" + DEFAULT_ES_PORT + "</h3>");
             resp.getWriter().println("<pre>" + s + "</pre>");
 
         }
@@ -106,6 +114,7 @@ public class MetricsLib {
 
         RETRIES = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.count", "3"));
         RETRY_INTERVAL = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.interval.millis", "1500"));
+        BULK_SIZE = Integer.parseInt((String) props.getOrDefault("metricslib.client.bulk.size", "50000"));
         String dd = (String) props.getOrDefault("metricslib.client.dump.directory", "");
         if (dd.length() > 0 && !dd.endsWith("/")) dd += "/";
         DUMP_DIRECTORY = dd;
@@ -134,7 +143,7 @@ public class MetricsLib {
         //server.join();
 
         if (MetricsLib.DUMP_TO_FILE_ENABLED && DEFAULT_ES_HOST != null) {
-            MetricsLib.fut = new FileUploadThread(new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT, null));
+            MetricsLib.fut = new FileUploadThread(new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT));
             MetricsLib.fut.start();
         }
 
