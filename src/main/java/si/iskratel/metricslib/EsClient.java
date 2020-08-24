@@ -19,6 +19,13 @@ public class EsClient {
 
     private int retryCount = 0;
 
+    /**
+     * Use this constructor to create ES clients that are bound to this host:port instance, but independent of indices.
+     * Index will be used from the name of metrics registry. This client can handle all indices on given host:port.
+     * @param host
+     * @param port
+     * @param index
+     */
     public EsClient(String host, int port, String index) {
         this.host = host;
         this.port = port;
@@ -27,6 +34,11 @@ public class EsClient {
         this.url = "http://" + host + ":" + port + "/_bulk";
     }
 
+    /**
+     * If you use this constructor, then you are bound to this host:port/index instance. You cannot control the
+     * indices, unless you create new EsClient.
+     * @param url
+     */
     @Deprecated
     public EsClient(String url) {
         this.url = url;

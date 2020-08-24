@@ -21,14 +21,15 @@ public class MetricsLib {
     public static boolean EXPORT_PROMETHEUS_METRICS = true;
     /** Number of retries if sending fails */
     public static int RETRIES = 3;
+    public static int RETRY_INTERVAL = 1500;
     /** If still failing, then dump metrics to this directory */
     public static String DUMP_DIRECTORY = "dump/";
     /** Only if dumping is enabled */
     public static boolean DUMP_TO_FILE_ENABLED = false;
     /** Interval for uploading dumped files */
     public static int UPLOAD_INTERVAL = 16;
-    public static String defaultEsHost;
-    public static int defaultEsPort;
+    public static String DEFAULT_ES_HOST;
+    public static int DEFAULT_ES_PORT;
     public static FileUploadThread fut;
 
     static class HelloServlet extends HttpServlet {
@@ -66,7 +67,7 @@ public class MetricsLib {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
                 throws ServletException, IOException {
 
-            EsClient e = new EsClient(defaultEsHost, defaultEsPort, null);
+            EsClient e = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT, null);
             String s = e.sendGetIndices();
 
             resp.getWriter().println("<h1>Elasticsearch indices<h1>");
@@ -102,11 +103,16 @@ public class MetricsLib {
 
     public static void init(Properties props) throws Exception {
         int port = Integer.parseInt((String) props.getOrDefault("metricslib.jetty.port", "9099"));
-        RETRIES = Integer.parseInt((String) props.getOrDefault("metricslib.client.resend", "3"));
+
+        RETRIES = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.count", "3"));
+        RETRY_INTERVAL = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.interval.millis", "1500"));
         String dd = (String) props.getOrDefault("metricslib.client.dump.directory", "");
         if (dd.length() > 0 && !dd.endsWith("/")) dd += "/";
         DUMP_DIRECTORY = dd;
         DUMP_TO_FILE_ENABLED = Boolean.parseBoolean((String) props.getOrDefault("metricslib.client.dump.enabled", "true"));
+        UPLOAD_INTERVAL = Integer.parseInt((String) props.getOrDefault("metricslib.upload.interval.seconds", "16"));
+        DEFAULT_ES_HOST = (String) props.getOrDefault("metricslib.client.elasticsearch.default.host", null);
+        DEFAULT_ES_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.client.elasticsearch.default.port", "0"));
         if (port > 0) startJetty(port);
     }
 
@@ -127,8 +133,8 @@ public class MetricsLib {
         server.start();
         //server.join();
 
-        if (MetricsLib.DUMP_TO_FILE_ENABLED && defaultEsHost != null) {
-            MetricsLib.fut = new FileUploadThread(new EsClient(defaultEsHost, defaultEsPort, null));
+        if (MetricsLib.DUMP_TO_FILE_ENABLED && DEFAULT_ES_HOST != null) {
+            MetricsLib.fut = new FileUploadThread(new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT, null));
             MetricsLib.fut.start();
         }
 

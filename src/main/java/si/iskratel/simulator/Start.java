@@ -116,8 +116,8 @@ public class Start {
 
         MetricsLib.EXPORT_PROMETHEUS_METRICS = ENABLE_PROMETHEUS_METRICS;
         MetricsLib.DUMP_TO_FILE_ENABLED = true;
-        MetricsLib.defaultEsHost = "elasticvm";
-        MetricsLib.defaultEsPort = 9200;
+        MetricsLib.DEFAULT_ES_HOST = "elasticvm";
+        MetricsLib.DEFAULT_ES_PORT = 9200;
         MetricsLib.init();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
