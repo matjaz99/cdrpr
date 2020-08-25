@@ -132,7 +132,7 @@ public class MetricsLib {
         context.setContextPath("/");
         server.setHandler(context);
         HelloServlet hs = new HelloServlet();
-        context.addServlet(new ServletHolder(hs), "/");
+//        context.addServlet(new ServletHolder(hs), "/");
         context.addServlet(new ServletHolder(hs), "/hello");
         context.addServlet(new ServletHolder(new IndicesServlet()), "/indices");
         context.addServlet(new ServletHolder(new MetricsServletExtended()), "/metrics");
