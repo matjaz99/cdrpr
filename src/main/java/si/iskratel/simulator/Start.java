@@ -84,8 +84,9 @@ public class Start {
         SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
 //        ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
-        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
+//        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
+        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "mcrk-docker-1");
         ES_INDEX = getenv.getOrDefault("CDRPR_ES_INDEX", "cdraggs");
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
         PG_USER = getenv.getOrDefault("CDRPR_PG_USER", "postgres");
@@ -114,7 +115,8 @@ public class Start {
             System.err.println("IOException: " + e.getMessage());
         }
 
-        MetricsLib.EXPORT_PROMETHEUS_METRICS = ENABLE_PROMETHEUS_METRICS;
+//        MetricsLib.EXPORT_PROMETHEUS_METRICS = ENABLE_PROMETHEUS_METRICS;
+        MetricsLib.EXPORT_PROMETHEUS_METRICS = false;
         MetricsLib.DUMP_TO_FILE_ENABLED = true;
         MetricsLib.DEFAULT_ES_HOST = "elasticvm";
         MetricsLib.DEFAULT_ES_PORT = 9200;

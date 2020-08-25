@@ -160,7 +160,7 @@ public class AggregatedCalls implements Runnable {
             m_subscrGrpCalls.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
             m_voipRxCodec.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
             m_voipTxCodec.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
-            m_voipTxRxCodec.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "");
+            m_voipTxRxCodec.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
         } catch (PMetricException e) {
             e.printStackTrace();
         }

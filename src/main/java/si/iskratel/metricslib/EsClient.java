@@ -36,7 +36,6 @@ public class EsClient {
      * indices, unless you create new EsClient.
      * @param url
      */
-    @Deprecated
     public EsClient(String url) {
         this.url = url;
     }

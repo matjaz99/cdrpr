@@ -103,8 +103,8 @@ public class PMetricRegistry {
      */
     public void resetMetrics() {
         for (PMetric m : metricsMap.values()) {
-            m.clear();
-            m.setTimestamp(0);
+            m.clear();m.setTimestamp(0);
+
         }
     }
 

@@ -91,29 +91,29 @@ public class Test {
 
         callsList.add(new TestCall("Skopje", "Answered", 500));
         callsList.add(new TestCall("Skopje", "Answered", 500));
-        callsList.add(new TestCall("Skopje", "Answered", 500));
-        callsList.add(new TestCall("Skopje", "Busy", 500));
-        callsList.add(new TestCall("Skopje", "Rejected", 500));
-        callsList.add(new TestCall("Ljubljana", "Answered", 500));
-        callsList.add(new TestCall("Ljubljana", "Busy", 0));
-        callsList.add(new TestCall("Ljubljana", "Busy", 0));
-        callsList.add(new TestCall("Ljubljana", "Rejected", 0));
+//        callsList.add(new TestCall("Skopje", "Answered", 500));
+//        callsList.add(new TestCall("Skopje", "Busy", 500));
+//        callsList.add(new TestCall("Skopje", "Rejected", 500));
+//        callsList.add(new TestCall("Ljubljana", "Answered", 500));
+//        callsList.add(new TestCall("Ljubljana", "Busy", 0));
+//        callsList.add(new TestCall("Ljubljana", "Busy", 0));
+//        callsList.add(new TestCall("Ljubljana", "Rejected", 0));
 
         MetricsLib.init(9099);
-        EsClient e = new EsClient("http://mcrk-docker-1:9200/cdraggs/_bulk");
-        EsClient e2 = new EsClient("http://xy:9200/xml/_bulk");
+//        EsClient e = new EsClient("http://mcrk-docker-1:9200/cdraggs/_bulk");
+        EsClient e = new EsClient("mcrk-docker-1", 9200);
 
         PMetric pmon_calls_by_cause = PMetric.build()
                 .setName("pmon_calls_by_cause")
                 .setHelp("Counting calls by cause")
                 .setLabelNames("node", "cause")
-                .register("cdraggs");
+                .register("pmon_cdr_calls_idx");
 
         PMetric pmon_calls_by_duration = PMetric.build()
                 .setName("pmon_calls_by_duration")
                 .setHelp("Total duration of all calls")
                 .setLabelNames("node")
-                .register("cdraggs");
+                .register("pmon_cdr_trunks_idx");
 
         for (TestCall c : callsList) {
             pmon_calls_by_cause.setLabelValues(c.node, c.cause).inc();
@@ -124,7 +124,7 @@ public class Test {
 
 
         }
-        e.sendBulkPost(PMetricRegistry.getRegistry("cdraggs"));
+        e.sendBulkPost(PMetricRegistry.getRegistry("pmon_cdr_calls_idx"));
 
 
         PMetric pmon_xml_calls_by_duration = PMetric.build()

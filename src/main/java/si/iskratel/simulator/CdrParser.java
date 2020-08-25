@@ -3,6 +3,7 @@ package si.iskratel.simulator;
 import org.apache.commons.io.IOUtils;
 import si.iskratel.cdr.manager.BadCdrRecordException;
 import si.iskratel.cdr.parser.*;
+import si.iskratel.metricslib.PMetric;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -11,6 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CdrParser {
+
+    public static PMetric cdr_metric = PMetric.build()
+            .setName("pmon_cdrparser_metric")
+            .setHelp("adfasf")
+            .setLabelNames("status")
+            .register("pmon_internal");
 
     public static List<CdrBean> parse(File f) throws Exception {
 
@@ -34,6 +41,7 @@ public class CdrParser {
             try {
                 CdrBean cdrBean = cbc.parseBinaryCdr(dr.getDataRecordBytes(), null);
                 returnList.add(cdrBean);
+                cdr_metric.setLabelValues("Success").inc();
                 Start.totalCount++;
                 Start.debug(cdrBean.toString());
             } catch (BadCdrRecordException e) {
@@ -41,6 +49,7 @@ public class CdrParser {
                 PpdrBean ppdrBean = cbc.parseBinaryPpdr(dr);
             } catch (Exception e) {
                 e.printStackTrace();
+                cdr_metric.setLabelValues("Fail").inc();
             }
         }
 
