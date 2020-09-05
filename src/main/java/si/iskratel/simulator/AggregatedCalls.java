@@ -225,11 +225,7 @@ public class AggregatedCalls implements Runnable {
 
             PrometheusMetrics.bulkCount.set(m_countByCrc.getTimeSeriesSize());
 
-            try {
-                m_callsInProgress.setLabelValues(Start.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
-            } catch (PMetricException e) {
-                e.printStackTrace();
-            }
+            m_callsInProgress.setLabelValues(Start.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR));
@@ -260,45 +256,41 @@ public class AggregatedCalls implements Runnable {
     private void aggregate(CdrBean cdr) {
 
         // fill metrics
-        try {
-            m_countByCrc.setLabelValues(cdr.getNodeId(), Utils.toCauseString(cdr.getCause()), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc();
-            if (cdr.getCause() == 16)
-                m_durationByTG.setLabelValues(cdr.getNodeId(), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc(cdr.getDuration());
-            m_timeBeforeRing.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrTimeBeforeRinging());
-            m_timeBeforeAns.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrRingingTimeBeforeAnsw());
-            m_bgCalls.setLabelValues(cdr.getNodeId(), cdr.getBgidOrig() + "", cdr.getBgidTerm() + "").inc();
-            m_cgCalls.setLabelValues(cdr.getNodeId(), cdr.getCgidOrig() + "", cdr.getCgidTerm() + "", cdr.getCentrexCallType() + "", cdr.getCtxCall() + "").inc();
-            m_suppServ.setLabelValues(cdr.getNodeId(), cdr.getServId() + "", cdr.getServIdOrig() + "", cdr.getServIdTerm() + "").inc();
-            m_subscrGrpCalls.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
-            m_voipRxCodec.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
-            m_voipTxCodec.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
-            m_voipTxRxCodec.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
+        m_countByCrc.setLabelValues(cdr.getNodeId(), Utils.toCauseString(cdr.getCause()), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc();
+        if (cdr.getCause() == 16)
+            m_durationByTG.setLabelValues(cdr.getNodeId(), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc(cdr.getDuration());
+        m_timeBeforeRing.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrTimeBeforeRinging());
+        m_timeBeforeAns.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrRingingTimeBeforeAnsw());
+        m_bgCalls.setLabelValues(cdr.getNodeId(), cdr.getBgidOrig() + "", cdr.getBgidTerm() + "").inc();
+        m_cgCalls.setLabelValues(cdr.getNodeId(), cdr.getCgidOrig() + "", cdr.getCgidTerm() + "", cdr.getCentrexCallType() + "", cdr.getCtxCall() + "").inc();
+        m_suppServ.setLabelValues(cdr.getNodeId(), cdr.getServId() + "", cdr.getServIdOrig() + "", cdr.getServIdTerm() + "").inc();
+        m_subscrGrpCalls.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
+        m_voipRxCodec.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
+        m_voipTxCodec.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
+        m_voipTxRxCodec.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
 
-            if (cdr.getCause() == 16)
-                m_durationByTG_2.setLabelValues(cdr.getNodeId(), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc(cdr.getDuration());
-            m_timeBeforeRing_2.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrTimeBeforeRinging());
-            m_timeBeforeAns_2.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrRingingTimeBeforeAnsw());
-            m_bgCalls_2.setLabelValues(cdr.getNodeId(), cdr.getBgidOrig() + "", cdr.getBgidTerm() + "").inc();
-            m_cgCalls_2.setLabelValues(cdr.getNodeId(), cdr.getCgidOrig() + "", cdr.getCgidTerm() + "", cdr.getCentrexCallType() + "", cdr.getCtxCall() + "").inc();
-            m_suppServ_2.setLabelValues(cdr.getNodeId(), cdr.getServId() + "", cdr.getServIdOrig() + "", cdr.getServIdTerm() + "").inc();
-            m_subscrGrpCalls_2.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
-            m_voipRxCodec_2.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
-            m_voipTxCodec_2.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
-            m_voipTxRxCodec_2.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
-            if (cdr.getCause() == 16)
-                m_durationByTG_3.setLabelValues(cdr.getNodeId(), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc(cdr.getDuration());
-            m_timeBeforeRing_3.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrTimeBeforeRinging());
-            m_timeBeforeAns_3.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrRingingTimeBeforeAnsw());
-            m_bgCalls_3.setLabelValues(cdr.getNodeId(), cdr.getBgidOrig() + "", cdr.getBgidTerm() + "").inc();
-            m_cgCalls_3.setLabelValues(cdr.getNodeId(), cdr.getCgidOrig() + "", cdr.getCgidTerm() + "", cdr.getCentrexCallType() + "", cdr.getCtxCall() + "").inc();
-            m_suppServ_3.setLabelValues(cdr.getNodeId(), cdr.getServId() + "", cdr.getServIdOrig() + "", cdr.getServIdTerm() + "").inc();
-            m_subscrGrpCalls_3.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
-            m_voipRxCodec_3.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
-            m_voipTxCodec_3.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
-            m_voipTxRxCodec_3.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
-        } catch (PMetricException e) {
-            e.printStackTrace();
-        }
+        if (cdr.getCause() == 16)
+            m_durationByTG_2.setLabelValues(cdr.getNodeId(), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc(cdr.getDuration());
+        m_timeBeforeRing_2.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrTimeBeforeRinging());
+        m_timeBeforeAns_2.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrRingingTimeBeforeAnsw());
+        m_bgCalls_2.setLabelValues(cdr.getNodeId(), cdr.getBgidOrig() + "", cdr.getBgidTerm() + "").inc();
+        m_cgCalls_2.setLabelValues(cdr.getNodeId(), cdr.getCgidOrig() + "", cdr.getCgidTerm() + "", cdr.getCentrexCallType() + "", cdr.getCtxCall() + "").inc();
+        m_suppServ_2.setLabelValues(cdr.getNodeId(), cdr.getServId() + "", cdr.getServIdOrig() + "", cdr.getServIdTerm() + "").inc();
+        m_subscrGrpCalls_2.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
+        m_voipRxCodec_2.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
+        m_voipTxCodec_2.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
+        m_voipTxRxCodec_2.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
+        if (cdr.getCause() == 16)
+            m_durationByTG_3.setLabelValues(cdr.getNodeId(), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc(cdr.getDuration());
+        m_timeBeforeRing_3.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrTimeBeforeRinging());
+        m_timeBeforeAns_3.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrRingingTimeBeforeAnsw());
+        m_bgCalls_3.setLabelValues(cdr.getNodeId(), cdr.getBgidOrig() + "", cdr.getBgidTerm() + "").inc();
+        m_cgCalls_3.setLabelValues(cdr.getNodeId(), cdr.getCgidOrig() + "", cdr.getCgidTerm() + "", cdr.getCentrexCallType() + "", cdr.getCtxCall() + "").inc();
+        m_suppServ_3.setLabelValues(cdr.getNodeId(), cdr.getServId() + "", cdr.getServIdOrig() + "", cdr.getServIdTerm() + "").inc();
+        m_subscrGrpCalls_3.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
+        m_voipRxCodec_3.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
+        m_voipTxCodec_3.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
+        m_voipTxRxCodec_3.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
 
     }
 

@@ -2,7 +2,6 @@ package si.iskratel.simulator;
 
 import si.iskratel.metricslib.EsClient;
 import si.iskratel.metricslib.PMetric;
-import si.iskratel.metricslib.PMetricException;
 
 import java.util.Random;
 
