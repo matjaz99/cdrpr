@@ -40,7 +40,7 @@ public class MetricsLib {
                 throws ServletException, IOException {
             PromExporter.metricslib_hello_requests_total.inc();
 
-            resp.getWriter().println("<h1>MetricsLib v" + METRICSLIB_VERSION + "</h1>");
+            resp.getWriter().println("<h1>Iskratel MetricsLib v" + METRICSLIB_VERSION + "</h1>");
 
             resp.getWriter().println("<h3>Configuration</h3>");
             resp.getWriter().println("<pre>metricslib.client.prometheus.export=" + EXPORT_PROMETHEUS_METRICS + "\n"
