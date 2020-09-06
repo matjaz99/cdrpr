@@ -18,7 +18,7 @@ public class PMetricRegistry {
     private Map<String, Gauge> promMetricsMap = new HashMap<>();
 
     /** Check if index mapping exists in ElasticSearch */
-    private boolean mappingExist = false;
+    private boolean mappingCreated = false;
 
 
     public PMetricRegistry(String name) {
@@ -55,6 +55,14 @@ public class PMetricRegistry {
 
     public List<PMetric> getMetricsList() {
         return new ArrayList<>(metricsMap.values());
+    }
+
+    public boolean isMappingCreated() {
+        return mappingCreated;
+    }
+
+    public void setMappingCreated(boolean mappingCreated) {
+        this.mappingCreated = mappingCreated;
     }
 
     /**

@@ -9,6 +9,9 @@ import java.net.SocketTimeoutException;
 
 public class EsClient {
 
+    public static int esClientCount = 0;
+    private int clientId;
+
     private String url = "http://mcrk-docker-1:9200/cdraggs/_bulk";
     private String host;
     private int port;
@@ -25,6 +28,7 @@ public class EsClient {
      * @param port
      */
     public EsClient(String host, int port) {
+        this.clientId = esClientCount++;
         this.host = host;
         this.port = port;
 //        this.url = "http://" + host + ":" + port + "/" + index + "/_bulk";
@@ -37,20 +41,32 @@ public class EsClient {
      * @param url
      */
     public EsClient(String url) {
+        this.clientId = esClientCount++;
         this.url = url;
     }
 
-    public void setMapping() {
+    public void setMapping(String index) {
 
         String s = "{\n" +
                 "  \"mappings\": {\n" +
                 "    \"properties\": {\n" +
+                "      \"m_name\": {\"type\": \"keyword\"},\n" +
                 "      \"value\": {\"type\": \"double\"},\n" +
-                "    \t\"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n" +
+                "      \"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n" +
                 "    }\n" +
                 "  }\n" +
                 "}";
-        // TODO send PUT request
+
+        System.out.println("INFO: EsClient[" + clientId + "]: sending mapping for index: " + index);
+
+        Request request = new Request.Builder()
+                .url("http://" + host + ":" + port + "/" + index /*+ "/_mapping"*/)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .put(RequestBody.create(s, MEDIA_TYPE_JSON))
+                .build();
+
+        executeHttpRequest(request, "set_mapping");
+
     }
 
 
@@ -71,7 +87,7 @@ public class EsClient {
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .post(RequestBody.create(body, MEDIA_TYPE_JSON))
                 .build();
-        System.out.println("Executing request on url: " + url);
+        System.out.println("INFO: Executing request on url: " + url);
 
         return executeHttpRequest(request, "-");
 
@@ -99,15 +115,20 @@ public class EsClient {
         retryCount = 0;
 
         if (metric.getTimeSeriesSize() == 0) {
-            System.out.println("WARN: Metric " + metric.getName() + " contains no time-series points. It will be ignored.");
+            System.out.println("WARN: EsClient[" + clientId + "]: Metric " + metric.getName() + " contains no time-series points. It will be ignored.");
             return false;
+        }
+
+        if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated()) {
+            setMapping(metric.getParentRegistry());
+            PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
         }
 
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
-        System.out.println("sending metrics: " + metric.getName() + ", size: " + metric.getTimeSeriesSize());
+        System.out.println("INFO: EsClient[" + clientId + "]: sending metrics: " + metric.getName() + ", size: " + metric.getTimeSeriesSize());
 
-        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient", url, "executeHttpRequest").startTimer();
+        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "executeHttpRequest").startTimer();
 
         Request request = new Request.Builder()
                 .url(url)
@@ -122,12 +143,12 @@ public class EsClient {
                 if (success) break;
                 retryCount++;
                 Thread.sleep(1500);
-                System.out.println("EsClient[0]: Retrying to send...");
+                System.out.println("INFO: EsClient[" + clientId + "]: Retrying to send...");
             }
             if (!success) {
-                System.out.println("WARN: EsClient[0]: ...retrying failed!");
+                System.out.println("WARN: EsClient[" + clientId + "]: ...retrying failed!");
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    System.out.println("EsClient[0]: Dumping to file: " + metric.getName());
+                    System.out.println("INFO: EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
                     FileClient.dumpToFile(this, metric);
                     PromExporter.metricslib_dump_to_file_total.labels("EsClient").inc();
                 }
@@ -138,9 +159,8 @@ public class EsClient {
             e.printStackTrace();
         }
 
-
         t.observeDuration();
-        PromExporter.metricslib_bulk_request_time.labels("EsClient", url, "executeHttpRequest").observe(metric.getTimeSeriesSize());
+        PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "executeHttpRequest").observe(metric.getTimeSeriesSize());
 
         metric.setTimestamp(0);
 
@@ -157,36 +177,32 @@ public class EsClient {
 
         try {
 
-            PromExporter.metricslib_attempted_requests_total.labels("EsClient", url).inc();
+            PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", url).inc();
             Response response = httpClient.newCall(request).execute();
             if (!response.isSuccessful()) {
-                System.out.println("EsClient[0]: unexpected code: " + response);
-                PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "" + response.code()).inc();
+                System.out.println("WARN: EsClient[" + clientId + "]: unexpected code: " + response);
+                PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "" + response.code()).inc();
                 response.close();
                 return false;
             }
-            System.out.println("--> EsClient[0]: " + reqId + " POST successfully sent");
+            System.out.println("INFO: EsClient[" + clientId + "]: " + reqId + " " + request.method() + " successfully executed");
             response.close();
             return true;
 
         } catch (SocketTimeoutException e) {
-            System.err.println("SocketTimeoutException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "SocketTimeoutException").inc();
+            System.err.println("ERROR: EsClient[" + clientId + "]: SocketTimeoutException: " + e.getMessage());
+            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "SocketTimeoutException").inc();
         } catch (SocketException e) {
-            System.err.println("SocketException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "SocketException").inc();
+            System.err.println("ERROR: EsClient[" + clientId + "]: SocketException: " + e.getMessage());
+            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "SocketException").inc();
         } catch (Exception e) {
             e.printStackTrace();
-            PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "Exception").inc();
+            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "Exception").inc();
         }
 
         return false;
 
     }
-
-//    public String getIndex() {
-//        return index;
-//    }
 
     public String sendGetIndices() {
         Request request = new Request.Builder()

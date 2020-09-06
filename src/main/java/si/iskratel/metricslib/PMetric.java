@@ -52,7 +52,10 @@ public class PMetric {
     }
 
     public PTimeSeries setLabelValues(String... values) {
-        if (labelNames.length != values.length) throw new PMetricException("Number of label names is different than number of values.");
+        if (labelNames.length != values.length) {
+            System.out.println("Number of label names is different than number of values.");
+            return null;
+        }
         String tsId = "";
         // ID of timeseries is concatenation of all label values
         for (int i = 0; i < values.length; i++) {

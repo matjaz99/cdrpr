@@ -29,8 +29,8 @@ public class MetricsLib {
     public static boolean DUMP_TO_FILE_ENABLED = false;
     /** Interval for uploading dumped files */
     public static int UPLOAD_INTERVAL = 16;
-    public static String DEFAULT_ES_HOST;
-    public static int DEFAULT_ES_PORT;
+    public static String DEFAULT_ES_HOST = "localhost";
+    public static int DEFAULT_ES_PORT = 9200;
     public static FileUploadThread fut;
 
     static class HelloServlet extends HttpServlet {

@@ -29,12 +29,8 @@ public class XmlSimulatorThread extends Thread {
             }
 
             for (int i = 0; i < measurements.length; i++) {
-                try {
-                    xml_metric.setLabelValues(measurements[i], elementTypes[getRandomInRange(0, elementTypes.length - 1)],
-                            "" + getRandomInRange(0, 5), "" + getRandomInRange(1, 3)).set(getRandomInRange(0, 5000));
-                } catch (PMetricException e) {
-                    e.printStackTrace();
-                }
+                xml_metric.setLabelValues(measurements[i], elementTypes[getRandomInRange(0, elementTypes.length - 1)],
+                        "" + getRandomInRange(0, 5), "" + getRandomInRange(1, 3)).set(getRandomInRange(0, 5000));
             }
 
             esClient.sendBulkPost(xml_metric);
