@@ -53,7 +53,7 @@ public class PMetric {
 
     public PTimeSeries setLabelValues(String... values) {
         if (labelNames.length != values.length) {
-            System.out.println("Number of label names is different than number of values.");
+            System.out.println("WARN: Number of label names is different than number of label values.");
             return null;
         }
         String tsId = "";

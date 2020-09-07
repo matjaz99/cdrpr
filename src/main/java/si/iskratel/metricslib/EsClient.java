@@ -45,9 +45,15 @@ public class EsClient {
         this.url = url;
     }
 
-    public void setMapping(String index) {
+    private void createIndex(String index) {
 
         String s = "{\n" +
+                "  \"aliases\": {\n" +
+                "    \"${ALIAS_NAME}\": {}\n" +
+                "  }," +
+                "  \"settings\": {\n" +
+                "    \"number_of_shards\": 1\n" +
+                "  }," +
                 "  \"mappings\": {\n" +
                 "    \"properties\": {\n" +
                 "      \"m_name\": {\"type\": \"keyword\"},\n" +
@@ -56,16 +62,17 @@ public class EsClient {
                 "    }\n" +
                 "  }\n" +
                 "}";
+        s = s.replace("${ALIAS_NAME}", index + "_alias");
 
-        System.out.println("INFO: EsClient[" + clientId + "]: sending mapping for index: " + index);
+        System.out.println("INFO: EsClient[" + clientId + "]: creating index: " + index + " with alias: " + index + "_alias");
 
         Request request = new Request.Builder()
-                .url("http://" + host + ":" + port + "/" + index /*+ "/_mapping"*/)
+                .url("http://" + host + ":" + port + "/" + index)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .put(RequestBody.create(s, MEDIA_TYPE_JSON))
                 .build();
 
-        executeHttpRequest(request, "set_mapping");
+        executeHttpRequest(request, "createIndex");
 
     }
 
@@ -120,37 +127,35 @@ public class EsClient {
         }
 
         if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated()) {
-            setMapping(metric.getParentRegistry());
+            createIndex(metric.getParentRegistry());
             PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
         }
 
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
-
-        System.out.println("INFO: EsClient[" + clientId + "]: sending metrics: " + metric.getName() + ", size: " + metric.getTimeSeriesSize());
 
         Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "executeHttpRequest").startTimer();
 
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric, metric.getParentRegistry()), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric, metric.getParentRegistry() + "_alias"), MEDIA_TYPE_JSON))
                 .build();
 
         try {
 
             while (retryCount < MetricsLib.RETRIES) {
-                success = executeHttpRequest(request, metric.getName());
+                success = executeHttpRequest(request, metric.getName() + "[" + metric.getTimeSeriesSize() + "]");
                 if (success) break;
                 retryCount++;
                 Thread.sleep(1500);
-                System.out.println("INFO: EsClient[" + clientId + "]: Retrying to send...");
+                System.out.println("INFO: EsClient[" + clientId + "]: Retrying to send " + metric.getName());
             }
             if (!success) {
-                System.out.println("WARN: EsClient[" + clientId + "]: ...retrying failed!");
+                System.out.println("WARN: EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
                     System.out.println("INFO: EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
                     FileClient.dumpToFile(this, metric);
-                    PromExporter.metricslib_dump_to_file_total.labels("EsClient").inc();
+                    PromExporter.metricslib_dump_to_file_total.labels("EsClient[" + clientId + "]").inc();
                 }
             }
 
@@ -185,7 +190,7 @@ public class EsClient {
                 response.close();
                 return false;
             }
-            System.out.println("INFO: EsClient[" + clientId + "]: " + reqId + " " + request.method() + " successfully executed");
+            System.out.println("INFO: EsClient[" + clientId + "]: " + reqId + " -> " + request.method() + " successfully executed");
             response.close();
             return true;
 
