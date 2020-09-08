@@ -106,6 +106,9 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setOutTrunkId(130 + getRandomGaussian(5, 3));
         cdrBean.setOutTrunkGroupId(8440 + getRandomGaussian(10, 10));
 
+        String[] ttArray = {"INC", "OUT", "LOCAL", "TRANSIT"};
+        cdrBean.setTrafficType(ttArray[getRandomInRange(0, ttArray.length - 1)]);
+
         cdrBean.setBgidOrig(getRandomInRange(1, 4));
         cdrBean.setBgidTerm(getRandomInRange(10, 15));
         cdrBean.setCgidOrig(getRandomInRange(50, 54));

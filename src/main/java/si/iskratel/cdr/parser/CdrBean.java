@@ -6,6 +6,7 @@ public class CdrBean {
 
   protected String nodeId;
   protected String causeString;
+  protected String trafficType;
 
   protected int id;
   protected long callid = 0;
@@ -106,6 +107,14 @@ public class CdrBean {
 
   public void setCauseString(String causeString) {
     this.causeString = causeString;
+  }
+
+  public String getTrafficType() {
+    return trafficType;
+  }
+
+  public void setTrafficType(String trafficType) {
+    this.trafficType = trafficType;
   }
 
   public void setId(int id) {
