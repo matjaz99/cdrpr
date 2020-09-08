@@ -45,7 +45,10 @@ public class EsClient {
         this.url = url;
     }
 
-    private void createIndex(String index) {
+    private boolean createIndex(String index) {
+
+        boolean success = false;
+        retryCount = 0;
 
         String s = "{\n" +
                 "  \"aliases\": {\n" +
@@ -72,7 +75,25 @@ public class EsClient {
                 .put(RequestBody.create(s, MEDIA_TYPE_JSON))
                 .build();
 
-        executeHttpRequest(request, "createIndex");
+        try {
+
+            while (retryCount < MetricsLib.RETRIES) {
+                success = executeHttpRequest(request, "createIndex");
+                if (success) break;
+                retryCount++;
+                Thread.sleep(1500);
+                System.out.println("INFO: EsClient[" + clientId + "]: Retrying to create index");
+            }
+            if (!success) {
+                System.out.println("WARN: EsClient[" + clientId + "]: ...failed to create index. Metric will be dropped!!!");
+            }
+
+        } catch (Exception e) {
+            success = false;
+            e.printStackTrace();
+        }
+
+        return success;
 
     }
 
@@ -126,6 +147,7 @@ public class EsClient {
             return false;
         }
 
+        // check if index exists in elastic, only on first run
         if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated()) {
             createIndex(metric.getParentRegistry());
             PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
@@ -133,7 +155,7 @@ public class EsClient {
 
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
-        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "executeHttpRequest").startTimer();
+        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "POST").startTimer();
 
         Request request = new Request.Builder()
                 .url(url)
@@ -156,6 +178,9 @@ public class EsClient {
                     System.out.println("INFO: EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
                     FileClient.dumpToFile(this, metric);
                     PromExporter.metricslib_dump_to_file_total.labels("EsClient[" + clientId + "]").inc();
+                } else {
+                    System.out.println("ERROR: EsClient[" + clientId + "]: Dumping is disabled. Metric will be dropped!!!");
+                    PromExporter.metricslib_dropped_metrics_total.labels("EsClient[" + clientId + "]").inc();
                 }
             }
 

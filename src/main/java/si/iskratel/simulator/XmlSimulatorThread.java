@@ -16,10 +16,10 @@ public class XmlSimulatorThread extends Thread {
         EsClient esClient = new EsClient(Start.ES_HOST, Start.ES_PORT);
 
         PMetric xml_metric = PMetric.build()
-                .setName("pmon_xml_measurement")
-                .setHelp("Test XML metric")
-                .setLabelNames("measurement", "elementType", "measInfoId", "jobId")
-                .register("pmon_xml");
+                .setName("pmon_xml_metric")
+                .setHelp("Metric from xml")
+                .setLabelNames("node", "measurement", "elementType", "measInfoId", "jobId")
+                .register("pmon_xml_measurements_idx");
 
         while (true) {
 
@@ -29,8 +29,13 @@ public class XmlSimulatorThread extends Thread {
             }
 
             for (int i = 0; i < measurements.length; i++) {
-                xml_metric.setLabelValues(measurements[i], elementTypes[getRandomInRange(0, elementTypes.length - 1)],
-                        "" + getRandomInRange(0, 5), "" + getRandomInRange(1, 3)).set(getRandomInRange(0, 5000));
+                xml_metric.setLabelValues(
+                        Start.getRandomNodeId(),
+                        measurements[i],
+                        elementTypes[getRandomInRange(0, elementTypes.length - 1)],
+                        "" + getRandomInRange(0, 5),
+                        "" + getRandomInRange(1, 3)
+                ).set(getRandomInRange(0, 5000));
             }
 
             esClient.sendBulkPost(xml_metric);

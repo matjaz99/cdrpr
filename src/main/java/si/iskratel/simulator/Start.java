@@ -62,7 +62,7 @@ public class Start {
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "2"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "8"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
@@ -84,8 +84,8 @@ public class Start {
         SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
 //        ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
-//        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
-        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "mcrk-docker-1");
+        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
+//        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "mcrk-docker-1");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
         ES_INDEX = getenv.getOrDefault("CDRPR_ES_INDEX", "cdraggs");
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
@@ -118,9 +118,8 @@ public class Start {
 //        MetricsLib.EXPORT_PROMETHEUS_METRICS = ENABLE_PROMETHEUS_METRICS;
         MetricsLib.EXPORT_PROMETHEUS_METRICS = false;
         MetricsLib.DUMP_TO_FILE_ENABLED = false;
-//        MetricsLib.DEFAULT_ES_HOST = "elasticvm";
-        MetricsLib.DEFAULT_ES_HOST = "mcrk-docker-1";
-        MetricsLib.DEFAULT_ES_PORT = 9200;
+        MetricsLib.DEFAULT_ES_HOST = ES_HOST;
+        MetricsLib.DEFAULT_ES_PORT = ES_PORT;
         MetricsLib.init();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);

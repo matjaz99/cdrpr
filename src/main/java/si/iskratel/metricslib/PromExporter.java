@@ -37,6 +37,11 @@ public class PromExporter {
             .labelNames("client")
             .help("Number of successful file uploads.")
             .register();
+    public static final Counter metricslib_dropped_metrics_total = Counter.build()
+            .name("metricslib_dropped_metrics_total")
+            .labelNames("client")
+            .help("Number of metrics that were dropped because they could not be written")
+            .register();
     public static final Histogram metricslib_bulk_request_time = Histogram.build()
             .buckets(1, 5, 10, 30, 50)
             .name("metricslib_bulk_request_time")
