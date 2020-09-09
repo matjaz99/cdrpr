@@ -40,8 +40,6 @@ public class Start {
 
     public static long totalCount = 0;
     public static long badCdrRecordExceptionCount = 0;
-    public static long startTime = 0;
-    public static long endTime = 0;
 
     private static LinkedBlockingQueue<CdrBean> queue = new LinkedBlockingQueue();
     public static boolean running = true;
@@ -83,9 +81,8 @@ public class Start {
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
         SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
-//        ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
+        ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
         ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
-//        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "mcrk-docker-1");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
         ES_INDEX = getenv.getOrDefault("CDRPR_ES_INDEX", "cdraggs");
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);

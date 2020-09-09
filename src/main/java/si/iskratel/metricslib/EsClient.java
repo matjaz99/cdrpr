@@ -47,9 +47,6 @@ public class EsClient {
 
     private boolean createIndex(String index) {
 
-        boolean success = false;
-        retryCount = 0;
-
         String s = "{\n" +
                 "  \"aliases\": {\n" +
                 "    \"${ALIAS_NAME}\": {}\n" +
@@ -67,9 +64,18 @@ public class EsClient {
                 "}";
         s = s.replace("${ALIAS_NAME}", index + "_alias");
 
-        System.out.println("INFO: EsClient[" + clientId + "]: creating index: " + index + " with alias: " + index + "_alias");
+        int i = checkIndex(index);
 
-        // TODO: first check if index exist
+        if (i == 200) {
+            System.out.println("INFO:  EsClient[" + clientId + "]: index already exists: " + index);
+            return true;
+        }
+        if (i == 0) {
+            // exception
+            return false;
+        }
+
+        System.out.println("INFO:  EsClient[" + clientId + "]: creating index: " + index + " with alias: " + index + "_alias");
 
         Request request = new Request.Builder()
                 .url("http://" + host + ":" + port + "/" + index)
@@ -77,30 +83,21 @@ public class EsClient {
                 .put(RequestBody.create(s, MEDIA_TYPE_JSON))
                 .build();
 
-        try {
-
-            while (retryCount < MetricsLib.RETRIES) {
-                success = executeHttpRequest(request, "createIndex");
-                if (success) break;
-                retryCount++;
-                Thread.sleep(1500);
-                System.out.println("INFO: EsClient[" + clientId + "]: Retrying to create index");
-            }
-            if (!success) {
-                System.out.println("WARN: EsClient[" + clientId + "]: ...failed to create index. Metric will be dropped!!!");
-            }
-
-        } catch (Exception e) {
-            success = false;
-            e.printStackTrace();
-        }
-
-        return success;
+        if (executeHttpRequest(request, "createIndex").success) return true;
+        System.out.println("WARN: EsClient[" + clientId + "]: ...failed to create index.");
+        return false;
 
     }
 
-    private boolean checkIfIndexExist(String index) {
-        return false;
+    private int checkIndex(String index) {
+
+        Request request = new Request.Builder()
+                .url("http://" + host + ":" + port + "/" + index)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .get()
+                .build();
+
+        return executeHttpRequest(request, "checkIndex").responseCode;
     }
 
 
@@ -121,9 +118,9 @@ public class EsClient {
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .post(RequestBody.create(body, MEDIA_TYPE_JSON))
                 .build();
-        System.out.println("INFO: Executing request on url: " + url);
+        System.out.println("INFO:  Executing request on url: " + url);
 
-        return executeHttpRequest(request, "-");
+        return executeHttpRequest(request, "-").success;
 
     }
 
@@ -156,13 +153,12 @@ public class EsClient {
         // check if index exists in elastic, only on first run
         if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated()) {
             boolean b = createIndex(metric.getParentRegistry());
-//            if (b == true) {
-//                PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
-//            } else {
-//                System.out.println("ERROR: Index cannot be created, metrics may not be inserted without index. Now what? I will drop this metric!!!!!");
-//                return false;
-//            }
-            PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
+            if (b == true) {
+                PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
+            } else {
+                System.out.println("ERROR: Index cannot be created, metrics may not be inserted without index. Now what? I will drop this metric!!!!!");
+                return false;
+            }
         }
 
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
@@ -178,16 +174,16 @@ public class EsClient {
         try {
 
             while (retryCount < MetricsLib.RETRIES) {
-                success = executeHttpRequest(request, metric.getName() + "[" + metric.getTimeSeriesSize() + "]");
+                success = executeHttpRequest(request, metric.getName() + "[" + metric.getTimeSeriesSize() + "]").success;
                 if (success) break;
                 retryCount++;
                 Thread.sleep(1500);
-                System.out.println("INFO: EsClient[" + clientId + "]: Retrying to send " + metric.getName());
+                System.out.println("INFO:  EsClient[" + clientId + "]: Retrying to send " + metric.getName());
             }
             if (!success) {
                 System.out.println("WARN: EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    System.out.println("INFO: EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
+                    System.out.println("INFO:  EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
                     FileClient.dumpToFile(this, metric);
                     PromExporter.metricslib_dump_to_file_total.labels("EsClient[" + clientId + "]").inc();
                 } else {
@@ -215,34 +211,47 @@ public class EsClient {
      * @param request
      * @return success
      */
-    private boolean executeHttpRequest(Request request, String reqId) {
+    private HttpResponse executeHttpRequest(Request request, String reqId) {
+
+        HttpResponse httpResponse = new HttpResponse();
+
+        System.out.println("INFO:  EsClient[" + clientId + "]: >>> sending " + request.method() + " request: " + reqId);
 
         try {
 
             PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", url).inc();
             Response response = httpClient.newCall(request).execute();
             if (!response.isSuccessful()) {
-                System.out.println("WARN: EsClient[" + clientId + "]: unexpected code: " + response);
                 PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "" + response.code()).inc();
-                response.close();
-                return false;
             }
-            System.out.println("INFO: EsClient[" + clientId + "]: " + reqId + " -> " + request.method() + " successfully executed");
+            System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + request.method().toUpperCase() + " " + request.url().toString() + " - " + response.code());
+            httpResponse.success = response.isSuccessful();
+            httpResponse.responseCode = response.code();
+            httpResponse.responseText = response.body().string();
             response.close();
-            return true;
 
         } catch (SocketTimeoutException e) {
-            System.err.println("ERROR: EsClient[" + clientId + "]: SocketTimeoutException: " + e.getMessage());
+            System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketTimeoutException: " + e.getMessage());
             PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "SocketTimeoutException").inc();
+            httpResponse.success = false;
+            httpResponse.responseCode = 0;
+            httpResponse.responseText = "SocketTimeoutException";
         } catch (SocketException e) {
-            System.err.println("ERROR: EsClient[" + clientId + "]: SocketException: " + e.getMessage());
+            System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketException: " + e.getMessage());
             PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "SocketException").inc();
+            httpResponse.success = false;
+            httpResponse.responseCode = 0;
+            httpResponse.responseText = "SocketException";
         } catch (Exception e) {
+            System.err.println("ERROR: EsClient[" + clientId + "]: <<< Exception: " + e.getMessage());
             e.printStackTrace();
             PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "Exception").inc();
+            httpResponse.success = false;
+            httpResponse.responseCode = 0;
+            httpResponse.responseText = "Exception";
         }
 
-        return false;
+        return httpResponse;
 
     }
 
@@ -258,6 +267,18 @@ public class EsClient {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * This class is for internal use only. Http response contains http error code, response body and success flag,
+     * which indicates if something went wrong, like an exception.
+     */
+    private class HttpResponse {
+
+        public boolean success = false;
+        public int responseCode = 0;
+        public String responseText;
+
     }
 
 }
