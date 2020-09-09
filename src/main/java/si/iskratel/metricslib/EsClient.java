@@ -69,6 +69,8 @@ public class EsClient {
 
         System.out.println("INFO: EsClient[" + clientId + "]: creating index: " + index + " with alias: " + index + "_alias");
 
+        // TODO: first check if index exist
+
         Request request = new Request.Builder()
                 .url("http://" + host + ":" + port + "/" + index)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
@@ -95,6 +97,10 @@ public class EsClient {
 
         return success;
 
+    }
+
+    private boolean checkIfIndexExist(String index) {
+        return false;
     }
 
 
@@ -149,7 +155,13 @@ public class EsClient {
 
         // check if index exists in elastic, only on first run
         if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated()) {
-            createIndex(metric.getParentRegistry());
+            boolean b = createIndex(metric.getParentRegistry());
+//            if (b == true) {
+//                PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
+//            } else {
+//                System.out.println("ERROR: Index cannot be created, metrics may not be inserted without index. Now what? I will drop this metric!!!!!");
+//                return false;
+//            }
             PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
         }
 
