@@ -84,7 +84,7 @@ public class EsClient {
                 .build();
 
         if (executeHttpRequest(request, "createIndex").success) return true;
-        System.out.println("WARN: EsClient[" + clientId + "]: ...failed to create index.");
+        System.out.println("WARN:  EsClient[" + clientId + "]: ...failed to create index.");
         return false;
 
     }
@@ -109,7 +109,7 @@ public class EsClient {
     public boolean sendBulkPost(String body) {
 
         if (body == null) {
-            System.out.println("WARN: Body is null. Request will be ignored.");
+            System.out.println("WARN:  Body is null. Request will be ignored.");
             return false;
         }
 
@@ -146,7 +146,7 @@ public class EsClient {
         retryCount = 0;
 
         if (metric.getTimeSeriesSize() == 0) {
-            System.out.println("WARN: EsClient[" + clientId + "]: Metric " + metric.getName() + " contains no time-series points. It will be ignored.");
+            System.out.println("WARN:  EsClient[" + clientId + "]: Metric " + metric.getName() + " contains no time-series points. It will be ignored.");
             return false;
         }
 
@@ -156,7 +156,7 @@ public class EsClient {
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
-                System.out.println("ERROR: Index cannot be created, metrics may not be inserted without index. Now what? I will drop this metric!!!!!");
+                System.out.println("ERROR: Index cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
                 return false;
             }
         }
@@ -181,7 +181,7 @@ public class EsClient {
                 System.out.println("INFO:  EsClient[" + clientId + "]: Retrying to send " + metric.getName());
             }
             if (!success) {
-                System.out.println("WARN: EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
+                System.out.println("WARN:  EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
                     System.out.println("INFO:  EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
                     FileClient.dumpToFile(this, metric);

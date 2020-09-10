@@ -54,17 +54,17 @@ public class AggregatedCalls implements Runnable {
             .setName("pmon_cdr_trunk_calls")
             .setHelp("pmon_cdr_trunk_calls")
             .setLabelNames("node", "cause", "incTG", "outTG")
-            .register(INDEX_CDR_CALL_TIMING);
+            .register(INDEX_CDR_TRUNK);
     public static PMetric m_trunkDuration = PMetric.build()
             .setName("pmon_cdr_trunk_calls_duration")
             .setHelp("pmon_cdr_trunk_calls_duration")
             .setLabelNames("node", "incTG", "outTG")
-            .register(INDEX_CDR_TRUNK);
+            .register(INDEX_CDR_TRUNK_DURATION);
     public static PMetric m_bgCalls = PMetric.build()
             .setName("pmon_cdr_bg_calls")
             .setHelp("BG calls")
             .setLabelNames("node", "bgidOrig", "bgidTerm")
-            .register(INDEX_CDR_TRUNK_DURATION);
+            .register(INDEX_CDR_BG);
     public static PMetric m_cgCalls = PMetric.build()
             .setName("pmon_cdr_cg_calls")
             .setHelp("CG calls")
