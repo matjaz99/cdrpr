@@ -10,6 +10,7 @@ public class AllCallData implements Runnable {
     private int threadId = 0;
     private int sendInterval = Start.SEND_INTERVAL_SEC * 1000;
     private int bulkCount = 0;
+    private String url;
 
     private StringBuilder sb = new StringBuilder();
 
@@ -20,6 +21,7 @@ public class AllCallData implements Runnable {
 
     public AllCallData(int id) {
         this.threadId = id;
+        url = "http://" + Start.ES_HOST + ":" + Start.ES_PORT + "/cdrs/_bulk";
     }
 
 
@@ -83,7 +85,7 @@ public class AllCallData implements Runnable {
     public void sendBulkPost() {
 
         Request request = new Request.Builder()
-                .url(Start.ES_URL)
+                .url(url)
                 .addHeader("User-Agent", "OkHttp Bot")
 //                .addHeader("Content-Type", "application/json")
                 .post(RequestBody.create(sb.toString(), MEDIA_TYPE_JSON))
@@ -96,12 +98,12 @@ public class AllCallData implements Runnable {
     private void executeHttpRequest(Request request) {
         try {
 
-            PromExporter.metricslib_attempted_requests_total.labels("EsClient", Start.ES_URL).inc();
+            PromExporter.metricslib_attempted_requests_total.labels("EsClient", url).inc();
             Response response = httpClient.newCall(request).execute();
             while (!response.isSuccessful()) {
                 System.out.println("EsClient[0]: repeat, unexpected code: " + response);
-                PromExporter.metricslib_failed_requests_total.labels("EsClient", Start.ES_URL, "" + response.code()).inc();
-                PromExporter.metricslib_attempted_requests_total.labels("EsClient", Start.ES_URL).inc();
+                PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "" + response.code()).inc();
+                PromExporter.metricslib_attempted_requests_total.labels("EsClient", url).inc();
                 Thread.sleep(1500);
                 response = httpClient.newCall(request).execute();
             }
@@ -117,7 +119,7 @@ public class AllCallData implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("ElasticPersistenceClient[" + threadId + "]: Recursive call.");
-            PromExporter.metricslib_failed_requests_total.labels("EsClient", Start.ES_URL, "Exception").inc();
+            PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "Exception").inc();
             executeHttpRequest(request);
         }
     }

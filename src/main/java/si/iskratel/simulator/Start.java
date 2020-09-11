@@ -17,10 +17,9 @@ public class Start {
     public static int SEND_INTERVAL_SEC = 60;
     public static int SIMULATOR_NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
-    public static String ES_URL;
     public static String ES_HOST;
     public static int ES_PORT;
-    public static String ES_INDEX;
+    public static boolean ES_AUTO_CREATE_INDEX;
     public static String PG_URL;
     public static String PG_USER;
     public static String PG_PASS;
@@ -37,6 +36,7 @@ public class Start {
     public static int SIMULATOR_BNUM_RANGE = 0;
     public static boolean SIMULATOR_MINIMUM_DATA = false;
     public static boolean ENABLE_PROMETHEUS_METRICS = false;
+    public static boolean ENABLE_DUMP_TO_FILE = false;
 
     public static long totalCount = 0;
     public static long badCdrRecordExceptionCount = 0;
@@ -52,11 +52,6 @@ public class Start {
 
         Runtime.getRuntime().addShutdownHook(new TheShutdownHook());
 
-//        String testUrl = "http://mcrk-docker-1:9200/cdrs/_bulk";
-//        String testUrl = "http://mcrk-docker-1:9200/cdraggs/_bulk";
-//        String testUrl = "http://pgcentos:9200/cdraggs/_bulk";
-        String testUrl = "http://elasticvm:9200/cdraggs/_bulk";
-//        String testUrl = "http://centosvm:9200/cdr_aggs/_bulk";
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
@@ -78,19 +73,19 @@ public class Start {
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
 
-        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "8000"));
+        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "50000"));
         SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
-        ES_URL = getenv.getOrDefault("CDRPR_ES_URL", testUrl);
         ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
-        ES_INDEX = getenv.getOrDefault("CDRPR_ES_INDEX", "cdraggs");
+        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "true"));
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
         PG_USER = getenv.getOrDefault("CDRPR_PG_USER", "postgres");
         PG_PASS = getenv.getOrDefault("CDRPR_PG_PASS", "object00");
         PG_CREATE_TABLES_ON_START = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_PG_CREATE_TABLES_ON_START", "false"));
         EXIT_AT_THE_END = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
         ENABLE_PROMETHEUS_METRICS = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ENABLE_PROMETHEUS_METRICS", "true"));
+        ENABLE_DUMP_TO_FILE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DUMP_TO_FILE", "false"));
 
         try {
             HOSTNAME = InetAddress.getLocalHost().getHostName();
@@ -99,7 +94,8 @@ public class Start {
         System.out.println("HOSTNAME: " + HOSTNAME);
         System.out.println("NUM_OF_THREADS: " + SIMULATOR_NUM_OF_THREADS);
         System.out.println("BULK_SIZE: " + BULK_SIZE);
-        System.out.println("ES_URL: " + ES_URL);
+        System.out.println("ES_HOST: " + ES_HOST);
+        System.out.println("ES_PORT: " + ES_PORT);
         System.out.println("PG_URL: " + PG_URL);
         System.out.println("SIMULATOR_NODEID: " + SIMULATOR_NODEID);
         System.out.println("SIMULATOR_DELAY: " + SIMULATOR_CALL_DELAY);
@@ -112,9 +108,8 @@ public class Start {
             System.err.println("IOException: " + e.getMessage());
         }
 
-//        MetricsLib.EXPORT_PROMETHEUS_METRICS = ENABLE_PROMETHEUS_METRICS;
-        MetricsLib.EXPORT_PROMETHEUS_METRICS = false;
-        MetricsLib.DUMP_TO_FILE_ENABLED = false;
+        MetricsLib.EXPORT_PROMETHEUS_METRICS = ENABLE_PROMETHEUS_METRICS;
+        MetricsLib.DUMP_TO_FILE_ENABLED = ENABLE_DUMP_TO_FILE;
         MetricsLib.DEFAULT_ES_HOST = ES_HOST;
         MetricsLib.DEFAULT_ES_PORT = ES_PORT;
         MetricsLib.init();
