@@ -70,7 +70,7 @@ services:
     ports:
       - 9090:9090
     networks:
-      - monitoring_network
+      - net
     command:
       - '--config.file=/prometheus_config/prometheus.yml'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
