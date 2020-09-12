@@ -122,6 +122,8 @@ public class AggregatedCalls implements Runnable {
             PMetricRegistry.getRegistry(INDEX_CDR_SUPP_SERVICE).resetMetrics();
             PMetricRegistry.getRegistry(INDEX_CDR_SG).resetMetrics();
             PMetricRegistry.getRegistry(INDEX_CDR_VOIP).resetMetrics();
+            PMetricRegistry.getRegistry(INDEX_CDR_TRUNK).resetMetrics();
+            PMetricRegistry.getRegistry(INDEX_CDR_TRUNK_DURATION).resetMetrics();
 
             while (Start.getQueueSize() > 0) {
 
@@ -161,6 +163,8 @@ public class AggregatedCalls implements Runnable {
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_SUPP_SERVICE));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_SG));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_VOIP));
+                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_TRUNK));
+                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_TRUNK_DURATION));
             }
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {

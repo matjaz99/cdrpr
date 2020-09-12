@@ -15,26 +15,15 @@ services:
       - 9099:9099
     environment:
       - CDRPR_THREADS=32
-      - CDRPR_BULK_SIZE=7000
       - CDRPR_SEND_INTERVAL_SEC=900
       - CDRPR_DEBUG_ENABLED=false
-      - CDRPR_ES_URL=http://172.29.6.6:9200/cdraggs/_bulk
-      #- CDRPR_ES_URL=http://192.168.1.170:9200/cdraggs/_bulk
+      - CDRPR_ES_HOST=172.29.6.6
+      - CDRPR_ES_PORT=9200
       - CDRPR_EXIT=false
+      - CDRPR_ES_AUTO_CREATE_INDEX=false
       - CDRPR_SIMULATOR_MODE=STORE_AGGREGATED_CALLS
       - CDRPR_SIMULATOR_STORAGE_TYPE=ELASTICSEARCH
-      - CDRPR_SIMULATOR_NODEID=Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris
       - CDRPR_SIMULATOR_DELAY=30
-      - CDRPR_SIMULATOR_CALL_REASON=0
-      - CDRPR_SIMULATOR_ANUM_START=10000000
-      - CDRPR_SIMULATOR_ANUM_RANGE=9999999
-      - CDRPR_SIMULATOR_BNUM_START=80000000
-      - CDRPR_SIMULATOR_BNUM_RANGE=9999999
-      - CDRPR_SIMULATOR_MINIMUM_DATA=true
-      - CDRPR_PG_URL=jdbc:postgresql://172.29.6.6:5432/cdraggs
-      - CDRPR_PG_USER=postgres
-      - CDRPR_PG_PASS=object00
-      - CDRPR_PG_CREATE_TABLES_ON_START=true
       - CDRPR_ENABLE_PROMETHEUS_METRICS=true
     deploy:
       mode: replicated

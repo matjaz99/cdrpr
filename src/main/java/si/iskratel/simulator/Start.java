@@ -55,8 +55,8 @@ public class Start {
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "8"));
-        SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "20"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "32"));
+        SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "10"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
         SIMULATOR_ANUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_RANGE", "99999999"));
@@ -112,6 +112,7 @@ public class Start {
         MetricsLib.DUMP_TO_FILE_ENABLED = ENABLE_DUMP_TO_FILE;
         MetricsLib.DEFAULT_ES_HOST = ES_HOST;
         MetricsLib.DEFAULT_ES_PORT = ES_PORT;
+        MetricsLib.ES_AUTO_CREATE_INDEX = ES_AUTO_CREATE_INDEX;
         MetricsLib.init();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
@@ -150,7 +151,6 @@ public class Start {
     }
 
     public static synchronized void addCdr(CdrBean cdrBean) {
-        if (queue.size() > 200 * BULK_SIZE) queue.poll();
         queue.add(cdrBean);
     }
 

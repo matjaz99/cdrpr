@@ -47,7 +47,7 @@ public class FileUploadThread extends Thread {
             }
 
             try {
-                Thread.sleep(MetricsLib.UPLOAD_INTERVAL * 1000);
+                Thread.sleep(MetricsLib.UPLOAD_INTERVAL_SECONDS * 1000);
             } catch (InterruptedException e) {
             }
 

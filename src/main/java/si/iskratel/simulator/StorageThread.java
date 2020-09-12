@@ -52,7 +52,7 @@ public class StorageThread extends Thread {
                 }
             }
             PrometheusMetrics.callsInProgress.set(callsInProgress.size());
-            System.out.println("StorageThread: callsInProgress.size=" + callsInProgress.size());
+            System.out.println("calls in progress: " + callsInProgress.size());
         } catch (Exception e) {
             System.err.println("StorageThread: Error cleaning table callsInProgress");
         }

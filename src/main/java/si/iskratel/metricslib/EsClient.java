@@ -174,7 +174,7 @@ public class EsClient {
         try {
 
             while (retryCount < MetricsLib.RETRIES) {
-                success = executeHttpRequest(request, metric.getName() + "[" + metric.getTimeSeriesSize() + "]").success;
+                success = executeHttpRequest(request, "metric " + metric.getName() + " [size=" + metric.getTimeSeriesSize() + "]").success;
                 if (success) break;
                 retryCount++;
                 Thread.sleep(1500);
@@ -215,7 +215,7 @@ public class EsClient {
 
         HttpResponse httpResponse = new HttpResponse();
 
-        System.out.println("INFO:  EsClient[" + clientId + "]: >>> sending " + request.method() + " request: " + reqId);
+        System.out.println("INFO:  EsClient[" + clientId + "]: >>> sending: " + reqId);
 
         try {
 
