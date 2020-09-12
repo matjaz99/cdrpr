@@ -10,6 +10,8 @@ volumes:
     driver: local
   pgadmin_storage:
     driver: local
+  prometheus_storage:
+    driver: local
 
 configs:
   prometheus_config:
