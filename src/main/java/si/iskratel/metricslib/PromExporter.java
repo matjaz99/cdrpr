@@ -12,6 +12,10 @@ public class PromExporter {
             .name("metricslib_hello_requests_total")
             .help("Number of hello requests served.")
             .register();
+    public static final Gauge metricslib_up_time = Gauge.build()
+            .name("metricslib_up_time")
+            .help("Time when started")
+            .register();
     public static final Gauge metricslib_metrics_total = Gauge.build()
             .name("metricslib_metrics_total")
             .labelNames("registry", "metric")
@@ -45,7 +49,7 @@ public class PromExporter {
     public static final Histogram metricslib_bulk_request_time = Histogram.build()
             .buckets(1, 5, 10, 30, 50)
             .name("metricslib_bulk_request_time")
-            .labelNames("client", "endpoint", "method")
+            .labelNames("client", "endpoint", "method", "metric")
             .help("my first histogram")
             .register();
 

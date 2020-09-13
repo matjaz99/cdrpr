@@ -39,6 +39,7 @@ public class PMetricRegistry {
         PMetricRegistry r = registriesMap.getOrDefault(registryName, new PMetricRegistry(registryName));
         r.metricsMap.put(metric.getName(), metric);
         registriesMap.put(registryName, r);
+        System.out.println("INFO:  PMetricRegistry: new metric " + metric.getName() + " registered in registry: " + registryName);
     }
 
     public static List<PMetricRegistry> getRegistries() {
@@ -74,7 +75,7 @@ public class PMetricRegistry {
         PMetricRegistry r = registriesMap.get(registryName);
         for (PMetric m : r.metricsMap.values()) {
             if (m.getTimeSeriesSize() == 0) {
-                System.out.println("WARN: Metric " + m.getName() + " contains no time-series points. It will be ignored.");
+                System.out.println("WARN:  PMetricRegistry: Metric " + m.getName() + " cannot be scraped, it contains no time-series points.");
                 continue;
             }
             Gauge g = promMetricsMap.get(m.getName());

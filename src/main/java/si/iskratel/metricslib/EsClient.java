@@ -103,7 +103,7 @@ public class EsClient {
 
     /**
      * Send any custom JSON body to ElasticSearch.
-     * @param body
+     * @param body custom body in json format
      * @return success
      */
     public boolean sendBulkPost(String body) {
@@ -126,7 +126,7 @@ public class EsClient {
 
     /**
      * Send all metrics in given registry to ElasticSearch.
-     * @param registry
+     * @param registry registry name
      */
     public void sendBulkPost(PMetricRegistry registry) {
         for (PMetric m : registry.getMetricsList()) {
@@ -137,7 +137,7 @@ public class EsClient {
     /**
      * Send given metric to ElasticSearch. Method will retry to send the metric until max retries (configurable) is reached.
      * Then it will dump the metrics to file in 'dump' directory.
-     * @param metric
+     * @param metric metric object
      * @return true if successful, false if it fails
      */
     public boolean sendBulkPost(PMetric metric) {
@@ -151,24 +151,26 @@ public class EsClient {
         }
 
         // check if index exists in elastic, only on first run
-        if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated()) {
+        if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated() && MetricsLib.ES_AUTO_CREATE_INDEX) {
             boolean b = createIndex(metric.getParentRegistry());
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
-                System.out.println("ERROR: Index cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
+                System.out.println("ERROR: EsClient[" + clientId + "]: Index cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
                 return false;
             }
         }
 
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
-        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "POST").startTimer();
+        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "Bulk POST", metric.getName()).startTimer();
 
+
+        String indexName = MetricsLib.ES_AUTO_CREATE_INDEX ? metric.getParentRegistry() + "_alias" : metric.getParentRegistry();
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric, metric.getParentRegistry() + "_alias"), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric, indexName), MEDIA_TYPE_JSON))
                 .build();
 
         try {
@@ -198,7 +200,7 @@ public class EsClient {
         }
 
         t.observeDuration();
-        PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "executeHttpRequest").observe(metric.getTimeSeriesSize());
+        PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "Bulk POST", metric.getName()).observe(metric.getTimeSeriesSize());
 
         metric.setTimestamp(0);
 

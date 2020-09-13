@@ -144,6 +144,8 @@ public class MetricsLib {
         server.start();
         //server.join();
 
+        PromExporter.metricslib_up_time.set(System.currentTimeMillis());
+
         if (MetricsLib.DUMP_TO_FILE_ENABLED && DEFAULT_ES_HOST != null) {
             MetricsLib.fut = new FileUploadThread(new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT));
             MetricsLib.fut.start();

@@ -20,7 +20,7 @@ public class CdrSimulatorThread extends Thread {
     public void run() {
 
         try {
-            Thread.sleep(getRandomGaussian(Start.SIMULATOR_CALL_DELAY, Start.SIMULATOR_CALL_DELAY / 2));
+            Thread.sleep(getRandomInRange(10, 100));
         } catch (InterruptedException e) {
         }
 
@@ -108,9 +108,9 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setEndTime(d2);
 
         cdrBean.setInTrunkId(220 + getRandomGaussian(10, 6));
-        cdrBean.setInTrunkGroupId(9940 + getRandomGaussian(10, 10));
+        cdrBean.setInTrunkGroupId(9940 + getRandomGaussian(10, 11));
         cdrBean.setOutTrunkId(130 + getRandomGaussian(5, 5));
-        cdrBean.setOutTrunkGroupId(8440 + getRandomGaussian(10, 12));
+        cdrBean.setOutTrunkGroupId(8440 + getRandomGaussian(10, 13));
 
         String[] ttArray = {"INC", "OUT", "LOCAL", "TRANSIT"};
         cdrBean.setTrafficType(ttArray[getRandomInRange(0, ttArray.length - 1)]);
