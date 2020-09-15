@@ -83,17 +83,17 @@ public class AggregatedCalls implements Runnable {
     public static PMetric m_voipRxCodec = PMetric.build()
             .setName("pmon_voip_rx_codec")
             .setHelp("VOIP rx codec")
-            .setLabelNames("codec")
+            .setLabelNames("node", "codec")
             .register(INDEX_CDR_VOIP);
     public static PMetric m_voipTxCodec = PMetric.build()
             .setName("pmon_voip_tx_codec")
             .setHelp("VOIP tx codec")
-            .setLabelNames("codec")
+            .setLabelNames("node", "codec")
             .register(INDEX_CDR_VOIP);
     public static PMetric m_voipTxRxCodec = PMetric.build()
             .setName("pmon_voip_tx_rx_codec")
             .setHelp("VOIP tx/rx codec")
-            .setLabelNames("rxCodec", "txCodec")
+            .setLabelNames("node", "rxCodec", "txCodec")
             .register(INDEX_CDR_VOIP);
 
     public AggregatedCalls(int id) {
@@ -142,9 +142,9 @@ public class AggregatedCalls implements Runnable {
                     m_cgCalls.setLabelValues(cdr.getNodeId(), cdr.getCgidOrig() + "", cdr.getCgidTerm() + "", cdr.getCentrexCallType() + "", cdr.getCtxCall() + "").inc();
                     m_suppServ.setLabelValues(cdr.getNodeId(), cdr.getServId() + "", cdr.getServIdOrig() + "", cdr.getServIdTerm() + "").inc();
                     m_subscrGrpCalls.setLabelValues(cdr.getNodeId(), cdr.getCallingSubscriberGroup() + "", cdr.getCalledSubscriberGroup() + "").inc();
-                    m_voipRxCodec.setLabelValues(cdr.getVoipRxCodecType() + "").inc();
-                    m_voipTxCodec.setLabelValues(cdr.getVoipTxCodecType() + "").inc();
-                    m_voipTxRxCodec.setLabelValues(cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
+                    m_voipRxCodec.setLabelValues(cdr.getNodeId(), cdr.getVoipRxCodecType() + "").inc();
+                    m_voipTxCodec.setLabelValues(cdr.getNodeId(), cdr.getVoipTxCodecType() + "").inc();
+                    m_voipTxRxCodec.setLabelValues(cdr.getNodeId(), cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
                 } else {
                     break;
                 }
