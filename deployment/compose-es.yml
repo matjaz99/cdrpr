@@ -16,7 +16,6 @@ configs:
 services:
 
   es01:
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
     image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
     environment:
       - discovery.type=single-node
@@ -37,11 +36,10 @@ services:
       replicas: 1
       placement:
         constraints:
-          #- node.hostname == mcrk-docker-1
-          - node.hostname == $(hostname)
+          - node.hostname == mcrk-docker-1
+          #- node.hostname == $(hostname)
 
   kibana:
-    #image: docker.elastic.co/kibana/kibana:7.4.2
     image: docker.elastic.co/kibana/kibana:7.8.0
     networks:
       - net
