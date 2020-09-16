@@ -6,6 +6,7 @@ import okhttp3.*;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 public class EsClient {
 
@@ -232,6 +233,12 @@ public class EsClient {
             httpResponse.responseText = response.body().string();
             response.close();
 
+        } catch (UnknownHostException e) {
+            System.err.println("ERROR: EsClient[" + clientId + "]: <<< UnknownHostException: " + e.getMessage());
+            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "UnknownHostException").inc();
+            httpResponse.success = false;
+            httpResponse.responseCode = 0;
+            httpResponse.responseText = "UnknownHostException";
         } catch (SocketTimeoutException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketTimeoutException: " + e.getMessage());
             PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "SocketTimeoutException").inc();
@@ -265,10 +272,10 @@ public class EsClient {
         try {
             response = httpClient.newCall(request).execute();
             return response.body().string();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            return e.getMessage();
         }
-        return null;
     }
 
     /**

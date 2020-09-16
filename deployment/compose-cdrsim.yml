@@ -15,6 +15,7 @@ services:
       - 9099:9099
     environment:
       - CDRPR_THREADS=32
+      - CDRPR_SIMULATOR_DELAY=30
       - CDRPR_SEND_INTERVAL_SEC=900
       - CDRPR_DEBUG_ENABLED=false
       - CDRPR_ES_HOST=172.29.6.6
@@ -23,7 +24,6 @@ services:
       - CDRPR_ES_AUTO_CREATE_INDEX=false
       - CDRPR_SIMULATOR_MODE=STORE_AGGREGATED_CALLS
       - CDRPR_SIMULATOR_STORAGE_TYPE=ELASTICSEARCH
-      - CDRPR_SIMULATOR_DELAY=30
       - CDRPR_ENABLE_PROMETHEUS_METRICS=true
     deploy:
       mode: replicated
