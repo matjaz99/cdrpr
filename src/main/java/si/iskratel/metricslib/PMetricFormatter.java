@@ -8,7 +8,7 @@ public class PMetricFormatter {
         for (PTimeSeries ts : metric.getTimeSeries()) {
             sb.append("{ \"index\":{ \"_index\":\"").append(index).append("\"} }\n");
             sb.append("{");
-            sb.append("\"m_name\":\"").append(metric.getName()).append("\",");
+            sb.append("\"metric_name\":\"").append(metric.getName()).append("\",");
             for (int i = 0; i < metric.getLabelNames().length; i++) {
                 sb.append("\"").append(metric.getLabelNames()[i]).append("\":\"").append(ts.getLabelValues()[i]).append("\",");
             }
