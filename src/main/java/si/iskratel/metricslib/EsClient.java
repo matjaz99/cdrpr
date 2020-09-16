@@ -46,18 +46,23 @@ public class EsClient {
         this.url = url;
     }
 
+    /**
+     * Create index.
+     * @param index
+     * @return success
+     */
     private boolean createIndex(String index) {
 
         String s = "{\n" +
                 "  \"aliases\": {\n" +
                 "    \"${ALIAS_NAME}\": {}\n" +
                 "  }," +
-                "  \"settings\": {\n" +
-                "    \"number_of_shards\": 1\n" +
-                "  }," +
+//                "  \"settings\": {\n" +
+//                "    \"number_of_shards\": 1\n" +
+//                "  }," +
                 "  \"mappings\": {\n" +
                 "    \"properties\": {\n" +
-                "      \"m_name\": {\"type\": \"keyword\"},\n" +
+                "      \"metric_name\": {\"type\": \"keyword\"},\n" +
                 "      \"value\": {\"type\": \"double\"},\n" +
                 "      \"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n" +
                 "    }\n" +
@@ -90,6 +95,12 @@ public class EsClient {
 
     }
 
+    /**
+     * Check if index exists. If yes, then 200 is returned. If no, then 404 is returned. If 0 is returned,
+     * it means exception occurred when sending request and no http error code was retrieved.
+     * @param index
+     * @return http error code
+     */
     private int checkIndex(String index) {
 
         Request request = new Request.Builder()
@@ -210,9 +221,11 @@ public class EsClient {
     }
 
     /**
-     * This method actually sends the HTTP request and does all the error handling.
+     * This method actually sends the HTTP request and does all the error handling. Method returns object HttpResponse,
+     * which contains a boolean flag if request was successfully executed, a returned http error code and the response
+     * itself. Error code 0 means exception, otherwise real http error code is returned (200-OK, 404-Not found...).
      * @param request
-     * @return success
+     * @return http response
      */
     private HttpResponse executeHttpRequest(Request request, String reqId) {
 
@@ -264,6 +277,10 @@ public class EsClient {
 
     }
 
+    /**
+     * Show all indices in ElasticSearch.
+     * @return response
+     */
     public String sendGetIndices() {
         Request request = new Request.Builder()
                 .url("http://" + host + ":" + port + "/_cat/indices?v")

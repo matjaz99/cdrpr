@@ -93,12 +93,14 @@ public class Start {
 
         System.out.println("HOSTNAME: " + HOSTNAME);
         System.out.println("NUM_OF_THREADS: " + SIMULATOR_NUM_OF_THREADS);
+        System.out.println("SIMULATOR_DELAY: " + SIMULATOR_CALL_DELAY);
+        System.out.println("SEND_INTERVAL_SEC: " + SEND_INTERVAL_SEC);
         System.out.println("BULK_SIZE: " + BULK_SIZE);
         System.out.println("ES_HOST: " + ES_HOST);
         System.out.println("ES_PORT: " + ES_PORT);
+        System.out.println("ES_AUTO_CREATE_INDEX: " + ES_AUTO_CREATE_INDEX);
         System.out.println("PG_URL: " + PG_URL);
         System.out.println("SIMULATOR_NODEID: " + SIMULATOR_NODEID);
-        System.out.println("SIMULATOR_DELAY: " + SIMULATOR_CALL_DELAY);
         System.out.println("SIMULATOR_CALL_REASON: " + SIMULATOR_CALL_REASON);
 
         releaseCausesProps = new Properties();
