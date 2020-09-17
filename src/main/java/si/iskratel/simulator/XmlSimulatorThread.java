@@ -44,6 +44,12 @@ public class XmlSimulatorThread extends Thread {
 
     }
 
+    /**
+     * Return random number in range (inclusive)
+     * @param min
+     * @param max
+     * @return
+     */
     private int getRandomInRange(int min, int max) {
         // min and max are inclusive
         Random r = new Random();
