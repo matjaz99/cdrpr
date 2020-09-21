@@ -119,11 +119,11 @@ public class PMetric {
 
     @Override
     public String toString() {
-        return "m_name=" + name + ", help=" + help + ", labels=" + Arrays.toString(labelNames);
+        return "metric_name=" + name + ", help=" + help + ", labels=" + Arrays.toString(labelNames);
     }
 
     public String toStringDetail() {
-        String s = "PMetric[" + "timestamp=" + timestamp + ", m_name=" + name + ", timeseries=\n";
+        String s = "PMetric[" + "timestamp=" + timestamp + ", metric_name=" + name + ", timeseries=\n";
         for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
             s += "\t" + entry.getValue().toString() + "\n";
         }
