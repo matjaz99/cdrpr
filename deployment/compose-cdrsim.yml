@@ -6,7 +6,6 @@ networks:
     attachable: true
 
 services:
-
   cdrsim:
     image: matjaz99/cdrpr:2.0
     networks:
