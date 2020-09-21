@@ -2,6 +2,7 @@ package si.iskratel.simulator;
 
 import si.iskratel.metricslib.EsClient;
 import si.iskratel.metricslib.PMetric;
+import si.iskratel.metricslib.PMetricRegistry;
 
 import java.util.Random;
 
@@ -27,6 +28,8 @@ public class XmlSimulatorThread extends Thread {
                 Thread.sleep(5 * 60 * 1000);
             } catch (InterruptedException e) {
             }
+
+            PMetricRegistry.getRegistry("pmon_xml_measurements_idx").resetMetrics();
 
             for (int i = 0; i < measurements.length; i++) {
                 xml_metric.setLabelValues(
