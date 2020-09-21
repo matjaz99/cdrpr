@@ -17,6 +17,7 @@ public class Start {
     public static int SEND_INTERVAL_SEC = 60;
     public static int SIMULATOR_NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
+    public static int RETRIES = 3;
     public static String ES_HOST;
     public static int ES_PORT;
     public static boolean ES_AUTO_CREATE_INDEX;
@@ -76,6 +77,7 @@ public class Start {
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "50000"));
         SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
+        RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "3"));
         ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "false"));
@@ -115,6 +117,7 @@ public class Start {
         MetricsLib.DEFAULT_ES_HOST = ES_HOST;
         MetricsLib.DEFAULT_ES_PORT = ES_PORT;
         MetricsLib.ES_AUTO_CREATE_INDEX = ES_AUTO_CREATE_INDEX;
+        MetricsLib.RETRIES = RETRIES;
         MetricsLib.init();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
