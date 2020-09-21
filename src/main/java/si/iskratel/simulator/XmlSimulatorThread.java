@@ -22,6 +22,12 @@ public class XmlSimulatorThread extends Thread {
                 .setLabelNames("node", "measurement", "elementType", "measInfoId", "jobId")
                 .register("pmon_xml_measurements_idx");
 
+        PMetric inventory_metric = PMetric.build()
+                .setName("pmon_cdr_inventory")
+                .setHelp("Inventory of PAM-CDR module")
+                .setLabelNames("nodeId", "nodeName", "productCategory", "subType", "status")
+                .register("pmon_inventory_idx");
+
         while (true) {
 
             try {
@@ -42,6 +48,12 @@ public class XmlSimulatorThread extends Thread {
             }
 
             esClient.sendBulkPost(xml_metric);
+
+            String[] nodes = Start.SIMULATOR_NODEID.split(",");
+            for (int i = 0; i < nodes.length; i++) {
+                inventory_metric.setLabelValues("1048084", nodes[i], elementTypes[getRandomInRange(0, elementTypes.length - 1)], "HSS", "No CDR files found").set(1);
+            }
+            esClient.sendBulkPost(inventory_metric);
 
         }
 
