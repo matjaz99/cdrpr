@@ -46,12 +46,11 @@ public class XmlSimulatorThread extends Thread {
                         "" + getRandomInRange(1, 3)
                 ).set(getRandomInRange(0, 5000));
             }
-
             esClient.sendBulkPost(xml_metric);
 
             String[] nodes = Start.SIMULATOR_NODEID.split(",");
             for (int i = 0; i < nodes.length; i++) {
-                inventory_metric.setLabelValues("1048084", nodes[i], elementTypes[getRandomInRange(0, elementTypes.length - 1)], "HSS", "No CDR files found").set(1);
+                inventory_metric.setLabelValues("1048084", nodes[i], elementTypes[getRandomInRange(0, elementTypes.length - 1)], "subType", "No CDR files found").set(1);
             }
             esClient.sendBulkPost(inventory_metric);
 
