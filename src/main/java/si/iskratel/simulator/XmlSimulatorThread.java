@@ -50,7 +50,7 @@ public class XmlSimulatorThread extends Thread {
 
             String[] nodes = Start.SIMULATOR_NODEID.split(",");
             for (int i = 0; i < nodes.length; i++) {
-                inventory_metric.setLabelValues("10480" + i, nodes[i], "elementType", "subType", "No CDR files found").set(1);
+                inventory_metric.setLabelValues("" + nodes[i].hashCode(), nodes[i], "elementType", "subType", "No CDR files found").set(1);
             }
             esClient.sendBulkPost(inventory_metric);
 
