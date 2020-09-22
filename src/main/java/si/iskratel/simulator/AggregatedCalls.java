@@ -26,72 +26,72 @@ public class AggregatedCalls implements Runnable {
     public static PMetric pmon_cdr_calls_by_cause = PMetric.build()
             .setName("pmon_cdr_calls_by_cause")
             .setHelp("Count calls by release cause")
-            .setLabelNames("node", "cause", "trafficType")
+            .setLabelNames("nodeName", "cause", "trafficType")
             .register(INDEX_CDR_CALLS);
     public static PMetric pmon_cdr_calls_by_duration = PMetric.build()
             .setName("pmon_cdr_call_duration")
             .setHelp("Total duration of answered calls on node")
-            .setLabelNames("node")
+            .setLabelNames("nodeName")
             .register(INDEX_CDR_CALL_DURATION);
     public static PMetric m_callsInProgress = PMetric.build()
             .setName("pmon_cdr_calls_in_progress")
             .setHelp("Current number of calls in progress (answered only)")
-            .setLabelNames("node")
+            .setLabelNames("nodeName")
             .register(INDEX_CDR_CALLS);
     public static PMetric m_timeBeforeRing = PMetric.build()
             .setName("pmon_cdr_time_before_ringing")
             .setHelp("pmon_cdr_time_before_ringing")
-            .setLabelNames("node")
+            .setLabelNames("nodeName")
             .register(INDEX_CDR_CALL_DURATION);
     public static PMetric m_timeBeforeAns = PMetric.build()
             .setName("pmon_cdr_time_before_answer")
             .setHelp("pmon_cdr_time_before_answer")
-            .setLabelNames("node")
+            .setLabelNames("nodeName")
             .register(INDEX_CDR_CALL_DURATION);
     public static PMetric m_trunkCalls = PMetric.build()
             .setName("pmon_cdr_calls_by_trunkgroup")
             .setHelp("pmon_cdr_trunk_calls")
-            .setLabelNames("node", "cause", "incTG", "outTG")
+            .setLabelNames("nodeName", "cause", "incTG", "outTG")
             .register(INDEX_CDR_TRUNK);
     public static PMetric m_trunkDuration = PMetric.build()
             .setName("pmon_cdr_duration_by_trunkgroup")
             .setHelp("pmon_cdr_trunk_calls_duration")
-            .setLabelNames("node", "incTG", "outTG")
+            .setLabelNames("nodeName", "incTG", "outTG")
             .register(INDEX_CDR_TRUNK_DURATION);
     public static PMetric m_bgCalls = PMetric.build()
             .setName("pmon_cdr_bg_calls")
             .setHelp("BG calls")
-            .setLabelNames("node", "bgidOrig", "bgidTerm")
+            .setLabelNames("nodeName", "bgidOrig", "bgidTerm")
             .register(INDEX_CDR_BG);
     public static PMetric m_cgCalls = PMetric.build()
             .setName("pmon_cdr_cg_calls")
             .setHelp("CG calls")
-            .setLabelNames("node", "cgidOrig", "cgidTerm", "centrexCallType", "ctxCall")
+            .setLabelNames("nodeName", "cgidOrig", "cgidTerm", "centrexCallType", "ctxCall")
             .register(INDEX_CDR_BG);
     public static PMetric m_suppServ = PMetric.build()
             .setName("pmon_cdr_supplementary_service")
             .setHelp("Supplementary services")
-            .setLabelNames("node", "servId", "servIdOrig", "servIdTerm")
+            .setLabelNames("nodeName", "servId", "servIdOrig", "servIdTerm")
             .register(INDEX_CDR_SUPP_SERVICE);
     public static PMetric m_subscrGrpCalls = PMetric.build()
             .setName("pmon_cdr_subscriber_group_calls")
             .setHelp("Subscriber group calls")
-            .setLabelNames("node", "callingSubscrGroup", "calledSubscrGroup")
+            .setLabelNames("nodeName", "callingSubscrGroup", "calledSubscrGroup")
             .register(INDEX_CDR_SG);
     public static PMetric m_voipRxCodec = PMetric.build()
             .setName("pmon_voip_rx_codec")
             .setHelp("VOIP rx codec")
-            .setLabelNames("node", "codec")
+            .setLabelNames("nodeName", "codec")
             .register(INDEX_CDR_VOIP);
     public static PMetric m_voipTxCodec = PMetric.build()
             .setName("pmon_voip_tx_codec")
             .setHelp("VOIP tx codec")
-            .setLabelNames("node", "codec")
+            .setLabelNames("nodeName", "codec")
             .register(INDEX_CDR_VOIP);
     public static PMetric m_voipTxRxCodec = PMetric.build()
             .setName("pmon_voip_tx_rx_codec")
             .setHelp("VOIP tx/rx codec")
-            .setLabelNames("node", "rxCodec", "txCodec")
+            .setLabelNames("nodeName", "rxCodec", "txCodec")
             .register(INDEX_CDR_VOIP);
 
     public AggregatedCalls(int id) {

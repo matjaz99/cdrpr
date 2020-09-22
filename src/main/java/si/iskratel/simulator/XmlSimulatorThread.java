@@ -19,7 +19,7 @@ public class XmlSimulatorThread extends Thread {
         PMetric xml_metric = PMetric.build()
                 .setName("pmon_xml_metric")
                 .setHelp("Metric from xml")
-                .setLabelNames("node", "measurement", "elementType", "measInfoId", "jobId")
+                .setLabelNames("nodeName", "measurement", "elementType", "measInfoId", "jobId")
                 .register("pmon_xml_measurements_idx");
 
         PMetric inventory_metric = PMetric.build()
