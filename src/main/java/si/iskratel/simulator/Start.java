@@ -80,7 +80,7 @@ public class Start {
         RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "3"));
         ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
-        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "false"));
+        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "true"));
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
         PG_USER = getenv.getOrDefault("CDRPR_PG_USER", "postgres");
         PG_PASS = getenv.getOrDefault("CDRPR_PG_PASS", "object00");
