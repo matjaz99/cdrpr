@@ -40,7 +40,7 @@ public class MetricsLib {
         @Override
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
                 throws ServletException, IOException {
-            PromExporter.metricslib_hello_requests_total.inc();
+            PromExporter.metricslib_servlet_requests_total.labels("/hello").inc();
 
             resp.getWriter().println("<h1>Iskratel MetricsLib v" + METRICSLIB_VERSION + "</h1>");
 
@@ -76,6 +76,8 @@ public class MetricsLib {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
                 throws ServletException, IOException {
 
+            PromExporter.metricslib_servlet_requests_total.labels("/indices").inc();
+
             EsClient e = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT);
             String s = e.sendGetIndices();
 
@@ -90,6 +92,8 @@ public class MetricsLib {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+            PromExporter.metricslib_servlet_requests_total.labels("/metrics").inc();
 
             for (PMetricRegistry reg : PMetricRegistry.getRegistries()) {
                 for (PMetric m : reg.getMetricsList()) {

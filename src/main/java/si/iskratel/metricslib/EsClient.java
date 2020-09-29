@@ -48,27 +48,12 @@ public class EsClient {
 
     /**
      * Create index.
-     * @param index
+     * @param metric
      * @return success
      */
-    private boolean createIndex(String index) {
+    private boolean createIndex(PMetric metric) {
 
-        String s = "{\n" +
-                "  \"aliases\": {\n" +
-                "    \"${ALIAS_NAME}\": {}\n" +
-                "  }," +
-//                "  \"settings\": {\n" +
-//                "    \"number_of_shards\": 1\n" +
-//                "  }," +
-                "  \"mappings\": {\n" +
-                "    \"properties\": {\n" +
-                "      \"metric_name\": {\"type\": \"keyword\"},\n" +
-                "      \"value\": {\"type\": \"double\"},\n" +
-                "      \"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n" +
-                "    }\n" +
-                "  }\n" +
-                "}";
-        s = s.replace("${ALIAS_NAME}", index + "_alias");
+        String index = metric.getParentRegistry();
 
         int i = checkIndex(index);
 
@@ -86,7 +71,7 @@ public class EsClient {
         Request request = new Request.Builder()
                 .url("http://" + host + ":" + port + "/" + index)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .put(RequestBody.create(s, MEDIA_TYPE_JSON))
+                .put(RequestBody.create(PMetricFormatter.toEsIndexMappingJsonString(metric), MEDIA_TYPE_JSON))
                 .build();
 
         if (executeHttpRequest(request, "createIndex").success) return true;
@@ -162,9 +147,9 @@ public class EsClient {
             return false;
         }
 
-        // check if index exists in elastic, only on first run
+        // check if index exists in elastic
         if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated() && MetricsLib.ES_AUTO_CREATE_INDEX) {
-            boolean b = createIndex(metric.getParentRegistry());
+            boolean b = createIndex(metric);
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
@@ -173,16 +158,15 @@ public class EsClient {
             }
         }
 
+        // set timestamp if it is not set already
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
-        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "Bulk POST", metric.getName()).startTimer();
+        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "POST", metric.getName()).startTimer();
 
-
-        String indexName = MetricsLib.ES_AUTO_CREATE_INDEX ? metric.getParentRegistry() + "_alias" : metric.getParentRegistry();
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric, indexName), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric), MEDIA_TYPE_JSON))
                 .build();
 
         try {
@@ -212,8 +196,9 @@ public class EsClient {
         }
 
         t.observeDuration();
-        PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "Bulk POST", metric.getName()).observe(metric.getTimeSeriesSize());
+        PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "POST", metric.getName()).observe(metric.getTimeSeriesSize());
 
+        // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be usd when metric will be sent
         metric.setTimestamp(0);
 
         return success;

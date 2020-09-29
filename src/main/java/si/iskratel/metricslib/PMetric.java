@@ -13,6 +13,7 @@ public class PMetric {
     private Double value;
     // the name of registry that this metric belongs to
     private String parentRegistry;
+    private Double[] buckets;
 
     public static PMetric build() {
         PMetric m = new PMetric();
@@ -25,8 +26,18 @@ public class PMetric {
     }
 
     public String getHelp() {
-        if (help == null) return "Help missing";
+//        if (help == null) return "Help missing";
+        if (help == null) throw new PMetricException("Help missing");
         return help;
+    }
+
+    public PMetric setBuckets(Double... buckets) {
+//        Double[] numbers = new Double[buckets.length];
+//        for(int i = 0;i < buckets.length;i++) {
+//            numbers[i] = Double.parseDouble(buckets[i]);
+//        }
+        this.buckets = buckets;
+        return this;
     }
 
     public PMetric setName(String name) {
@@ -54,7 +65,8 @@ public class PMetric {
     public PTimeSeries setLabelValues(String... values) {
         if (labelNames.length != values.length) {
             System.out.println("WARN: Number of label names is different than number of label values.");
-            return null;
+//            return null;
+            throw new PMetricException("Number of label names is different than number of label values");
         }
         String tsId = "";
         // ID of timeseries is concatenation of all label values

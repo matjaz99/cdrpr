@@ -2,11 +2,14 @@ package si.iskratel.metricslib;
 
 public class PMetricFormatter {
 
-    public static String toEsNdJsonString(PMetric metric, String index) {
+    public static String toEsNdJsonString(PMetric metric) {
+
+        String indexName = MetricsLib.ES_AUTO_CREATE_INDEX ? metric.getParentRegistry() + "_alias" : metric.getParentRegistry();
+
         StringBuilder sb = new StringBuilder();
 
         for (PTimeSeries ts : metric.getTimeSeries()) {
-            sb.append("{ \"index\":{ \"_index\":\"").append(index).append("\"} }\n");
+            sb.append("{ \"index\":{ \"_index\":\"").append(indexName).append("\"} }\n");
             sb.append("{");
             sb.append("\"metric_name\":\"").append(metric.getName()).append("\",");
             for (int i = 0; i < metric.getLabelNames().length; i++) {
@@ -18,6 +21,30 @@ public class PMetricFormatter {
         }
 
         return sb.toString();
+    }
+
+    public static String toEsIndexMappingJsonString(PMetric metric) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{\n");
+        sb.append("  \"aliases\": {\n");
+        sb.append("    \"${ALIAS_NAME}\": {}\n");
+        sb.append("  },");
+//      sb.append(  "  \"settings\": {\n");
+//      sb.append(  "    \"number_of_shards\": 1\n");
+//      sb.append(  "  },");
+        sb.append("  \"mappings\": {\n");
+        sb.append("    \"properties\": {\n");
+        sb.append("      \"metric_name\": {\"type\": \"keyword\"},\n");
+        // TODO add mapping for all labels in metric?
+        sb.append("      \"value\": {\"type\": \"double\"},\n");
+        sb.append("      \"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n");
+        sb.append("    }\n");
+        sb.append("  }\n");
+        sb.append("}");
+
+        return sb.toString().replace("${ALIAS_NAME}", metric.getParentRegistry() + "_alias");
     }
 
     public static String toPgCreateTableString(PMetric metric) {
