@@ -16,8 +16,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 5,
-  "iteration": 1601714062218,
+  "id": 7,
+  "iteration": 1601748141642,
   "links": [],
   "panels": [
     {
@@ -26,6 +26,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -51,9 +58,10 @@
       "linewidth": 2,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.2.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -113,11 +121,22 @@
       }
     },
     {
-      "aliasColors": {},
+      "aliasColors": {
+        "Failed": "red",
+        "SocketException": "red"
+      },
       "bars": true,
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "decimals": 0,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -131,27 +150,28 @@
       "legend": {
         "alignAsTable": true,
         "avg": false,
-        "current": true,
+        "current": false,
         "max": false,
         "min": false,
         "rightSide": true,
         "show": true,
-        "total": false,
+        "total": true,
         "values": true
       },
       "lines": false,
       "linewidth": 2,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.2.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": true,
+      "stack": false,
       "steppedLine": false,
       "targets": [
         {
@@ -159,13 +179,19 @@
           "interval": "",
           "legendFormat": "{{endpoint}}",
           "refId": "A"
+        },
+        {
+          "expr": "-1 * sum(irate(metricslib_failed_requests_total{instance=\"$node\",error!=\"null\"}[5m])) * 15",
+          "interval": "",
+          "legendFormat": "Failed",
+          "refId": "B"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Client attempted requests",
+      "title": "Client requests",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -214,6 +240,13 @@
       "dashes": false,
       "datasource": "Prometheus",
       "decimals": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -239,9 +272,10 @@
       "linewidth": 2,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.2.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -278,7 +312,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:155",
-          "decimals": null,
+          "decimals": 0,
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -302,27 +336,31 @@
       }
     },
     {
-      "aliasColors": {
-        "SocketException": "red",
-        "SocketTimeoutException": "orange"
-      },
-      "bars": true,
+      "aliasColors": {},
+      "bars": false,
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 4,
+        "h": 13,
         "w": 12,
         "x": 0,
         "y": 13
       },
       "hiddenSeries": false,
-      "id": 9,
+      "id": 6,
       "legend": {
         "alignAsTable": true,
-        "avg": false,
+        "avg": true,
         "current": true,
         "max": false,
         "min": false,
@@ -331,25 +369,26 @@
         "total": false,
         "values": true
       },
-      "lines": false,
+      "lines": true,
       "linewidth": 2,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.2.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": true,
+      "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(metricslib_failed_requests_total{instance=\"$node\"}[5m])) by (error) * 15",
+          "expr": "sum(rate(metricslib_http_request_time_sum{instance=\"$node\"}[5m])) by (metric) / sum(rate(metricslib_http_request_time_count{instance=\"$node\"}[5m])) by (metric)",
           "interval": "",
-          "legendFormat": "{{error}}",
+          "legendFormat": "{{metric}}",
           "refId": "A"
         }
       ],
@@ -357,7 +396,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Client failed requests",
+      "title": "Bulk insert time (avg over last 5 min)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -374,7 +413,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:155",
-          "format": "short",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -398,46 +437,57 @@
     },
     {
       "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 30
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 4,
         "w": 4,
         "x": 12,
         "y": 13
       },
-      "id": 5,
+      "id": 19,
       "options": {
-        "fieldOptions": {
+        "orientation": "auto",
+        "reduceOptions": {
           "calcs": [
             "last"
           ],
-          "defaults": {
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            }
-          },
-          "overrides": [],
+          "fields": "",
           "values": false
         },
-        "orientation": "auto",
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "6.7.1",
+      "pluginVersion": "7.2.0",
       "targets": [
         {
-          "expr": "sum(metricslib_failed_requests_total{instance=\"$node\"}) / sum(metricslib_attempted_requests_total{instance=\"$node\"})",
-          "instant": true,
+          "expr": "(sum(metricslib_attempted_requests_total{instance=\"$node\"}) - sum(metricslib_failed_requests_total{instance=\"$node\"})) / sum(metricslib_attempted_requests_total{instance=\"$node\"})",
+          "instant": false,
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -445,7 +495,7 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Fail rate",
+      "title": "Success rate",
       "type": "gauge"
     },
     {
@@ -458,6 +508,12 @@
         "#d44a3a"
       ],
       "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "dateTimeFromNow",
       "gauge": {
         "maxValue": 100,
@@ -539,21 +595,45 @@
     },
     {
       "cacheTimeout": null,
-      "colorBackground": true,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "#56A64B",
-        "#d44a3a"
-      ],
       "datasource": "Prometheus",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [
+            {
+              "$$hashKey": "object:542",
+              "id": 0,
+              "op": "=",
+              "text": "N/A",
+              "type": 1,
+              "value": "null"
+            }
+          ],
+          "nullValueMode": "connected",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#299c46",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.1
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 0.7
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 4,
@@ -564,159 +644,35 @@
       "id": 13,
       "interval": null,
       "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "$$hashKey": "object:539",
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "$$hashKey": "object:540",
-          "name": "range to text",
-          "value": 2
-        }
-      ],
       "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "pluginVersion": "6.7.1",
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false,
-        "ymax": null,
-        "ymin": null
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
       },
-      "tableColumn": "",
+      "pluginVersion": "7.2.0",
       "targets": [
         {
-          "expr": "sum(irate(metricslib_failed_requests_total{instance=\"$node\"}[5m])) / sum(irate(metricslib_attempted_requests_total{instance=\"$node\"}[5m]))",
-          "instant": false,
+          "expr": "sum(rate(metricslib_failed_requests_total{instance=\"$node\"}[1m])) / sum(rate(metricslib_attempted_requests_total{instance=\"$node\"}[1m]))",
+          "instant": true,
           "interval": "",
           "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "0,1",
       "timeFrom": null,
       "timeShift": null,
       "title": "Status",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "$$hashKey": "object:542",
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Prometheus",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 17
-      },
-      "hiddenSeries": false,
-      "id": 6,
-      "legend": {
-        "alignAsTable": true,
-        "avg": false,
-        "current": true,
-        "max": false,
-        "min": false,
-        "rightSide": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 2,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sum(rate(metricslib_bulk_request_time_sum{instance=\"$node\"}[5m])) by (metric) / sum(rate(metricslib_bulk_request_time_count{instance=\"$node\"}[5m])) by (metric)",
-          "interval": "",
-          "legendFormat": "{{metric}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Average method time",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:155",
-          "format": "ms",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:156",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "type": "stat"
     },
     {
       "aliasColors": {},
@@ -727,6 +683,12 @@
         "threshold": ""
       },
       "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fontSize": "80%",
       "format": "none",
       "gridPos": {
@@ -767,7 +729,15 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "decimals": 1,
       "description": "You might have an SLA to serve 95% of requests within 100ms. In that case, configure a histogram to have a bucket with an upper limit of 0.3 seconds. You can then directly express the relative amount of requests served within 300ms and easily alert if the value drops below 0.95.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -795,9 +765,10 @@
       "linewidth": 1,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.2.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -807,7 +778,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(metricslib_bulk_request_time_bucket{le=\"10.0\"}[5m])) by (metric) / sum(rate(metricslib_bulk_request_time_count[5m])) by (metric)",
+          "expr": "sum(rate(metricslib_http_request_time_bucket{instance=\"$node\",le=\"0.1\"}[5m])) by (metric) / sum(rate(metricslib_http_request_time_count{instance=\"$node\"}[5m])) by (metric)",
           "interval": "",
           "legendFormat": "{{metric}}",
           "refId": "A"
@@ -817,7 +788,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Percentage of request durations below 10s",
+      "title": "Percentage of request durations below 100ms",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -833,6 +804,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:462",
           "format": "percentunit",
           "label": null,
           "logBase": 1,
@@ -841,6 +813,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:463",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -855,11 +828,21 @@
       }
     },
     {
-      "aliasColors": {},
-      "bars": false,
+      "aliasColors": {
+        "Dumps": "red",
+        "Uploads": "blue"
+      },
+      "bars": true,
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -881,13 +864,14 @@
         "total": false,
         "values": true
       },
-      "lines": true,
+      "lines": false,
       "linewidth": 2,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.2.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -897,15 +881,15 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(metricslib_dump_to_file_total{instance=\"$node\"}[5m])) by (client) * 15",
+          "expr": "sum(rate(metricslib_dump_to_file_total{instance=\"$node\"}[5m])) * 15",
           "interval": "",
-          "legendFormat": "{{client}}",
+          "legendFormat": "Dumps",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(metricslib_dump_files_uploads_total{instance=\"$node\"}[5m])) by (client) * -15",
+          "expr": "sum(rate(metricslib_dump_files_uploads_total{instance=\"$node\"}[5m])) * -15",
           "interval": "",
-          "legendFormat": "{{client}}",
+          "legendFormat": "Uploads",
           "refId": "B"
         }
       ],
@@ -959,6 +943,13 @@
       "dashes": false,
       "datasource": "Prometheus",
       "description": "This time, you do not want to display the percentage of requests served within 300ms, but instead the 95th percentile, i.e. the request duration within which you have served 95% of requests. To do that, you can either configure a summary with a 0.95-quantile and (for example) a 5-minute decay time, or you configure a histogram with a few buckets around the 300ms mark",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -986,9 +977,10 @@
       "linewidth": 1,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.2.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -998,19 +990,19 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum(rate(metricslib_bulk_request_time_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.5, sum(rate(metricslib_http_request_time_bucket{instance=\"$node\"}[5m])) by (le))",
           "interval": "",
           "legendFormat": "50%",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.75, sum(rate(metricslib_bulk_request_time_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.75, sum(rate(metricslib_http_request_time_bucket{instance=\"$node\"}[5m])) by (le))",
           "interval": "",
           "legendFormat": "75%",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(metricslib_bulk_request_time_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(metricslib_http_request_time_bucket{instance=\"$node\"}[5m])) by (le))",
           "interval": "",
           "legendFormat": "95%",
           "refId": "C"
@@ -1036,6 +1028,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:540",
           "format": "s",
           "label": null,
           "logBase": 1,
@@ -1044,6 +1037,256 @@
           "show": true
         },
         {
+          "$$hashKey": "object:541",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "id": 18,
+      "options": {
+        "displayMode": "basic",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.2.0",
+      "targets": [
+        {
+          "expr": "sum(metricslib_http_request_time_bucket{instance=\"$node\"}) by (le)",
+          "format": "heatmap",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{le}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Request duration histogram",
+      "type": "bargauge"
+    },
+    {
+      "cards": {
+        "cardPadding": null,
+        "cardRound": null
+      },
+      "color": {
+        "cardColor": "#b4ff00",
+        "colorScale": "sqrt",
+        "colorScheme": "interpolateTurbo",
+        "exponent": 0.5,
+        "min": null,
+        "mode": "spectrum"
+      },
+      "dataFormat": "tsbuckets",
+      "datasource": "Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 39
+      },
+      "heatmap": {},
+      "hideZeroBuckets": false,
+      "highlightCards": true,
+      "id": 21,
+      "legend": {
+        "show": true
+      },
+      "pluginVersion": "7.2.0",
+      "reverseYBuckets": false,
+      "targets": [
+        {
+          "expr": "sum(increase(metricslib_http_request_time_bucket{instance=\"$node\",le!=\"+Inf\"}[5m])) by (le)",
+          "format": "heatmap",
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{le}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Distribution of request durations",
+      "tooltip": {
+        "show": true,
+        "showHistogram": true
+      },
+      "type": "heatmap",
+      "xAxis": {
+        "show": true
+      },
+      "xBucketNumber": null,
+      "xBucketSize": null,
+      "yAxis": {
+        "decimals": 0,
+        "format": "s",
+        "logBase": 1,
+        "max": null,
+        "min": null,
+        "show": true,
+        "splitFactor": null
+      },
+      "yBucketBound": "middle",
+      "yBucketNumber": null,
+      "yBucketSize": null
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 39
+      },
+      "hiddenSeries": false,
+      "id": 20,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.0",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(metricslib_http_request_time_bucket{instance=\"$node\",le!=\"+Inf\"}) by (le)",
+          "format": "heatmap",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "<{{le}} s",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Request by duration",
+      "tooltip": {
+        "shared": false,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "series",
+        "name": null,
+        "show": true,
+        "values": [
+          "total"
+        ]
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:922",
+          "format": "short",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:923",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -1059,7 +1302,7 @@
     }
   ],
   "refresh": "30s",
-  "schemaVersion": 22,
+  "schemaVersion": 26,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -1067,6 +1310,7 @@
       {
         "allValue": null,
         "current": {
+          "selected": false,
           "text": "192.168.0.18:9099",
           "value": "192.168.0.18:9099"
         },
@@ -1074,7 +1318,6 @@
         "definition": "label_values(metricslib_servlet_requests_total, instance)",
         "hide": 0,
         "includeAll": false,
-        "index": -1,
         "label": "Node",
         "multi": false,
         "name": "node",
@@ -1093,7 +1336,7 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
@@ -1113,8 +1356,5 @@
   "timezone": "",
   "title": "MetricsLib Internals",
   "uid": "JjgejGOGz",
-  "variables": {
-    "list": []
-  },
-  "version": 25
+  "version": 27
 }

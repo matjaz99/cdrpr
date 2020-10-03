@@ -3,7 +3,6 @@ package si.iskratel.metricslib;
 import io.prometheus.client.Histogram;
 import okhttp3.*;
 
-import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -34,6 +33,9 @@ public class EsClient {
         this.port = port;
 //        this.url = "http://" + host + ":" + port + "/" + index + "/_bulk";
         this.url = "http://" + host + ":" + port + "/_bulk";
+        // just initialize metrics with value 0
+        PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", url);
+        PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "null");
     }
 
     /**
@@ -44,6 +46,9 @@ public class EsClient {
     public EsClient(String url) {
         this.clientId = esClientCount++;
         this.url = url;
+        // just initialize metrics with value 0
+        PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", url);
+        PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "null");
     }
 
     /**
@@ -161,7 +166,7 @@ public class EsClient {
         // set timestamp if it is not set already
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
-        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "POST", metric.getName()).startTimer();
+        Histogram.Timer t = PromExporter.metricslib_http_request_time.labels("EsClient[" + clientId + "]", url, "POST", metric.getName()).startTimer();
 
         Request request = new Request.Builder()
                 .url(url)
@@ -195,8 +200,8 @@ public class EsClient {
             e.printStackTrace();
         }
 
-        t.observeDuration();
-        PromExporter.metricslib_bulk_request_time.labels("EsClient[" + clientId + "]", url, "POST", metric.getName()).observe(metric.getTimeSeriesSize());
+        double dur = t.observeDuration();
+        PromExporter.metricslib_http_request_time.labels("EsClient[" + clientId + "]", url, "POST", metric.getName()).observe(dur);
 
         // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be usd when metric will be sent
         metric.setTimestamp(0);
@@ -215,21 +220,20 @@ public class EsClient {
     private HttpResponse executeHttpRequest(Request request, String reqId) {
 
         HttpResponse httpResponse = new HttpResponse();
-        long startTime = 0;
-        long endTime = 0;
+        long startTime = System.currentTimeMillis();
+        long duration = 0;
 
         System.out.println("INFO:  EsClient[" + clientId + "]: >>> sending: " + reqId);
 
         try {
 
-            startTime = System.currentTimeMillis();
             PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", url).inc();
             Response response = httpClient.newCall(request).execute();
             if (!response.isSuccessful()) {
                 PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "" + response.code()).inc();
             }
-            endTime = System.currentTimeMillis();
-            System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + request.method().toUpperCase() + " " + request.url().toString() + " - " + response.code() + " - [took=" + (endTime - startTime) + "ms]");
+            duration = System.currentTimeMillis() - startTime;
+            System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + request.method().toUpperCase() + " " + request.url().toString() + " - " + response.code() + " - [took " + duration + "ms]");
             httpResponse.success = response.isSuccessful();
             httpResponse.responseCode = response.code();
             httpResponse.responseText = response.body().string();

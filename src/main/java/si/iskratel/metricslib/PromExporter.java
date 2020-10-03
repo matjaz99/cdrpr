@@ -47,9 +47,9 @@ public class PromExporter {
             .labelNames("client")
             .help("Number of metrics that were dropped because they could not be written")
             .register();
-    public static final Histogram metricslib_bulk_request_time = Histogram.build()
-            .buckets(1, 5, 10, 30, 50)
-            .name("metricslib_bulk_request_time")
+    public static final Histogram metricslib_http_request_time = Histogram.build()
+            .buckets(0.05, 0.1, 0.3, 0.5, 1.0, 3.0, 5.0)
+            .name("metricslib_http_request_time")
             .labelNames("client", "endpoint", "method", "metric")
             .help("my first histogram")
             .register();

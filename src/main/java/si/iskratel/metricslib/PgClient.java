@@ -38,7 +38,7 @@ public class PgClient {
 
         if (pMetric.getTimestamp() == 0) pMetric.setTimestamp(System.currentTimeMillis());
 
-        Histogram.Timer t = PromExporter.metricslib_bulk_request_time.labels("PgClient", url, "sendBulk").startTimer();
+        Histogram.Timer t = PromExporter.metricslib_http_request_time.labels("PgClient", url, "sendBulk").startTimer();
 
         String INSERT_SQL = PMetricFormatter.toPgInsertMetricString(pMetric);
         System.out.println(INSERT_SQL);
@@ -72,7 +72,7 @@ public class PgClient {
         }
 
         t.observeDuration();
-        PromExporter.metricslib_bulk_request_time.labels("PgClient", url, "sendBulk").observe(pMetric.getTimeSeriesSize());
+        PromExporter.metricslib_http_request_time.labels("PgClient", url, "sendBulk").observe(pMetric.getTimeSeriesSize());
     }
 
     private void printBatchUpdateException(BatchUpdateException b) {
