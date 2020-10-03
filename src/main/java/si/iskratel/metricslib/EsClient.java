@@ -215,17 +215,21 @@ public class EsClient {
     private HttpResponse executeHttpRequest(Request request, String reqId) {
 
         HttpResponse httpResponse = new HttpResponse();
+        long startTime = 0;
+        long endTime = 0;
 
         System.out.println("INFO:  EsClient[" + clientId + "]: >>> sending: " + reqId);
 
         try {
 
+            startTime = System.currentTimeMillis();
             PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", url).inc();
             Response response = httpClient.newCall(request).execute();
             if (!response.isSuccessful()) {
                 PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "" + response.code()).inc();
             }
-            System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + request.method().toUpperCase() + " " + request.url().toString() + " - " + response.code());
+            endTime = System.currentTimeMillis();
+            System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + request.method().toUpperCase() + " " + request.url().toString() + " - " + response.code() + " - [took=" + (endTime - startTime) + "ms]");
             httpResponse.success = response.isSuccessful();
             httpResponse.responseCode = response.code();
             httpResponse.responseText = response.body().string();

@@ -58,13 +58,13 @@ services:
       replicas: 1
 
   grafana:
-    image: grafana/grafana:6.7.1
+    image: grafana/grafana:7.2.0
     networks:
       - net
     ports:
       - 3000:3000
     environment:
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,corpglory-progresslist-panel,camptocamp-prometheus-alertmanager-datasource,michaeldmoore-multistat-panel,briangann-gauge-panel,flant-statusmap-panel,jdbranham-diagram-panel,natel-discrete-panel,natel-plotly-panel
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,corpglory-progresslist-panel,michaeldmoore-multistat-panel,briangann-gauge-panel,flant-statusmap-panel,jdbranham-diagram-panel,natel-discrete-panel,natel-plotly-panel
     volumes:
       - grafana_storage:/var/lib/grafana
     deploy:
