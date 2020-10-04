@@ -31,15 +31,6 @@ public class PMetric {
         return help;
     }
 
-    public PMetric setBuckets(Double... buckets) {
-//        Double[] numbers = new Double[buckets.length];
-//        for(int i = 0;i < buckets.length;i++) {
-//            numbers[i] = Double.parseDouble(buckets[i]);
-//        }
-        this.buckets = buckets;
-        return this;
-    }
-
     public PMetric setName(String name) {
         this.name = name;
         return this;
@@ -103,6 +94,19 @@ public class PMetric {
     public void inc(double d) {
         if (value == null) value = 0.0;
         value += d;
+    }
+
+    public PMetric setBuckets(Double... buckets) {
+//        Double[] numbers = new Double[buckets.length];
+//        for(int i = 0;i < buckets.length;i++) {
+//            numbers[i] = Double.parseDouble(buckets[i]);
+//        }
+        this.buckets = buckets;
+        return this;
+    }
+
+    public void observe(double value) {
+
     }
 
     public PMetric register() {

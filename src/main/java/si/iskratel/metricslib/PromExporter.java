@@ -51,7 +51,7 @@ public class PromExporter {
             .buckets(0.05, 0.1, 0.3, 0.5, 1.0, 3.0, 5.0)
             .name("metricslib_http_request_time")
             .labelNames("client", "endpoint", "method", "metric")
-            .help("my first histogram")
+            .help("Http request-response time")
             .register();
 
 }
