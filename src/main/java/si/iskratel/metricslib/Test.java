@@ -1,5 +1,7 @@
 package si.iskratel.metricslib;
 
+import io.prometheus.client.Gauge;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,6 +137,24 @@ public class Test {
 
         PMetricRegistry.getRegistry("pmon_xml").resetMetrics();
         pmon_xml_calls_by_duration.setLabelValues("ime noda").set(123); // set value from xml metric
+
+
+
+        // Varianta 1 - ES + prometheus
+        PMetric pam_cdr_ftp_downloaded_files_count = PMetric.build()
+                .setName("pam_cdr_ftp_downloaded_files_count")
+                .setHelp("Total duration of all calls")
+                .setLabelNames("nodeName")
+                .register("pam_cdr_internal_metrics");
+        e.sendBulkPost(pam_cdr_ftp_downloaded_files_count); // optional: insert metrics into ES
+
+        // Varianta 2 - only prometheus
+        Gauge gauge = Gauge.build()
+                .name("pam_cdr_ftp_downloaded_files_count")
+                .help("asdjkfhaksjf asdf as")
+                .labelNames("nodeName")
+                .register();
+
 
 
     }
