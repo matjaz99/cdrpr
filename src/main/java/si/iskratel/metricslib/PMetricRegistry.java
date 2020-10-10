@@ -39,7 +39,7 @@ public class PMetricRegistry {
         PMetricRegistry r = registriesMap.getOrDefault(registryName, new PMetricRegistry(registryName));
         r.metricsMap.put(metric.getName(), metric);
         registriesMap.put(registryName, r);
-        System.out.println("INFO:  PMetricRegistry: new metric " + metric.getName() + " registered in registry: " + registryName);
+        System.out.println("INFO:  PMetricRegistry: new metric " + metric.getName() + " registered in: " + registryName);
     }
 
     public static List<PMetricRegistry> getRegistries() {

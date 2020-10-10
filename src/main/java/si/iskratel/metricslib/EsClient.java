@@ -191,7 +191,7 @@ public class EsClient {
                     PromExporter.metricslib_dump_to_file_total.labels("EsClient[" + clientId + "]").inc();
                 } else {
                     System.out.println("ERROR: EsClient[" + clientId + "]: Dumping is disabled. Metric will be dropped!!!");
-                    PromExporter.metricslib_dropped_metrics_total.labels("EsClient[" + clientId + "]").inc();
+                    PromExporter.metricslib_dropped_metrics_total.labels("EsClient[" + clientId + "]").inc(metric.getTimeSeriesSize());
                 }
             }
 

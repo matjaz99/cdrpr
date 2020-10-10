@@ -4,6 +4,8 @@ import si.iskratel.metricslib.EsClient;
 import si.iskratel.metricslib.PMetric;
 import si.iskratel.metricslib.PMetricRegistry;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class XmlSimulatorThread extends Thread {
@@ -28,13 +30,6 @@ public class XmlSimulatorThread extends Thread {
                 .setLabelNames("nodeId", "nodeName", "productCategory", "subType", "status")
                 .register("pmon_inventory_idx");
 
-        PMetric test_histogram = PMetric.build()
-                .setName("test_histogram")
-                .setHelp("histogram metric test")
-                .setBuckets(1.0, 5.0, 10.0, 20.0)
-                .setLabelNames("nodeName")
-                .register("test_registry");
-
         while (true) {
 
             try {
@@ -56,10 +51,14 @@ public class XmlSimulatorThread extends Thread {
             esClient.sendBulkPost(xml_metric);
 
 
+            Map<String, Object> nodesMap = new HashMap<>();
             String[] nodes = Start.SIMULATOR_NODEID.split(",");
             for (int i = 0; i < nodes.length; i++) {
+                nodesMap.put(nodes[i], null);
+            }
+            for (String n : nodesMap.keySet()) {
                 int status = (System.currentTimeMillis() % 13 == 0) ? 0 : 1;
-                inventory_metric.setLabelValues("" + nodes[i].hashCode(), nodes[i], "elementType", "subType", "No CDR files found").set(status);
+                inventory_metric.setLabelValues("" + n.hashCode(), n, "elementType", "subType", "No CDR files found").set(status);
             }
             esClient.sendBulkPost(inventory_metric);
 

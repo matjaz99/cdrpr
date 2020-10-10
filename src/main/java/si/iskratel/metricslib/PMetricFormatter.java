@@ -1,5 +1,8 @@
 package si.iskratel.metricslib;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PMetricFormatter {
 
     public static String toEsNdJsonString(PMetric metric) {
@@ -25,6 +28,14 @@ public class PMetricFormatter {
 
     public static String toEsIndexMappingJsonString(PMetric metric) {
 
+        // collect all labels from all metrics in registry
+        Map<String, Object> allLabelsMap = new HashMap<>();
+        for (PMetric m : PMetricRegistry.getRegistry(metric.getParentRegistry()).getMetricsList()) {
+            for (int i = 0; i < m.getLabelNames().length; i++) {
+                allLabelsMap.put(m.getLabelNames()[i], null);
+            }
+        }
+
         StringBuilder sb = new StringBuilder();
 
         sb.append("{\n");
@@ -37,7 +48,12 @@ public class PMetricFormatter {
         sb.append("  \"mappings\": {\n");
         sb.append("    \"properties\": {\n");
         sb.append("      \"metric_name\": {\"type\": \"keyword\"},\n");
-        // TODO add mapping for all labels in metric?
+
+        // add mapping for all labels in metric
+//        for (String s : allLabelsMap.keySet()) {
+//            sb.append("      \"").append(s).append("\": {\"type\": \"keyword\"},\n");
+//        }
+
         sb.append("      \"value\": {\"type\": \"double\"},\n");
         sb.append("      \"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n");
         sb.append("    }\n");
