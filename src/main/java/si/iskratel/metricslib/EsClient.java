@@ -176,7 +176,7 @@ public class EsClient {
 
         try {
 
-            while (retryCount < MetricsLib.RETRIES) {
+            while (retryCount <= MetricsLib.RETRIES) {
                 success = executeHttpRequest(request, "metric " + metric.getName() + " [size=" + metric.getTimeSeriesSize() + "]").success;
                 if (success) break;
                 retryCount++;
