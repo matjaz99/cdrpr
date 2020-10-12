@@ -42,9 +42,12 @@ public class PMetricFormatter {
         sb.append("  \"aliases\": {\n");
         sb.append("    \"${ALIAS_NAME}\": {}\n");
         sb.append("  },");
-//      sb.append(  "  \"settings\": {\n");
-//      sb.append(  "    \"number_of_shards\": 1\n");
-//      sb.append(  "  },");
+
+//        sb.append("  \"settings\": {\n");
+//        sb.append("    \"number_of_shards\": 1,\n");
+//        sb.append("    \"number_of_replicas\" : 0\n");
+//        sb.append("  },");
+
         sb.append("  \"mappings\": {\n");
         sb.append("    \"properties\": {\n");
         sb.append("      \"metric_name\": {\"type\": \"keyword\"},\n");
