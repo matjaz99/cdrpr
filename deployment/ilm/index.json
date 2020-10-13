@@ -1,0 +1,7 @@
+{
+  "aliases": {
+    "pmon":{
+      "is_write_index": true
+    }
+  }
+}

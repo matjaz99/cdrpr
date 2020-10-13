@@ -1,0 +1,13 @@
+{
+  "order": 10,
+  "index_patterns": ["pmon_*"],
+  "settings": {
+  	"index": {
+      "number_of_shards" : 2,
+      "number_of_replicas" : 0,
+      "routing.allocation.include.size": "hot",
+      "lifecycle.name": "pmon",
+      "lifecycle.rollover_alias": "pmon_alias"
+    }
+  }
+}

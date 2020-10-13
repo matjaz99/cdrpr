@@ -1,0 +1,12 @@
+{
+  "index_patterns": ["pmon_*"],
+  "template": {
+    "mappings": {
+      "properties": {
+        "metric_name": {"type": "keyword"},
+        "value": {"type": "double"},
+        "timestamp": {"type": "date", "format": "epoch_millis"}
+      }
+    }
+  }
+}
