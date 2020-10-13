@@ -1,6 +1,7 @@
 #!/bin/bash -ex
 
-ES_HOST=alpinelinux
+#ES_HOST=alpinelinux
+ES_HOST=mcrk-docker-1
 ES_URL=http://$ES_HOST:9200
 
 # Wait for Elasticsearch to start up before doing anything.

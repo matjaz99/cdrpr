@@ -6,8 +6,8 @@
       "number_of_shards" : 2,
       "number_of_replicas" : 0,
       "routing.allocation.include.size": "hot",
-      "lifecycle.name": "pmon",
-      "lifecycle.rollover_alias": "pmon_alias"
+      "lifecycle.name": "pmon_ilm_policy",
+      "lifecycle.rollover_alias": "pmon"
     }
   }
 }
