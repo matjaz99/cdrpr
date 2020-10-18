@@ -1,0 +1,129 @@
+version: '2'
+
+networks:
+  net:
+    #driver: bridge
+    #driver: overlay
+    #attachable: true
+
+volumes:
+  data01:
+    driver: local
+  data02:
+    driver: local
+  data03:
+    driver: local
+
+#configs:
+#  kibana_config:
+#    file: ./kibana.yml
+
+services:
+
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=es-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      #- 9300:9300
+    networks:
+      - net
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == mcrk-docker-1
+
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=es-cluster
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    volumes:
+      - data02:/usr/share/elasticsearch/data
+    #ports:
+    #  - 9200:9200
+    #  - 9300:9300
+    networks:
+      - net
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == mcrk-docker-2
+
+  es03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    container_name: es03
+    environment:
+      - node.name=es03
+      - cluster.name=es-cluster
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    volumes:
+      - data03:/usr/share/elasticsearch/data
+    #ports:
+    #  - 9200:9200
+    #  - 9300:9300
+    networks:
+      - net
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == mcrk-docker-3
+
+  #kibana:
+  #  image: docker.elastic.co/kibana/kibana:7.9.2
+  #  networks:
+  #    - net
+  #  ports:
+  #    - 5601:5601
+  #  configs:
+  #    - source: kibana_config
+  #      target: /usr/share/kibana/config/kibana.yml
+  #  environment:
+  #    SERVER_NAME: kibana.example.org
+  #    ELASTICSEARCH_URL: http://es01:9200
+  #    ELASTICSEARCH_HOSTS: http://es01:9200
+  #    #ELASTICSEARCH_HOSTS: http://192.168.0.171:9200
+  #  deploy:
+  #    mode: replicated
+  #    replicas: 1
+  #    placement:
+  #      constraints:
+  #        - node.hostname == mcrk-docker-2
