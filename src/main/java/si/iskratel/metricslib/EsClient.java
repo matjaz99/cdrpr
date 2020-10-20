@@ -122,7 +122,7 @@ public class EsClient {
                 .build();
         System.out.println("INFO:  Executing request on url: " + url);
 
-        return executeHttpRequest(request, "-").success;
+        return executeHttpRequest(request, "bulk").success;
 
     }
 

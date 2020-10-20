@@ -19,6 +19,8 @@ public class MetricsLib {
     public static String METRICSLIB_VERSION = "1.0";
     /** Enable exporting collected metrics in prometheus format on /metrics endpoint. Does not apply to MetricsLib internal metrics, they are exposed anyway. */
     public static boolean EXPORT_PROMETHEUS_METRICS = true;
+    public static String[] PROM_INCLUDE_REGISTRY;
+    public static String[] PROM_EXCLUDE_REGISTRY;
     /** Number of retries if sending fails */
     public static int RETRIES = 3;
     public static int RETRY_INTERVAL_MILLISECONDS = 1500;
@@ -33,7 +35,10 @@ public class MetricsLib {
     public static int DEFAULT_ES_PORT = 9200;
     /** Choose whether or not you want index to be automatically created */
     public static boolean ES_AUTO_CREATE_INDEX = true;
+    /** A separate thread for uploading files */
     public static FileUploadThread fut;
+
+    private MetricsLib() { /** private constructor */ }
 
     static class HelloServlet extends HttpServlet {
 
@@ -45,7 +50,7 @@ public class MetricsLib {
             resp.getWriter().println("<h1>Iskratel MetricsLib v" + METRICSLIB_VERSION + "</h1>");
 
             resp.getWriter().println("<h3>Configuration</h3>");
-            resp.getWriter().println("<pre>metricslib.client.prometheus.export=" + EXPORT_PROMETHEUS_METRICS + "\n"
+            resp.getWriter().println("<pre>metricslib.prometheus.enable=" + EXPORT_PROMETHEUS_METRICS + "\n"
                     + "metricslib.client.retry=" + RETRIES + "\n"
                     + "metricslib.client.retry.interval.millis=" + RETRY_INTERVAL_MILLISECONDS + "\n"
                     + "metricslib.client.bulk.size=" + BULK_SIZE + "\n"
@@ -100,7 +105,7 @@ public class MetricsLib {
                     PromExporter.metricslib_metrics_total.labels(reg.getName(), m.getName()).set(m.getTimeSeriesSize());
                 }
                 if (EXPORT_PROMETHEUS_METRICS) {
-                    reg.collectPrometheusMetrics(reg.getName());
+                    if (determineExport(reg.getName())) reg.collectPrometheusMetrics(reg.getName());
                 }
             }
             super.doGet(req, resp);
@@ -126,8 +131,17 @@ public class MetricsLib {
         DUMP_DIRECTORY = dd;
         DUMP_TO_FILE_ENABLED = Boolean.parseBoolean((String) props.getOrDefault("metricslib.client.dump.enabled", "true"));
         UPLOAD_INTERVAL_SECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.upload.interval.seconds", "16"));
+
+        EXPORT_PROMETHEUS_METRICS = Boolean.parseBoolean((String) props.getOrDefault("metricslib.prometheus.enable", "true"));
+        String include = (String) props.getOrDefault("metricslib.prometheus.include.registry", "_all");
+        if (include.length() == 0) include = "_all";
+        PROM_INCLUDE_REGISTRY = include.split(",");
+        String exclude = (String) props.getOrDefault("metricslib.prometheus.exclude.registry", "");
+        PROM_EXCLUDE_REGISTRY = exclude.split(",");
+
         DEFAULT_ES_HOST = (String) props.getOrDefault("metricslib.client.elasticsearch.default.host", null);
         DEFAULT_ES_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.client.elasticsearch.default.port", "0"));
+
         if (port > 0) startJetty(port);
     }
 
@@ -154,6 +168,20 @@ public class MetricsLib {
             MetricsLib.fut = new FileUploadThread(new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT));
             MetricsLib.fut.start();
         }
+
+    }
+
+    private static boolean determineExport(String registry) {
+
+        for (int i = 0; i < PROM_INCLUDE_REGISTRY.length; i++) {
+            if (PROM_INCLUDE_REGISTRY[i].equals("_all")) return true;
+            if (PROM_INCLUDE_REGISTRY[i].equals(registry)) return true;
+            if (PROM_INCLUDE_REGISTRY[i].contains("*")) {
+                String[] arr = PROM_INCLUDE_REGISTRY[i].split("\\*");
+                if (registry.startsWith(arr[0])) return true;
+            }
+        }
+        return false;
 
     }
 
