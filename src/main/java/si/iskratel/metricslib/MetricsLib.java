@@ -30,7 +30,7 @@ public class MetricsLib {
     /** Dump only if dumping is enabled */
     public static boolean DUMP_TO_FILE_ENABLED = false;
     /** Interval for uploading dumped files */
-    public static int UPLOAD_INTERVAL_SECONDS = 16;
+    public static int UPLOAD_INTERVAL_SECONDS = 125;
     public static String DEFAULT_ES_HOST = "localhost";
     public static int DEFAULT_ES_PORT = 9200;
     /** Choose whether or not you want index to be automatically created */
@@ -50,7 +50,8 @@ public class MetricsLib {
             resp.getWriter().println("<h1>Iskratel MetricsLib v" + METRICSLIB_VERSION + "</h1>");
 
             resp.getWriter().println("<h3>Configuration</h3>");
-            resp.getWriter().println("<pre>metricslib.prometheus.enable=" + EXPORT_PROMETHEUS_METRICS + "\n"
+            resp.getWriter().println("<pre>"
+                    + "metricslib.prometheus.enable=" + EXPORT_PROMETHEUS_METRICS + "\n"
                     + "metricslib.client.retry=" + RETRIES + "\n"
                     + "metricslib.client.retry.interval.millis=" + RETRY_INTERVAL_MILLISECONDS + "\n"
                     + "metricslib.client.bulk.size=" + BULK_SIZE + "\n"

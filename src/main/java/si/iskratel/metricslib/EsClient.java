@@ -102,10 +102,41 @@ public class EsClient {
         return executeHttpRequest(request, "checkIndex").responseCode;
     }
 
+    /**
+     * Insert json object into ElasticSearch. Index is required, but no mapping will be prepared for it.
+     * @param index
+     * @param json
+     * @return http response
+     */
+    public HttpResponse insertDoc(String index, String json) {
+
+        // TODO test
+
+        HttpResponse response = new HttpResponse();
+
+        if (index == null || json == null) {
+            System.out.println("WARN:  index or body is null. Request will be ignored.");
+            return response;
+        }
+
+        String docUrl = url.replace("_bulk", index + "/_doc");
+        Request request = new Request.Builder()
+                .url(docUrl)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .post(RequestBody.create(json, MEDIA_TYPE_JSON))
+                .build();
+        System.out.println("INFO:  Executing request on url: " + url);
+
+        response = executeHttpRequest(request, "doc");
+
+        return response;
+    }
+
 
     /**
-     * Send any custom JSON body to ElasticSearch.
-     * @param body custom body in json format
+     * Send any custom JSON body to ElasticSearch. The body must have a properly formed NDJSON structure for
+     * bulk inserts and the metadata object must include a valid index.
+     * @param body custom body in ndjson format
      * @return success
      */
     public boolean sendBulkPost(String body) {
