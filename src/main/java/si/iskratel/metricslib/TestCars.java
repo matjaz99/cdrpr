@@ -11,7 +11,7 @@ public class TestCars {
 
     public static void main(String... args) throws Exception {
 
-        MetricsLib.EXPORT_PROMETHEUS_METRICS = true;
+        MetricsLib.PROM_METRICS_EXPORT_ENABLE = true;
         MetricsLib.DEFAULT_ES_HOST = "mcrk-docker-1";
         MetricsLib.DEFAULT_ES_PORT = 9200;
         MetricsLib.init();

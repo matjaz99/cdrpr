@@ -6,6 +6,7 @@ RUN mvn -f /usr/src/app/pom.xml clean package
 
 FROM openjdk:8-jre
 RUN mkdir -p /opt/cdr
+RUN mkdir -p /opt/dump
 #COPY target/cdrpr-2.0-jar-with-dependencies.jar /opt/cdrpr-2.0-jar-with-dependencies.jar
 COPY --from=build /usr/src/app/target/cdrpr-2.0-jar-with-dependencies.jar /opt/cdrpr-2.0-jar-with-dependencies.jar
 COPY call_release_causes.properties /opt/call_release_causes.properties

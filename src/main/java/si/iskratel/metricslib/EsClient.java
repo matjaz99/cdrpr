@@ -59,24 +59,32 @@ public class EsClient {
     private boolean createIndex(PMetric metric) {
 
         String index = metric.getParentRegistry();
+        String templateName = index + "_tmpl";
 
-        int i = checkIndex(index);
+        // 1. check if template exists
+        boolean b1 = checkTemplate(templateName);
 
-        if (i == 200) {
-            System.out.println("INFO:  EsClient[" + clientId + "]: index already exists: " + index);
+        // 2. create template
+        if (!b1) {
+            createTemplate(templateName);
+        }
+
+        // 3. check if alias exists
+        boolean b3 = checkAlias(index);
+        if (b3) {
+            // alias exists, nothing else to do
             return true;
         }
-        if (i == 0) {
-            // exception
-            return false;
-        }
 
-        System.out.println("INFO:  EsClient[" + clientId + "]: creating index: " + index + " with alias: " + index + "_alias");
+        // 4. create index with alias
+        String newIndex = index + "-000000";
+
+        System.out.println("INFO:  EsClient[" + clientId + "]: creating index: " + newIndex + " with alias: " + index);
 
         Request request = new Request.Builder()
-                .url("http://" + host + ":" + port + "/" + index)
+                .url("http://" + host + ":" + port + "/" + newIndex)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .put(RequestBody.create(PMetricFormatter.toEsIndexMappingJsonString(metric), MEDIA_TYPE_JSON))
+                .put(RequestBody.create(PMetricFormatter.toIndexJson(index), MEDIA_TYPE_JSON))
                 .build();
 
         if (executeHttpRequest(request, "createIndex").success) return true;
@@ -91,7 +99,7 @@ public class EsClient {
      * @param index
      * @return http error code
      */
-    private int checkIndex(String index) {
+    private boolean checkIndex(String index) {
 
         Request request = new Request.Builder()
                 .url("http://" + host + ":" + port + "/" + index)
@@ -99,8 +107,84 @@ public class EsClient {
                 .get()
                 .build();
 
-        return executeHttpRequest(request, "checkIndex").responseCode;
+        HttpResponse resp = executeHttpRequest(request, "checkIndex");
+
+        if (resp.responseCode == 200) {
+            System.out.println("INFO:  EsClient[" + clientId + "]: index already exists: " + index);
+            return true;
+        }
+        if (resp.responseCode == 0) {
+            // exception
+            return false;
+        }
+        return false;
     }
+
+    /**
+     * Return true only if template already exists.
+     * @param templateName
+     * @return true if template exists
+     */
+    private boolean checkTemplate(String templateName) {
+
+        Request request = new Request.Builder()
+                .url("http://" + host + ":" + port + "/_template/" + templateName)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .get()
+                .build();
+
+        HttpResponse resp = executeHttpRequest(request, "checkTemplate");
+
+        if (resp.responseCode == 200) {
+            System.out.println("INFO:  EsClient[" + clientId + "]: template already exists: " + templateName);
+            return true;
+        }
+        if (resp.responseCode == 0) {
+            // exception
+            return false;
+        }
+
+        return false;
+    }
+
+    private boolean checkAlias(String alias) {
+
+        Request request = new Request.Builder()
+                .url("http://" + host + ":" + port + "/_alias/" + alias)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .get()
+                .build();
+
+        HttpResponse resp = executeHttpRequest(request, "checkAlias");
+
+        if (resp.responseCode == 200) {
+            System.out.println("INFO:  EsClient[" + clientId + "]: alias already exists: " + alias);
+            return true;
+        }
+        if (resp.responseCode == 0) {
+            // exception
+            return false;
+        }
+
+        return false;
+    }
+
+    private boolean createTemplate(String templateName) {
+
+        System.out.println("INFO:  EsClient[" + clientId + "]: creating template: " + templateName);
+
+        Request request = new Request.Builder()
+                .url("http://" + host + ":" + port + "/_template/" + templateName)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .put(RequestBody.create(PMetricFormatter.toTemplateJson(templateName), MEDIA_TYPE_JSON))
+                .build();
+
+        if (executeHttpRequest(request, "createTemplate").success) return true;
+        System.out.println("WARN:  EsClient[" + clientId + "]: ...failed to create template.");
+        return false;
+
+    }
+
 
     /**
      * Insert json object into ElasticSearch. Index is required, but no mapping will be prepared for it.
@@ -169,8 +253,8 @@ public class EsClient {
 
     /**
      * Send given metric to ElasticSearch. Method will retry to send the metric until max retries (configurable) is reached.
-     * Then it will dump the metrics to file in 'dump' directory.
-     * @param metric metric object
+     * Then it will dump the metrics to file in 'dump' directory (if enabled).
+     * @param metric object
      * @return true if successful, false if it fails
      */
     public boolean sendBulkPost(PMetric metric) {

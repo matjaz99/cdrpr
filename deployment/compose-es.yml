@@ -16,7 +16,7 @@ configs:
 services:
 
   es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
     environment:
       - discovery.type=single-node
       #- "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -40,7 +40,7 @@ services:
           #- node.hostname == $(hostname)
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.8.0
+    image: docker.elastic.co/kibana/kibana:7.9.2
     networks:
       - net
     ports:

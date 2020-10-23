@@ -11,16 +11,30 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 public class MetricsLib {
 
     /** Just a version */
     public static String METRICSLIB_VERSION = "1.0";
+    /** Hostname where MetricsLib is running */
+    public static String METRICSLIB_HOSTNAME;
+    /** Port for Jetty http server */
+    public static int METRICSLIB_PORT = 9099;
+    /** Path prefix in case if running behind proxy */
+    public static String PATH_PREFIX = "/";
+    /** True if MetricsLib is running in container */
+    public static boolean METRICSLIB_IS_CONTAINERIZED = false;
     /** Enable exporting collected metrics in prometheus format on /metrics endpoint. Does not apply to MetricsLib internal metrics, they are exposed anyway. */
-    public static boolean EXPORT_PROMETHEUS_METRICS = true;
-    public static String[] PROM_INCLUDE_REGISTRY;
-    public static String[] PROM_EXCLUDE_REGISTRY;
+    public static boolean PROM_METRICS_EXPORT_ENABLE = false;
+    /** Coma-separated list of registries to include in export. Special keyword: '_all'. Allows wildcard '*' for begins_with_. */
+    public static String[] PROM_INCLUDE_REGISTRY = { "_all" };
+    /** Coma-separated list of registries to exclude from export. Exclusion is checked before the inclusion! */
+    public static String[] PROM_EXCLUDE_REGISTRY = { "" };
     /** Number of retries if sending fails */
     public static int RETRIES = 3;
     public static int RETRY_INTERVAL_MILLISECONDS = 1500;
@@ -38,20 +52,28 @@ public class MetricsLib {
     /** A separate thread for uploading files */
     public static FileUploadThread fut;
 
-    private MetricsLib() { /** private constructor */ }
+    private MetricsLib() { }
 
     static class HelloServlet extends HttpServlet {
 
         @Override
-        protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
-                throws ServletException, IOException {
+        protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
             PromExporter.metricslib_servlet_requests_total.labels("/hello").inc();
 
             resp.getWriter().println("<h1>Iskratel MetricsLib v" + METRICSLIB_VERSION + "</h1>");
 
+            resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/metrics\">/metrics</a>");
+            resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/indices\">/indices</a>");
+
             resp.getWriter().println("<h3>Configuration</h3>");
             resp.getWriter().println("<pre>"
-                    + "metricslib.prometheus.enable=" + EXPORT_PROMETHEUS_METRICS + "\n"
+                    + "metricslib.hostname=" + METRICSLIB_HOSTNAME + "\n"
+                    + "metricslib.port=" + METRICSLIB_PORT + "\n"
+                    + "metricslib.isContainerized=" + METRICSLIB_IS_CONTAINERIZED + "\n"
+                    + "metricslib.pathPrefix=" + PATH_PREFIX + "\n"
+                    + "metricslib.prometheus.enable=" + PROM_METRICS_EXPORT_ENABLE + "\n"
+                    + "metricslib.prometheus.include.registry=" + PROM_INCLUDE_REGISTRY + "\n"
+                    + "metricslib.prometheus.exclude.registry=" + PROM_EXCLUDE_REGISTRY + "\n"
                     + "metricslib.client.retry=" + RETRIES + "\n"
                     + "metricslib.client.retry.interval.millis=" + RETRY_INTERVAL_MILLISECONDS + "\n"
                     + "metricslib.client.bulk.size=" + BULK_SIZE + "\n"
@@ -71,16 +93,14 @@ public class MetricsLib {
 
             resp.getWriter().println("<h3>Metrics</h3>");
             resp.getWriter().println("<pre>" + PMetricRegistry.describeMetrics() + "</pre>");
-            resp.getWriter().println("<a href=\"http://localhost:9099/metrics\">/metrics</a>");
-            resp.getWriter().println("<a href=\"http://localhost:9099/indices\">/indices</a>");
+
         }
     }
 
     static class IndicesServlet extends HttpServlet {
 
         @Override
-        protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
-                throws ServletException, IOException {
+        protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
 
             PromExporter.metricslib_servlet_requests_total.labels("/indices").inc();
 
@@ -105,8 +125,8 @@ public class MetricsLib {
                 for (PMetric m : reg.getMetricsList()) {
                     PromExporter.metricslib_metrics_total.labels(reg.getName(), m.getName()).set(m.getTimeSeriesSize());
                 }
-                if (EXPORT_PROMETHEUS_METRICS) {
-                    if (determineExport(reg.getName())) reg.collectPrometheusMetrics(reg.getName());
+                if (PROM_METRICS_EXPORT_ENABLE) {
+                    if (isPrometheusExportRegistryAllowed(reg.getName())) reg.collectPrometheusMetrics(reg.getName());
                 }
             }
             super.doGet(req, resp);
@@ -114,15 +134,23 @@ public class MetricsLib {
     }
 
     public static void init() throws Exception {
-        init(9099);
+        init(METRICSLIB_PORT);
     }
 
     public static void init(int port) throws Exception {
+        METRICSLIB_PORT = port;
         startJetty(port);
     }
 
+    /**
+     * Just give me the damn properties.
+     * @param props
+     * @throws Exception if properties contain invalid values
+     */
     public static void init(Properties props) throws Exception {
-        int port = Integer.parseInt((String) props.getOrDefault("metricslib.jetty.port", "9099"));
+        METRICSLIB_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.jetty.port", "9099"));
+        PATH_PREFIX = (String) props.getOrDefault("metricslib.pathPrefix", "/");
+        if (PATH_PREFIX.length() > 0 && !PATH_PREFIX.endsWith("/")) PATH_PREFIX += "/";
 
         RETRIES = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.count", "3"));
         RETRY_INTERVAL_MILLISECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.interval.millis", "1500"));
@@ -133,7 +161,7 @@ public class MetricsLib {
         DUMP_TO_FILE_ENABLED = Boolean.parseBoolean((String) props.getOrDefault("metricslib.client.dump.enabled", "true"));
         UPLOAD_INTERVAL_SECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.upload.interval.seconds", "16"));
 
-        EXPORT_PROMETHEUS_METRICS = Boolean.parseBoolean((String) props.getOrDefault("metricslib.prometheus.enable", "true"));
+        PROM_METRICS_EXPORT_ENABLE = Boolean.parseBoolean((String) props.getOrDefault("metricslib.prometheus.enable", "true"));
         String include = (String) props.getOrDefault("metricslib.prometheus.include.registry", "_all");
         if (include.length() == 0) include = "_all";
         PROM_INCLUDE_REGISTRY = include.split(",");
@@ -143,10 +171,25 @@ public class MetricsLib {
         DEFAULT_ES_HOST = (String) props.getOrDefault("metricslib.client.elasticsearch.default.host", null);
         DEFAULT_ES_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.client.elasticsearch.default.port", "0"));
 
-        if (port > 0) startJetty(port);
+        if (METRICSLIB_PORT > 0) startJetty(METRICSLIB_PORT);
     }
 
     private static void startJetty(int port) throws Exception {
+
+        try {
+            METRICSLIB_HOSTNAME = InetAddress.getLocalHost().getHostName();
+        } catch (Exception e) {
+            METRICSLIB_HOSTNAME = "localhost";
+        }
+
+        // check if running inside container
+        try (Stream< String > stream =
+                     Files.lines(Paths.get("/proc/1/cgroup"))) {
+            System.out.println("Running in container: " + stream.anyMatch(line -> line.contains("/docker")));
+            METRICSLIB_IS_CONTAINERIZED = true;
+        } catch (IOException e) {
+            METRICSLIB_IS_CONTAINERIZED = false;
+        }
 
         Server server = new Server(port);
         ServletContextHandler context = new ServletContextHandler();
@@ -154,9 +197,9 @@ public class MetricsLib {
         server.setHandler(context);
         HelloServlet hs = new HelloServlet();
 //        context.addServlet(new ServletHolder(hs), "/");
-        context.addServlet(new ServletHolder(hs), "/hello");
-        context.addServlet(new ServletHolder(new IndicesServlet()), "/indices");
-        context.addServlet(new ServletHolder(new MetricsServletExtended()), "/metrics");
+        context.addServlet(new ServletHolder(hs), PATH_PREFIX + "hello");
+        context.addServlet(new ServletHolder(new IndicesServlet()), PATH_PREFIX + "indices");
+        context.addServlet(new ServletHolder(new MetricsServletExtended()), PATH_PREFIX + "metrics");
         // Add metrics about CPU, JVM memory etc.
         DefaultExports.initialize();
 
@@ -170,9 +213,23 @@ public class MetricsLib {
             MetricsLib.fut.start();
         }
 
+//        EsClient es = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT);
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("{\"name\":\"metricslib\",\"version\":\"v").append(METRICSLIB_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
+//        es.insertDoc("metricslib", sb.toString());
+
     }
 
-    private static boolean determineExport(String registry) {
+    private static boolean isPrometheusExportRegistryAllowed(String registry) {
+
+        for (int i = 0; i < PROM_EXCLUDE_REGISTRY.length; i++) {
+            if (PROM_EXCLUDE_REGISTRY[i].equals("_all")) return false;
+            if (PROM_EXCLUDE_REGISTRY[i].equals(registry)) return false;
+            if (PROM_EXCLUDE_REGISTRY[i].contains("*")) {
+                String[] arr = PROM_EXCLUDE_REGISTRY[i].split("\\*");
+                if (registry.startsWith(arr[0])) return false;
+            }
+        }
 
         for (int i = 0; i < PROM_INCLUDE_REGISTRY.length; i++) {
             if (PROM_INCLUDE_REGISTRY[i].equals("_all")) return true;

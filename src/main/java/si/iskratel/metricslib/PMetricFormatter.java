@@ -7,12 +7,10 @@ public class PMetricFormatter {
 
     public static String toEsNdJsonString(PMetric metric) {
 
-        String indexName = MetricsLib.ES_AUTO_CREATE_INDEX ? metric.getParentRegistry() + "_alias" : metric.getParentRegistry();
-
         StringBuilder sb = new StringBuilder();
 
         for (PTimeSeries ts : metric.getTimeSeries()) {
-            sb.append("{ \"index\":{ \"_index\":\"").append(indexName).append("\"} }\n");
+            sb.append("{ \"index\":{ \"_index\":\"").append(metric.getParentRegistry()).append("\"} }\n");
             sb.append("{");
             sb.append("\"metric_name\":\"").append(metric.getName()).append("\",");
             for (int i = 0; i < metric.getLabelNames().length; i++) {
@@ -41,7 +39,7 @@ public class PMetricFormatter {
         sb.append("{\n");
         sb.append("  \"aliases\": {\n");
         sb.append("    \"${ALIAS_NAME}\": {}\n");
-        sb.append("  },");
+        sb.append("  },\n");
 
 //        sb.append("  \"settings\": {\n");
 //        sb.append("    \"number_of_shards\": 1,\n");
@@ -61,9 +59,71 @@ public class PMetricFormatter {
         sb.append("      \"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n");
         sb.append("    }\n");
         sb.append("  }\n");
-        sb.append("}");
+        sb.append("}\n");
 
         return sb.toString().replace("${ALIAS_NAME}", metric.getParentRegistry() + "_alias");
+    }
+
+    public static String toIndexJson(String alias) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{\n");
+        sb.append("  \"aliases\": {\n");
+        sb.append("    \"${ALIAS_NAME}\": {\n");
+        sb.append("      \"is_write_index\":true\n");
+        sb.append("    }\n");
+        sb.append("  }\n");
+        sb.append("}\n");
+
+        String s = sb.toString().replace("${ALIAS_NAME}", alias);
+        System.out.println(s);
+        return s;
+    }
+
+    /**
+     * Template name must end with _tmpl.
+     * @param templateName
+     * @return
+     */
+    public static String toTemplateJson(String templateName) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{\n");
+        sb.append("  \"order\": 10,\n");
+        sb.append("  \"index_patterns\": [\"${INDEX_PATTERNS}\"],\n");
+        sb.append("  \"settings\": {\n");
+        sb.append("    \"index\": {\n");
+        sb.append("      \"number_of_shards\" : 1,\n");
+        sb.append("      \"number_of_replicas\" : 0,\n");
+        sb.append("      \"lifecycle.name\": \"pmon_ilm_policy\",\n");
+        sb.append("      \"lifecycle.rollover_alias\": \"${ROLLOVER_ALIAS}\"\n");
+        sb.append("    }\n");
+        sb.append("  },\n");
+        sb.append("  \"mappings\": {\n");
+        sb.append("    \"properties\": {\n");
+        sb.append("      \"metric_name\": {\"type\": \"keyword\"},\n");
+        sb.append("      \"value\": {\"type\": \"double\"},\n");
+        sb.append("      \"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n");
+        sb.append("    }\n");
+        sb.append("  }\n");
+        sb.append("}\n");
+
+        String rolloverAlias = templateName.replace("_tmpl", "");
+        String indexPattern = templateName.replace("_tmpl", "");
+        if (indexPattern.endsWith("_idx")) {
+            indexPattern = indexPattern.replace("_idx", "_*");
+        } else {
+            indexPattern = indexPattern + "*";
+        }
+
+        String s = sb.toString();
+        s = s.replace("${INDEX_PATTERNS}", indexPattern);
+        s = s.replace("${ROLLOVER_ALIAS}", rolloverAlias);
+        System.out.println(s);
+        return s;
+
     }
 
     public static String toPgCreateTableString(PMetric metric) {
