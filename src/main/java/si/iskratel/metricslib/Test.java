@@ -11,7 +11,17 @@ public class Test {
 
 //        testMultipleRegistries();
 //        testMetrics();
-        aggregateCalls();
+//        aggregateCalls();
+
+
+        double t = 0.0;
+
+        while (true) {
+            double y = Math.cos(t);
+            System.out.println("t=" + t + "   y=" + y);
+            t = t + (2 * 3.14 / 3600);
+            Thread.sleep(1000);
+        }
 
     }
 

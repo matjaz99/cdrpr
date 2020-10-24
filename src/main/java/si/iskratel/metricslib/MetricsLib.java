@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -72,8 +73,8 @@ public class MetricsLib {
                     + "metricslib.isContainerized=" + METRICSLIB_IS_CONTAINERIZED + "\n"
                     + "metricslib.pathPrefix=" + PATH_PREFIX + "\n"
                     + "metricslib.prometheus.enable=" + PROM_METRICS_EXPORT_ENABLE + "\n"
-                    + "metricslib.prometheus.include.registry=" + PROM_INCLUDE_REGISTRY + "\n"
-                    + "metricslib.prometheus.exclude.registry=" + PROM_EXCLUDE_REGISTRY + "\n"
+                    + "metricslib.prometheus.include.registry=" + Arrays.toString(PROM_INCLUDE_REGISTRY) + "\n"
+                    + "metricslib.prometheus.exclude.registry=" + Arrays.toString(PROM_EXCLUDE_REGISTRY) + "\n"
                     + "metricslib.client.retry=" + RETRIES + "\n"
                     + "metricslib.client.retry.interval.millis=" + RETRY_INTERVAL_MILLISECONDS + "\n"
                     + "metricslib.client.bulk.size=" + BULK_SIZE + "\n"

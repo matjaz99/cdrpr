@@ -21,7 +21,7 @@ public class FileUploadThread extends Thread {
 
             File dumpDir = new File(MetricsLib.DUMP_DIRECTORY);
             if (!dumpDir.exists()) {
-                System.out.println("WARN: dump directory does not exist: " + dumpDir.getAbsolutePath());
+                System.out.println("WARN:  dump directory does not exist: " + dumpDir.getAbsolutePath());
                 try {
                     Thread.sleep(MetricsLib.UPLOAD_INTERVAL_SECONDS * 1000);
                 } catch (InterruptedException e) {
