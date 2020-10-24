@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -214,10 +215,10 @@ public class MetricsLib {
             MetricsLib.fut.start();
         }
 
-//        EsClient es = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT);
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("{\"name\":\"metricslib\",\"version\":\"v").append(METRICSLIB_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
-//        es.insertDoc("metricslib", sb.toString());
+        EsClient es = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT);
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"name\":\"metricslib\",\"version\":\"v").append(METRICSLIB_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
+        es.insertDoc("metricslib", sb.toString());
 
     }
 
