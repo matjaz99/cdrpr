@@ -1,0 +1,6 @@
+{
+  "persistent": {
+    "indices.lifecycle.poll_interval": "10m",
+    "slm.retention_schedule": "* * * * * ?"
+  }
+}
