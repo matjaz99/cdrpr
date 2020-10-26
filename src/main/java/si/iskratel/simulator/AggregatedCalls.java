@@ -28,32 +28,32 @@ public class AggregatedCalls implements Runnable {
             .setHelp("Count calls by release cause")
             .setLabelNames("nodeName", "cause", "trafficType")
             .register(INDEX_CDR_CALLS);
-    public static PMetric pmon_cdr_calls_by_duration = PMetric.build()
-            .setName("pmon_cdr_call_duration")
-            .setHelp("Total duration of answered calls on node")
-            .setLabelNames("nodeName")
-            .register(INDEX_CDR_CALL_DURATION);
-    public static PMetric m_callsInProgress = PMetric.build()
+    public static PMetric pmon_cdr_calls_in_progress = PMetric.build()
             .setName("pmon_cdr_calls_in_progress")
             .setHelp("Current number of calls in progress (answered only)")
             .setLabelNames("nodeName")
             .register(INDEX_CDR_CALLS);
-    public static PMetric m_timeBeforeRing = PMetric.build()
+    public static PMetric pmon_cdr_call_duration = PMetric.build()
+            .setName("pmon_cdr_call_duration")
+            .setHelp("Total duration of answered calls on node")
+            .setLabelNames("nodeName")
+            .register(INDEX_CDR_CALL_DURATION);
+    public static PMetric pmon_cdr_time_before_ringing = PMetric.build()
             .setName("pmon_cdr_time_before_ringing")
             .setHelp("pmon_cdr_time_before_ringing")
             .setLabelNames("nodeName")
             .register(INDEX_CDR_CALL_DURATION);
-    public static PMetric m_timeBeforeAns = PMetric.build()
+    public static PMetric pmon_cdr_time_before_answer = PMetric.build()
             .setName("pmon_cdr_time_before_answer")
             .setHelp("pmon_cdr_time_before_answer")
             .setLabelNames("nodeName")
             .register(INDEX_CDR_CALL_DURATION);
-    public static PMetric m_trunkCalls = PMetric.build()
+    public static PMetric pmon_cdr_calls_by_trunkgroup = PMetric.build()
             .setName("pmon_cdr_calls_by_trunkgroup")
             .setHelp("pmon_cdr_trunk_calls")
             .setLabelNames("nodeName", "cause", "incTG", "outTG")
             .register(INDEX_CDR_TRUNK);
-    public static PMetric m_trunkDuration = PMetric.build()
+    public static PMetric pmon_cdr_duration_by_trunkgroup = PMetric.build()
             .setName("pmon_cdr_duration_by_trunkgroup")
             .setHelp("pmon_cdr_trunk_calls_duration")
             .setLabelNames("nodeName", "incTG", "outTG")
@@ -127,14 +127,14 @@ public class AggregatedCalls implements Runnable {
                 CdrBean cdr = Start.pollCdr();
                 if (cdr != null) {
                     // fill metrics
-                    m_trunkCalls.setLabelValues(cdr.getNodeId(), Utils.toCauseString(cdr.getCause()), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc();
+                    pmon_cdr_calls_by_trunkgroup.setLabelValues(cdr.getNodeId(), Utils.toCauseString(cdr.getCause()), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc();
                     pmon_cdr_calls_by_cause.setLabelValues(cdr.getNodeId(), Utils.toCauseString(cdr.getCause()), cdr.getTrafficType()).inc();
                     if (cdr.getCause() == 16) {
-                        pmon_cdr_calls_by_duration.setLabelValues(cdr.getNodeId()).inc(cdr.getDuration());
-                        m_trunkDuration.setLabelValues(cdr.getNodeId(), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc(cdr.getDuration());
+                        pmon_cdr_call_duration.setLabelValues(cdr.getNodeId()).inc(cdr.getDuration());
+                        pmon_cdr_duration_by_trunkgroup.setLabelValues(cdr.getNodeId(), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc(cdr.getDuration());
                     }
-                    m_timeBeforeRing.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrTimeBeforeRinging());
-                    m_timeBeforeAns.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrRingingTimeBeforeAnsw());
+                    pmon_cdr_time_before_ringing.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrTimeBeforeRinging());
+                    pmon_cdr_time_before_answer.setLabelValues(cdr.getNodeId()).inc(cdr.getCdrRingingTimeBeforeAnsw());
                     m_bgCalls.setLabelValues(cdr.getNodeId(), cdr.getBgidOrig() + "", cdr.getBgidTerm() + "").inc();
                     m_cgCalls.setLabelValues(cdr.getNodeId(), cdr.getCgidOrig() + "", cdr.getCgidTerm() + "", cdr.getCentrexCallType() + "", cdr.getCtxCall() + "").inc();
                     m_suppServ.setLabelValues(cdr.getNodeId(), cdr.getServId() + "", cdr.getServIdOrig() + "", cdr.getServIdTerm() + "").inc();
@@ -150,7 +150,7 @@ public class AggregatedCalls implements Runnable {
 
             PrometheusMetrics.bulkCount.set(pmon_cdr_calls_by_cause.getTimeSeriesSize());
 
-            m_callsInProgress.setLabelValues(Start.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
+            pmon_cdr_calls_in_progress.setLabelValues(Start.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
 
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_CALLS));
@@ -167,16 +167,16 @@ public class AggregatedCalls implements Runnable {
                 if (Start.PG_CREATE_TABLES_ON_START) {
                     try {
                         pgClient.createTable(pmon_cdr_calls_by_cause);
-                        pgClient.createTable(pmon_cdr_calls_by_duration);
-                        pgClient.createTable(m_callsInProgress);
+                        pgClient.createTable(pmon_cdr_call_duration);
+                        pgClient.createTable(pmon_cdr_calls_in_progress);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
                     Start.PG_CREATE_TABLES_ON_START = false;
                 }
                 pgClient.sendBulk(pmon_cdr_calls_by_cause);
-                pgClient.sendBulk(pmon_cdr_calls_by_duration);
-                pgClient.sendBulk(m_callsInProgress);
+                pgClient.sendBulk(pmon_cdr_call_duration);
+                pgClient.sendBulk(pmon_cdr_calls_in_progress);
             }
 
 

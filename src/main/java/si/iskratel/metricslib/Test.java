@@ -13,16 +13,16 @@ public class Test {
 //        testMetrics();
 //        aggregateCalls();
 
-
-        double t = 0.0;
-
         while (true) {
-            double y = Math.cos(t);
-            System.out.println("t=" + t + "   y=" + y);
-            t = t + (2 * 3.14 / 3600);
-            Thread.sleep(1000);
+            System.out.println(getCosFactor(60));
+            Thread.sleep(3 * 1000);
         }
 
+    }
+
+    public static double getCosFactor(int periodSeconds) throws InterruptedException {
+        double t = System.currentTimeMillis() / 1000;
+        return Math.cos(t * 2 * 3.14 / periodSeconds);
     }
 
     public static void testMultipleRegistries() throws Exception {

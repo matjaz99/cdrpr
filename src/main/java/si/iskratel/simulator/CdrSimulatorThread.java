@@ -30,17 +30,20 @@ public class CdrSimulatorThread extends Thread {
         while (running) {
 
             try {
-                Thread.sleep(delay);
+                Thread.sleep((long) (delay * Math.abs(getCosFactor(getRandomInRange(2, 12) * 3600) + 1.0)) + 1);
             } catch (InterruptedException e) {
             }
 
-            simulateCall();
+            CdrBean cdrBean = simulateCall();
+            Start.addCdr(cdrBean);
+            totalCount++;
+            PrometheusMetrics.totalCdrGenerated.labels(threadId + "").inc();
 
         }
 
     }
 
-    private void simulateCall() {
+    private CdrBean simulateCall() {
 
         CdrBean cdrBean = new CdrBean();
         cdrBean.setId((int) totalCount);
@@ -133,9 +136,7 @@ public class CdrSimulatorThread extends Thread {
             StorageThread.addCall(a, et);
         }
 
-        Start.addCdr(cdrBean);
-        totalCount++;
-        PrometheusMetrics.totalCdrGenerated.labels(threadId + "").inc();
+        return cdrBean;
 
     }
 
@@ -164,6 +165,11 @@ public class CdrSimulatorThread extends Thread {
         Random r = new Random();
         double gauss = r.nextGaussian();
         return Math.abs((int) (mean + gauss * dev));
+    }
+
+    public static double getCosFactor(int periodSeconds) {
+        double t = System.currentTimeMillis() / 1000;
+        return Math.cos(t * 2 * 3.14 / periodSeconds);
     }
 
 
