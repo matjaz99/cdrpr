@@ -9,6 +9,7 @@ public class CdrSimulatorThread extends Thread {
     private boolean running = true;
     private int threadId = 0;
     private long totalCount = 0;
+    private static double randomFactor = Math.abs(getCosFactor(getRandomInRange(2, 12) * 3600) + 1.0);
 
     private int timeBeforeRinging = 2500;
 
@@ -30,7 +31,7 @@ public class CdrSimulatorThread extends Thread {
         while (running) {
 
             try {
-                Thread.sleep((long) (delay * Math.abs(getCosFactor(getRandomInRange(2, 12) * 3600) + 1.0)) + 1);
+                Thread.sleep((long) (delay * randomFactor) + 1);
             } catch (InterruptedException e) {
             }
 
@@ -57,8 +58,8 @@ public class CdrSimulatorThread extends Thread {
         String b = "" + getRandomInRange(Start.SIMULATOR_BNUM_START, Start.SIMULATOR_BNUM_START + Start.SIMULATOR_BNUM_RANGE);
         cdrBean.setCalledNumber(b);
 
-        cdrBean.setCdrTimeBeforeRinging(getRandomGaussian(2500, 100));
-        cdrBean.setCdrRingingTimeBeforeAnsw(0);
+        cdrBean.setCdrTimeBeforeRinging((int) (getRandomGaussian(2500, 100) * randomFactor / 2));
+        cdrBean.setCdrRingingTimeBeforeAnsw((int) (getRandomGaussian(25000, 1000) * randomFactor * 1.1357));
 
         cdrBean.setCause(Start.SIMULATOR_CALL_REASON);
         if (Start.SIMULATOR_CALL_REASON == 0) {
@@ -155,13 +156,13 @@ public class CdrSimulatorThread extends Thread {
         return a + "";
     }
 
-    private int getRandomInRange(int min, int max) {
+    private static int getRandomInRange(int min, int max) {
         // min and max are inclusive
         Random r = new Random();
         return r.nextInt((max - min) + 1) + min;
     }
 
-    private int getRandomGaussian(int mean, int dev) {
+    private static int getRandomGaussian(int mean, int dev) {
         Random r = new Random();
         double gauss = r.nextGaussian();
         return Math.abs((int) (mean + gauss * dev));

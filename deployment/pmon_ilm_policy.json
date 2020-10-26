@@ -18,10 +18,7 @@
         "actions" : {
           "readonly" : { },
           "allocate" : {
-            "number_of_replicas" : 0,
-            "include" : {
-              "size" : "warm"
-            }
+            "number_of_replicas" : 0
           },
           "forcemerge": {
             "max_num_segments": 1
@@ -38,10 +35,7 @@
         "min_age" : "6h",
         "actions" : {
           "allocate" : {
-            "number_of_replicas" : 0,
-            "include" : {
-              "size" : "cold"
-            }
+            "number_of_replicas" : 0
           },
           "freeze" : { },
           "set_priority": {
