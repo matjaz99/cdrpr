@@ -12,12 +12,16 @@ public class EsClient {
     public static int esClientCount = 0;
     private int clientId;
 
-    private String url = "http://mcrk-docker-1:9200/cdraggs/_bulk";
     private String host;
     private int port;
+    private String esHost = "http://elasticvm:9200";
 
     private OkHttpClient httpClient = new OkHttpClient();
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
+
+    // Elastic endpoints
+    public static final String ES_API_GET_INDICES_VERBOSE = "/_cat/indices?v";
+    public static final String ES_API_BULK_ENDPOINT = "/_bulk";
 
     private int retryCount = 0;
 
@@ -31,25 +35,12 @@ public class EsClient {
         this.clientId = esClientCount++;
         this.host = host;
         this.port = port;
-//        this.url = "http://" + host + ":" + port + "/" + index + "/_bulk";
-        this.url = "http://" + host + ":" + port + "/_bulk";
+        esHost = "http://" + host + ":" + port;
         // just initialize metrics with value 0
-        PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", url);
-        PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "null");
+        PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", esHost);
+        PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", esHost, "null");
     }
 
-    /**
-     * If you use this constructor, then you are bound to this host:port/index instance. You cannot control the
-     * indices, unless you create new EsClient.
-     * @param url
-     */
-    public EsClient(String url) {
-        this.clientId = esClientCount++;
-        this.url = url;
-        // just initialize metrics with value 0
-        PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", url);
-        PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "null");
-    }
 
     /**
      * Create index.
@@ -93,32 +84,32 @@ public class EsClient {
 
     }
 
-    /**
-     * Check if index exists. If yes, then 200 is returned. If no, then 404 is returned. If 0 is returned,
-     * it means exception occurred when sending request and no http error code was retrieved.
-     * @param index
-     * @return http error code
-     */
-    private boolean checkIndex(String index) {
-
-        Request request = new Request.Builder()
-                .url("http://" + host + ":" + port + "/" + index)
-                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .get()
-                .build();
-
-        HttpResponse resp = executeHttpRequest(request, "checkIndex");
-
-        if (resp.responseCode == 200) {
-            System.out.println("INFO:  EsClient[" + clientId + "]: index already exists: " + index);
-            return true;
-        }
-        if (resp.responseCode == 0) {
-            // exception
-            return false;
-        }
-        return false;
-    }
+//    /**
+//     * Check if index exists. If yes, then 200 is returned. If no, then 404 is returned. If 0 is returned,
+//     * it means exception occurred when sending request and no http error code was retrieved.
+//     * @param index
+//     * @return http error code
+//     */
+//    private boolean checkIndex(String index) {
+//
+//        Request request = new Request.Builder()
+//                .url("http://" + host + ":" + port + "/" + index)
+//                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+//                .get()
+//                .build();
+//
+//        HttpResponse resp = executeHttpRequest(request, "checkIndex");
+//
+//        if (resp.responseCode == 200) {
+//            System.out.println("INFO:  EsClient[" + clientId + "]: index already exists: " + index);
+//            return true;
+//        }
+//        if (resp.responseCode == 0) {
+//            // exception
+//            return false;
+//        }
+//        return false;
+//    }
 
     /**
      * Return true only if template already exists.
@@ -128,7 +119,7 @@ public class EsClient {
     private boolean checkTemplate(String templateName) {
 
         Request request = new Request.Builder()
-                .url("http://" + host + ":" + port + "/_template/" + templateName)
+                .url(esHost + "/_template/" + templateName)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .get()
                 .build();
@@ -150,7 +141,7 @@ public class EsClient {
     private boolean checkAlias(String alias) {
 
         Request request = new Request.Builder()
-                .url("http://" + host + ":" + port + "/_alias/" + alias)
+                .url(esHost + "/_alias/" + alias)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .get()
                 .build();
@@ -174,7 +165,7 @@ public class EsClient {
         System.out.println("INFO:  EsClient[" + clientId + "]: creating template: " + templateName);
 
         Request request = new Request.Builder()
-                .url("http://" + host + ":" + port + "/_template/" + templateName)
+                .url(esHost + "/_template/" + templateName)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .put(RequestBody.create(PMetricFormatter.toTemplateJson(templateName), MEDIA_TYPE_JSON))
                 .build();
@@ -185,33 +176,60 @@ public class EsClient {
 
     }
 
-
     /**
-     * Insert json object into ElasticSearch. Index is required, but no mapping will be prepared for it.
-     * @param index
-     * @param json
+     * Send any GET request to elastic.
+     * @param uri relative path
      * @return http response
      */
-    public HttpResponse insertDoc(String index, String json) {
-
-        // TODO test
+    public HttpResponse sendGet(String uri) {
 
         HttpResponse response = new HttpResponse();
 
-        if (index == null || json == null) {
-            System.out.println("WARN:  index or body is null. Request will be ignored.");
+        if (uri == null) {
+            System.out.println("WARN:  uri is null. Request will be ignored.");
             return response;
         }
 
-        String docUrl = url.replace("_bulk", index + "/_doc");
-        Request request = new Request.Builder()
-                .url(docUrl)
-                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .post(RequestBody.create(json, MEDIA_TYPE_JSON))
-                .build();
-        System.out.println("INFO:  Executing request on url: " + url);
+        if (!uri.startsWith("/")) uri = "/" + uri;
 
-        response = executeHttpRequest(request, "doc");
+        Request request = new Request.Builder()
+                .url(esHost + uri)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .get()
+                .build();
+        System.out.println("INFO:  Executing request on url: " + esHost + uri);
+
+        response = executeHttpRequest(request, "sendGet");
+
+        return response;
+    }
+
+
+    /**
+     * Send any POST request to elastic. Body of the message must be properly formatted according to Elastic requirements.
+     * @param uri relative path
+     * @param body json body
+     * @return http response
+     */
+    public HttpResponse sendPost(String uri, String body) {
+
+        HttpResponse response = new HttpResponse();
+
+        if (uri == null || body == null) {
+            System.out.println("WARN:  uri or body is null. Request will be ignored.");
+            return response;
+        }
+
+        if (!uri.startsWith("/")) uri = "/" + uri;
+
+        Request request = new Request.Builder()
+                .url(esHost + uri)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .post(RequestBody.create(body, MEDIA_TYPE_JSON))
+                .build();
+        System.out.println("INFO:  Executing request on url: " + esHost + uri);
+
+        response = executeHttpRequest(request, "sendPost");
 
         return response;
     }
@@ -231,11 +249,11 @@ public class EsClient {
         }
 
         Request request = new Request.Builder()
-                .url(url)
+                .url(esHost + ES_API_BULK_ENDPOINT)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .post(RequestBody.create(body, MEDIA_TYPE_JSON))
                 .build();
-        System.out.println("INFO:  Executing request on url: " + url);
+        System.out.println("INFO:  Executing request on url: " + esHost + ES_API_BULK_ENDPOINT);
 
         return executeHttpRequest(request, "bulk").success;
 
@@ -281,10 +299,10 @@ public class EsClient {
         // set timestamp if it is not set already
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
-        Histogram.Timer t = PromExporter.metricslib_http_request_time.labels("EsClient[" + clientId + "]", url, "POST", metric.getName()).startTimer();
+        Histogram.Timer t = PromExporter.metricslib_http_request_time.labels("EsClient[" + clientId + "]", esHost + ES_API_BULK_ENDPOINT, "POST", metric.getName()).startTimer();
 
         Request request = new Request.Builder()
-                .url(url)
+                .url(esHost + ES_API_BULK_ENDPOINT)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric), MEDIA_TYPE_JSON))
                 .build();
@@ -316,7 +334,7 @@ public class EsClient {
         }
 
         double dur = t.observeDuration();
-        PromExporter.metricslib_http_request_time.labels("EsClient[" + clientId + "]", url, "POST", metric.getName()).observe(dur);
+        PromExporter.metricslib_http_request_time.labels("EsClient[" + clientId + "]", esHost + ES_API_BULK_ENDPOINT, "POST", metric.getName()).observe(dur);
 
         // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be usd when metric will be sent
         metric.setTimestamp(0);
@@ -328,7 +346,7 @@ public class EsClient {
     /**
      * This method actually sends the HTTP request and does all the error handling. Method returns object HttpResponse,
      * which contains a boolean flag if request was successfully executed, a returned http error code and the response
-     * itself. Error code 0 means exception, otherwise real http error code is returned (200-OK, 404-Not found...).
+     * itself. Error code 0 means exception, otherwise http error code is returned (200-OK, 404-Not found...).
      * @param request
      * @return http response
      */
@@ -342,10 +360,10 @@ public class EsClient {
 
         try {
 
-            PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", url).inc();
+            PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", request.url().toString()).inc();
             Response response = httpClient.newCall(request).execute();
             if (!response.isSuccessful()) {
-                PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "" + response.code()).inc();
+                PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "" + response.code()).inc();
             }
             duration = System.currentTimeMillis() - startTime;
             System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + request.method().toUpperCase() + " " + request.url().toString() + " - " + response.code() + " - [took " + duration + "ms]");
@@ -356,26 +374,26 @@ public class EsClient {
 
         } catch (UnknownHostException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< UnknownHostException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "UnknownHostException").inc();
+            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "UnknownHostException").inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "UnknownHostException";
         } catch (SocketTimeoutException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketTimeoutException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "SocketTimeoutException").inc();
+            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "SocketTimeoutException").inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketTimeoutException";
         } catch (SocketException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "SocketException").inc();
+            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "SocketException").inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketException";
         } catch (Exception e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< Exception: " + e.getMessage());
             e.printStackTrace();
-            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", url, "Exception").inc();
+            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "Exception").inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "Exception";
@@ -391,7 +409,8 @@ public class EsClient {
      */
     public String sendGetIndices() {
         Request request = new Request.Builder()
-                .url("http://" + host + ":" + port + "/_cat/indices?v")
+                .url(esHost + ES_API_GET_INDICES_VERBOSE)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .build();
         Response response = null;
         try {
@@ -407,7 +426,7 @@ public class EsClient {
      * This class is for internal use only. Http response contains http error code, response body and success flag,
      * which indicates if something went wrong, like an exception.
      */
-    private class HttpResponse {
+    public class HttpResponse {
 
         public boolean success = false;
         public int responseCode = 0;

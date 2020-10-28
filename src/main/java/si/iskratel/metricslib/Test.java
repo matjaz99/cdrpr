@@ -88,7 +88,7 @@ public class Test {
         PMetric test_without_timeseries_points = PMetric.build().setName("test_without_timeseries_points").setHelp("Coutning calls")
                 .setLabelNames("node", "trunkgroup", "direction").register();
 
-        EsClient es = new EsClient("http://mcrk-docker-1:9200/cdraggs/_bulk");
+        EsClient es = new EsClient("mcrk-docker-1", 9200);
         es.sendBulkPost(calls_by_cause);
         es.sendBulkPost(test_without_timeseries_points);
 

@@ -218,7 +218,7 @@ public class MetricsLib {
         EsClient es = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT);
         StringBuilder sb = new StringBuilder();
         sb.append("{\"name\":\"metricslib\",\"version\":\"v").append(METRICSLIB_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
-        es.insertDoc("metricslib", sb.toString());
+        es.sendPost("/metricslib", sb.toString());
 
     }
 
