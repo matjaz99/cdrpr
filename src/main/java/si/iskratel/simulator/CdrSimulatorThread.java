@@ -10,18 +10,18 @@ public class CdrSimulatorThread extends Thread {
     private int threadId = 0;
     private long totalCount = 0;
     private static double randomFactor = Math.abs(getCosFactor(getRandomInRange(2, 12) * 3600) + 1.0);
-
-    private int timeBeforeRinging = 2500;
+    private static String nodeId;
 
     public CdrSimulatorThread(int id) {
         threadId = id;
+        nodeId = Start.getRandomNodeId();
     }
 
 
     public void run() {
 
         try {
-            Thread.sleep(getRandomInRange(10, 100));
+            Thread.sleep(getRandomInRange(5000, 20000));
         } catch (InterruptedException e) {
         }
 
@@ -31,7 +31,7 @@ public class CdrSimulatorThread extends Thread {
         while (running) {
 
             try {
-                Thread.sleep((long) (delay * randomFactor) + 1);
+                Thread.sleep((long) (delay * Math.abs(getCosFactor(getRandomInRange(2, 12) * 3600))) + 1);
             } catch (InterruptedException e) {
             }
 
