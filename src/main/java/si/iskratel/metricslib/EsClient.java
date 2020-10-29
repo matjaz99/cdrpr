@@ -62,6 +62,7 @@ public class EsClient {
         } else if (r1.responseCode == 404) {
             // 2. create template
             HttpResponse r2 = sendPut("/_template/" + templateName, PMetricFormatter.toTemplateJson(templateName));
+            if (!r2.success) return false;
         }
 
         // 3. check if alias exists
@@ -73,23 +74,19 @@ public class EsClient {
             System.out.println("INFO:  EsClient[" + clientId + "]: alias already exists: " + index);
             // alias exists, nothing else to do
             return true;
-        } else if (r3.responseCode == 404) {
-            // 2. create alias
-            HttpResponse r4 = sendPut("/_alias/" + index, PMetricFormatter.toTemplateJson(templateName));
+        } else if (r3.responseCode != 404) {
+            // something is not right, exit
+            return false;
         }
+
+        // continue only if 404
 
         // 4. create index with alias
         String newIndex = index + "-000000";
-
         System.out.println("INFO:  EsClient[" + clientId + "]: creating index: " + newIndex + " with alias: " + index);
+        HttpResponse r4 = sendPut(newIndex, PMetricFormatter.toIndexJson(index));
+        if (r4.success) return true;
 
-        Request request = new Request.Builder()
-                .url("http://" + host + ":" + port + "/" + newIndex)
-                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .put(RequestBody.create(PMetricFormatter.toIndexJson(index), MEDIA_TYPE_JSON))
-                .build();
-
-        if (executeHttpRequest(request, "createIndex").success) return true;
         System.out.println("WARN:  EsClient[" + clientId + "]: ...failed to create index.");
         return false;
 
