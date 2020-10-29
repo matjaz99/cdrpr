@@ -43,7 +43,9 @@ public class EsClient {
 
 
     /**
-     * Create index.
+     * Create index. Well, first check if template exists and create it if it does not exist. Then check if alias exists
+     * and create one if it does not exist yet. The name of alias is the same as the name of registry, while index gets
+     * a numeric suffix (*-000000) for the sake of rotating index policy.
      * @param metric
      * @return success
      */
@@ -79,7 +81,7 @@ public class EsClient {
             return false;
         }
 
-        // continue only if 404
+        // ...continue only if 404
 
         // 4. create index with alias
         String newIndex = index + "-000000";
@@ -91,98 +93,6 @@ public class EsClient {
         return false;
 
     }
-
-//    /**
-//     * Check if index exists. If yes, then 200 is returned. If no, then 404 is returned. If 0 is returned,
-//     * it means exception occurred when sending request and no http error code was retrieved.
-//     * @param index
-//     * @return http error code
-//     */
-//    private boolean checkIndex(String index) {
-//
-//        Request request = new Request.Builder()
-//                .url("http://" + host + ":" + port + "/" + index)
-//                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-//                .get()
-//                .build();
-//
-//        HttpResponse resp = executeHttpRequest(request, "checkIndex");
-//
-//        if (resp.responseCode == 200) {
-//            System.out.println("INFO:  EsClient[" + clientId + "]: index already exists: " + index);
-//            return true;
-//        }
-//        if (resp.responseCode == 0) {
-//            // exception
-//            return false;
-//        }
-//        return false;
-//    }
-
-//    /**
-//     * Return true only if template already exists.
-//     * @param templateName
-//     * @return true if template exists
-//     */
-//    private boolean checkTemplate(String templateName) {
-//
-//        Request request = new Request.Builder()
-//                .url(esHost + "/_template/" + templateName)
-//                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-//                .get()
-//                .build();
-//
-//        HttpResponse resp = executeHttpRequest(request, "checkTemplate");
-//
-//        if (resp.responseCode == 200) {
-//            System.out.println("INFO:  EsClient[" + clientId + "]: template already exists: " + templateName);
-//            return true;
-//        }
-//        if (resp.responseCode == 0) {
-//            // exception
-//            return false;
-//        }
-//
-//        return false;
-//    }
-
-//    private boolean checkAlias(String alias) {
-//
-//        Request request = new Request.Builder()
-//                .url(esHost + "/_alias/" + alias)
-//                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-//                .get()
-//                .build();
-//
-//        HttpResponse resp = executeHttpRequest(request, "checkAlias");
-//
-//        if (resp.responseCode == 200) {
-//            System.out.println("INFO:  EsClient[" + clientId + "]: alias already exists: " + alias);
-//            return true;
-//        }
-//        if (resp.responseCode == 0) {
-//            // exception
-//            return false;
-//        }
-//
-//        return false;
-//    }
-
-//    private boolean createTemplate(String templateName) {
-//
-//        System.out.println("INFO:  EsClient[" + clientId + "]: creating template: " + templateName);
-//
-//        Request request = new Request.Builder()
-//                .url(esHost + "/_template/" + templateName)
-//                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-//                .put(RequestBody.create(PMetricFormatter.toTemplateJson(templateName), MEDIA_TYPE_JSON))
-//                .build();
-//
-//        if (executeHttpRequest(request, "createTemplate").success) return true;
-//        System.out.println("WARN:  EsClient[" + clientId + "]: ...failed to create template.");
-//        return false;
-//
-//    }
 
     /**
      * Send any GET request to elastic.

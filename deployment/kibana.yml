@@ -5,6 +5,9 @@ xpack.encryptedSavedObjects.encryptionKey: d974e095b5716c4640de67a4fdb7d4a286b47
 xpack.actions.enabledActionTypes: [.email, .index, .webhook]
 #xpack.security.session.idleTimeout: "10m"
 
+kibana.autocompleteTimeout: 20000
+kibana.autocompleteTerminateAfter: 30000
+
 # Kibana is served by a back end server. This setting specifies the port to use.
 #server.port: 5601
 

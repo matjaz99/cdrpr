@@ -14,6 +14,7 @@ public class AggregatedCalls implements Runnable {
     private EsClient esClient;
 
     private static final String INDEX_CDR_CALLS = "pmon_cdr_node_calls_idx";
+    private static final String INDEX_CDR_ACTIVE_CALLS = "pmon_cdr_node_active_calls_idx";
     private static final String INDEX_CDR_CALL_DURATION = "pmon_cdr_node_durations_idx";
     private static final String INDEX_CDR_BG = "pmon_cdr_business_group_idx";
     private static final String INDEX_CDR_SUPP_SERVICE = "pmon_cdr_supplementary_service_idx";
@@ -32,7 +33,7 @@ public class AggregatedCalls implements Runnable {
             .setName("pmon_cdr_calls_in_progress")
             .setHelp("Current number of calls in progress (answered only)")
             .setLabelNames("nodeName")
-            .register(INDEX_CDR_CALLS);
+            .register(INDEX_CDR_ACTIVE_CALLS);
     public static PMetric pmon_cdr_call_duration = PMetric.build()
             .setName("pmon_cdr_call_duration")
             .setHelp("Total duration of answered calls on node")
