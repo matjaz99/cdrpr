@@ -53,30 +53,29 @@ public class EsClient {
         String templateName = index + "_tmpl";
 
         // 1. check if template exists
-        boolean b1 = false;
         HttpResponse r1 = sendGet("/_template/" + templateName);
         if (r1.responseCode == 0) {
             // exception, exit
             return false;
-        }
-        if (r1.responseCode == 200) {
+        } else if (r1.responseCode == 200) {
             System.out.println("INFO:  EsClient[" + clientId + "]: template already exists: " + templateName);
-            b1 = true;
         } else if (r1.responseCode == 404) {
-
-        }
-
-
-        // 2. create template
-        if (!b1) {
-            createTemplate(templateName);
+            // 2. create template
+            HttpResponse r2 = sendPut("/_template/" + templateName, PMetricFormatter.toTemplateJson(templateName));
         }
 
         // 3. check if alias exists
-        boolean b3 = checkAlias(index);
-        if (b3) {
+        HttpResponse r3 = sendGet("/_alias/" + index);
+        if (r3.responseCode == 0) {
+            // exception, exit
+            return false;
+        } else if (r3.responseCode == 200) {
+            System.out.println("INFO:  EsClient[" + clientId + "]: alias already exists: " + index);
             // alias exists, nothing else to do
             return true;
+        } else if (r3.responseCode == 404) {
+            // 2. create alias
+            HttpResponse r4 = sendPut("/_alias/" + index, PMetricFormatter.toTemplateJson(templateName));
         }
 
         // 4. create index with alias
@@ -123,70 +122,70 @@ public class EsClient {
 //        return false;
 //    }
 
-    /**
-     * Return true only if template already exists.
-     * @param templateName
-     * @return true if template exists
-     */
-    private boolean checkTemplate(String templateName) {
+//    /**
+//     * Return true only if template already exists.
+//     * @param templateName
+//     * @return true if template exists
+//     */
+//    private boolean checkTemplate(String templateName) {
+//
+//        Request request = new Request.Builder()
+//                .url(esHost + "/_template/" + templateName)
+//                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+//                .get()
+//                .build();
+//
+//        HttpResponse resp = executeHttpRequest(request, "checkTemplate");
+//
+//        if (resp.responseCode == 200) {
+//            System.out.println("INFO:  EsClient[" + clientId + "]: template already exists: " + templateName);
+//            return true;
+//        }
+//        if (resp.responseCode == 0) {
+//            // exception
+//            return false;
+//        }
+//
+//        return false;
+//    }
 
-        Request request = new Request.Builder()
-                .url(esHost + "/_template/" + templateName)
-                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .get()
-                .build();
+//    private boolean checkAlias(String alias) {
+//
+//        Request request = new Request.Builder()
+//                .url(esHost + "/_alias/" + alias)
+//                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+//                .get()
+//                .build();
+//
+//        HttpResponse resp = executeHttpRequest(request, "checkAlias");
+//
+//        if (resp.responseCode == 200) {
+//            System.out.println("INFO:  EsClient[" + clientId + "]: alias already exists: " + alias);
+//            return true;
+//        }
+//        if (resp.responseCode == 0) {
+//            // exception
+//            return false;
+//        }
+//
+//        return false;
+//    }
 
-        HttpResponse resp = executeHttpRequest(request, "checkTemplate");
-
-        if (resp.responseCode == 200) {
-            System.out.println("INFO:  EsClient[" + clientId + "]: template already exists: " + templateName);
-            return true;
-        }
-        if (resp.responseCode == 0) {
-            // exception
-            return false;
-        }
-
-        return false;
-    }
-
-    private boolean checkAlias(String alias) {
-
-        Request request = new Request.Builder()
-                .url(esHost + "/_alias/" + alias)
-                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .get()
-                .build();
-
-        HttpResponse resp = executeHttpRequest(request, "checkAlias");
-
-        if (resp.responseCode == 200) {
-            System.out.println("INFO:  EsClient[" + clientId + "]: alias already exists: " + alias);
-            return true;
-        }
-        if (resp.responseCode == 0) {
-            // exception
-            return false;
-        }
-
-        return false;
-    }
-
-    private boolean createTemplate(String templateName) {
-
-        System.out.println("INFO:  EsClient[" + clientId + "]: creating template: " + templateName);
-
-        Request request = new Request.Builder()
-                .url(esHost + "/_template/" + templateName)
-                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .put(RequestBody.create(PMetricFormatter.toTemplateJson(templateName), MEDIA_TYPE_JSON))
-                .build();
-
-        if (executeHttpRequest(request, "createTemplate").success) return true;
-        System.out.println("WARN:  EsClient[" + clientId + "]: ...failed to create template.");
-        return false;
-
-    }
+//    private boolean createTemplate(String templateName) {
+//
+//        System.out.println("INFO:  EsClient[" + clientId + "]: creating template: " + templateName);
+//
+//        Request request = new Request.Builder()
+//                .url(esHost + "/_template/" + templateName)
+//                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+//                .put(RequestBody.create(PMetricFormatter.toTemplateJson(templateName), MEDIA_TYPE_JSON))
+//                .build();
+//
+//        if (executeHttpRequest(request, "createTemplate").success) return true;
+//        System.out.println("WARN:  EsClient[" + clientId + "]: ...failed to create template.");
+//        return false;
+//
+//    }
 
     /**
      * Send any GET request to elastic.
