@@ -107,7 +107,7 @@ public class MetricsLib {
             PromExporter.metricslib_servlet_requests_total.labels("/indices").inc();
 
             EsClient e = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT);
-            String s = e.sendGetIndices();
+            String s = e.sendGet(EsClient.ES_API_GET_INDICES_VERBOSE).responseText;
 
             resp.getWriter().println("<h1>Elasticsearch indices</h1>");
             resp.getWriter().println("<h3>" + DEFAULT_ES_HOST + ":" + DEFAULT_ES_PORT + "</h3>");

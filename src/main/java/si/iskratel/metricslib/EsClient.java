@@ -53,17 +53,19 @@ public class EsClient {
         String templateName = index + "_tmpl";
 
         // 1. check if template exists
-//        boolean b1 = checkTemplate(templateName);
         boolean b1 = false;
-        HttpResponse r1 = sendGet("");
-        if (r1.responseCode == 200) {
-            System.out.println("INFO:  EsClient[" + clientId + "]: template already exists: " + templateName);
-            b1 = true;
-        }
+        HttpResponse r1 = sendGet("/_template/" + templateName);
         if (r1.responseCode == 0) {
             // exception, exit
             return false;
         }
+        if (r1.responseCode == 200) {
+            System.out.println("INFO:  EsClient[" + clientId + "]: template already exists: " + templateName);
+            b1 = true;
+        } else if (r1.responseCode == 404) {
+
+        }
+
 
         // 2. create template
         if (!b1) {
@@ -440,25 +442,6 @@ public class EsClient {
 
         return httpResponse;
 
-    }
-
-    /**
-     * Show all indices in ElasticSearch.
-     * @return response
-     */
-    public String sendGetIndices() {
-        Request request = new Request.Builder()
-                .url(esHost + ES_API_GET_INDICES_VERBOSE)
-                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .build();
-        Response response = null;
-        try {
-            response = httpClient.newCall(request).execute();
-            return response.body().string();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return e.getMessage();
-        }
     }
 
     /**
