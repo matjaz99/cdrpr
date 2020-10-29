@@ -15,9 +15,17 @@ Added Inventory caanvas
 Warning: file is over 10 MB!
 
 ### rev006a
-Removed canvas-workpad-template from export (size is normal: ~100 kb)
+Removed canvas-workpad-template from export (size is normal: 100 kb)
 Added transform for index node_cause_transform_idx
 
 ### rev007
 Added better transform (index: `pmon_cdr_transform_node_cause-000000`)
 Check Node CDR tables
+
+#### rev008
+Added tables
+
+### rev009
+Added Forma_6 example
+Added piechart, tagcloud
+
