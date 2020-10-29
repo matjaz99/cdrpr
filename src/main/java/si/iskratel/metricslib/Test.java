@@ -3,6 +3,7 @@ package si.iskratel.metricslib;
 import io.prometheus.client.Gauge;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Test {
@@ -12,11 +13,12 @@ public class Test {
 //        testMultipleRegistries();
 //        testMetrics();
 //        aggregateCalls();
+        System.out.println(new Date().toString());
 
-        while (true) {
-            System.out.println(getCosFactor(60));
-            Thread.sleep(3 * 1000);
-        }
+        EsClient es = new EsClient("elasticvm", 9200);
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"name\":\"metricslib\",\"version\":\"v").append(MetricsLib.METRICSLIB_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
+        es.sendPost("/metricslib/_doc", sb.toString());
 
     }
 

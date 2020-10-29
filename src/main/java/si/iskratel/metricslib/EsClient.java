@@ -53,7 +53,17 @@ public class EsClient {
         String templateName = index + "_tmpl";
 
         // 1. check if template exists
-        boolean b1 = checkTemplate(templateName);
+//        boolean b1 = checkTemplate(templateName);
+        boolean b1 = false;
+        HttpResponse r1 = sendGet("");
+        if (r1.responseCode == 200) {
+            System.out.println("INFO:  EsClient[" + clientId + "]: template already exists: " + templateName);
+            b1 = true;
+        }
+        if (r1.responseCode == 0) {
+            // exception, exit
+            return false;
+        }
 
         // 2. create template
         if (!b1) {
@@ -230,6 +240,35 @@ public class EsClient {
         System.out.println("INFO:  Executing request on url: " + esHost + uri);
 
         response = executeHttpRequest(request, "sendPost");
+
+        return response;
+    }
+
+    /**
+     * Send any PUT request to elastic. Body of the message must be properly formatted according to Elastic requirements.
+     * @param uri relative path
+     * @param body json body
+     * @return http response
+     */
+    public HttpResponse sendPut(String uri, String body) {
+
+        HttpResponse response = new HttpResponse();
+
+        if (uri == null || body == null) {
+            System.out.println("WARN:  uri or body is null. Request will be ignored.");
+            return response;
+        }
+
+        if (!uri.startsWith("/")) uri = "/" + uri;
+
+        Request request = new Request.Builder()
+                .url(esHost + uri)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .put(RequestBody.create(body, MEDIA_TYPE_JSON))
+                .build();
+        System.out.println("INFO:  Executing request on url: " + esHost + uri);
+
+        response = executeHttpRequest(request, "sendPut");
 
         return response;
     }
@@ -432,6 +471,14 @@ public class EsClient {
         public int responseCode = 0;
         public String responseText;
 
+        @Override
+        public String toString() {
+            return "HttpResponse{" +
+                    "success=" + success +
+                    ", responseCode=" + responseCode +
+                    ", responseText='" + responseText + '\'' +
+                    '}';
+        }
     }
 
 }
