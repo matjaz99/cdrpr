@@ -129,7 +129,7 @@ public class PMetric {
         return timeSeries.size();
     }
 
-    public List<PTimeSeries> getTimeSeries() {
+    public synchronized List<PTimeSeries> getTimeSeries() {
         return new ArrayList<>(timeSeries.values());
     }
 
