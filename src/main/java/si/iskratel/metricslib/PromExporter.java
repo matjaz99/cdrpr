@@ -24,33 +24,30 @@ public class PromExporter {
             .register();
     public static final Counter metricslib_attempted_requests_total = Counter.build()
             .name("metricslib_attempted_requests_total")
-            .labelNames("client", "endpoint")
+            .labelNames("method", "endpoint")
             .help("Number of attempts to do bulk insert.")
             .register();
     public static final Counter metricslib_failed_requests_total = Counter.build()
             .name("metricslib_failed_requests_total")
-            .labelNames("client", "endpoint", "error")
+            .labelNames("method", "endpoint", "error")
             .help("Number of failed attempts to do bulk insert.")
             .register();
     public static final Counter metricslib_dump_to_file_total = Counter.build()
             .name("metricslib_dump_to_file_total")
-            .labelNames("client")
             .help("Number of files being dumped")
             .register();
     public static final Counter metricslib_dump_files_uploads_total = Counter.build()
             .name("metricslib_dump_files_uploads_total")
-            .labelNames("client")
             .help("Number of successful file uploads.")
             .register();
     public static final Counter metricslib_dropped_metrics_total = Counter.build()
             .name("metricslib_dropped_metrics_total")
-            .labelNames("client")
             .help("Number of metrics that were dropped because they could not be written")
             .register();
     public static final Histogram metricslib_http_request_time = Histogram.build()
             .buckets(0.05, 0.1, 0.3, 0.5, 1.0, 3.0, 5.0, 10.0, 30.0)
             .name("metricslib_http_request_time")
-            .labelNames("client", "endpoint", "method", "metric")
+            .labelNames("endpoint", "method", "metric")
             .help("Http request-response time")
             .register();
 

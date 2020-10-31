@@ -44,7 +44,7 @@ public class FileUploadThread extends Thread {
                 System.out.println("INFO:  uploading file: " + bkpFiles[i].getName() + " [result=" + b + "]");
                 if (b) {
                     bkpFiles[i].delete();
-                    PromExporter.metricslib_dump_files_uploads_total.labels("EsClient").inc();
+                    PromExporter.metricslib_dump_files_uploads_total.inc();
                 } else {
                     break;
                 }

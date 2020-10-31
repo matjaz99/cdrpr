@@ -36,9 +36,6 @@ public class EsClient {
         this.host = host;
         this.port = port;
         esHost = "http://" + host + ":" + port;
-        // just initialize metrics with value 0
-        PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", esHost);
-        PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", esHost, "null");
     }
 
 
@@ -115,9 +112,8 @@ public class EsClient {
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .get()
                 .build();
-        System.out.println("INFO:  Executing request on url: " + esHost + uri);
 
-        response = executeHttpRequest(request, "sendGet");
+        response = executeHttpRequest(request);
 
         return response;
     }
@@ -145,9 +141,8 @@ public class EsClient {
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .post(RequestBody.create(body, MEDIA_TYPE_JSON))
                 .build();
-        System.out.println("INFO:  Executing request on url: " + esHost + uri);
 
-        response = executeHttpRequest(request, "sendPost");
+        response = executeHttpRequest(request);
 
         return response;
     }
@@ -174,9 +169,8 @@ public class EsClient {
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .put(RequestBody.create(body, MEDIA_TYPE_JSON))
                 .build();
-        System.out.println("INFO:  Executing request on url: " + esHost + uri);
 
-        response = executeHttpRequest(request, "sendPut");
+        response = executeHttpRequest(request);
 
         return response;
     }
@@ -200,9 +194,8 @@ public class EsClient {
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
                 .post(RequestBody.create(body, MEDIA_TYPE_JSON))
                 .build();
-        System.out.println("INFO:  Executing request on url: " + esHost + ES_API_BULK_ENDPOINT);
 
-        return executeHttpRequest(request, "bulk").success;
+        return executeHttpRequest(request).success;
 
     }
 
@@ -238,7 +231,7 @@ public class EsClient {
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
-                System.out.println("ERROR: EsClient[" + clientId + "]: Index cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
+                System.out.println("ERROR: EsClient[" + clientId + "]: index cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
                 return false;
             }
         }
@@ -246,18 +239,19 @@ public class EsClient {
         // set timestamp if it is not set already
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
-        Histogram.Timer t = PromExporter.metricslib_http_request_time.labels("EsClient[" + clientId + "]", esHost + ES_API_BULK_ENDPOINT, "POST", metric.getName()).startTimer();
-
         Request request = new Request.Builder()
                 .url(esHost + ES_API_BULK_ENDPOINT)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .addHeader("metric-name", metric.getName())
                 .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric), MEDIA_TYPE_JSON))
                 .build();
 
         try {
 
+            System.out.println("INFO:  EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + metric.getTimeSeriesSize() + "]");
+
             while (retryCount <= MetricsLib.RETRIES) {
-                success = executeHttpRequest(request, "metric " + metric.getName() + " [size=" + metric.getTimeSeriesSize() + "]").success;
+                success = executeHttpRequest(request).success;
                 if (success) break;
                 retryCount++;
                 Thread.sleep(1500);
@@ -268,10 +262,10 @@ public class EsClient {
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
                     System.out.println("INFO:  EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
                     FileClient.dumpToFile(this, metric);
-                    PromExporter.metricslib_dump_to_file_total.labels("EsClient[" + clientId + "]").inc();
+                    PromExporter.metricslib_dump_to_file_total.inc();
                 } else {
                     System.out.println("ERROR: EsClient[" + clientId + "]: Dumping is disabled. Metric will be dropped!!!");
-                    PromExporter.metricslib_dropped_metrics_total.labels("EsClient[" + clientId + "]").inc(metric.getTimeSeriesSize());
+                    PromExporter.metricslib_dropped_metrics_total.inc(metric.getTimeSeriesSize());
                 }
             }
 
@@ -279,9 +273,6 @@ public class EsClient {
             success = false;
             e.printStackTrace();
         }
-
-        double dur = t.observeDuration();
-        PromExporter.metricslib_http_request_time.labels("EsClient[" + clientId + "]", esHost + ES_API_BULK_ENDPOINT, "POST", metric.getName()).observe(dur);
 
         // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be usd when metric will be sent
         metric.setTimestamp(0);
@@ -294,26 +285,30 @@ public class EsClient {
      * This method actually sends the HTTP request and does all the error handling. Method returns object HttpResponse,
      * which contains a boolean flag if request was successfully executed, a returned http error code and the response
      * itself. Error code 0 means exception, otherwise http error code is returned (200-OK, 404-Not found...).
-     * @param request
+     * @param request http request
      * @return http response
      */
-    private HttpResponse executeHttpRequest(Request request, String reqId) {
+    private HttpResponse executeHttpRequest(Request request) {
 
         HttpResponse httpResponse = new HttpResponse();
         long startTime = System.currentTimeMillis();
         long duration = 0;
+        String metric = request.headers().get("metric-name");
+        if (metric == null) metric = "null";
 
-        System.out.println("INFO:  EsClient[" + clientId + "]: >>> sending: " + reqId);
+        System.out.println("INFO:  EsClient[" + clientId + "]: >>> " + request.method().toUpperCase() + " " + request.url().uri().getPath());
+
+        Histogram.Timer t = PromExporter.metricslib_http_request_time.labels(request.url().toString(), request.method(), metric).startTimer();
 
         try {
 
-            PromExporter.metricslib_attempted_requests_total.labels("EsClient[" + clientId + "]", request.url().toString()).inc();
+            PromExporter.metricslib_attempted_requests_total.labels(request.method().toUpperCase(), request.url().toString()).inc();
             Response response = httpClient.newCall(request).execute();
             if (!response.isSuccessful()) {
-                PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "" + response.code()).inc();
+                PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "" + response.code()).inc();
             }
             duration = System.currentTimeMillis() - startTime;
-            System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + request.method().toUpperCase() + " " + request.url().toString() + " - " + response.code() + " - [took " + duration + "ms]");
+            System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + response.code() + " - [took " + duration + "ms]");
             httpResponse.success = response.isSuccessful();
             httpResponse.responseCode = response.code();
             httpResponse.responseText = response.body().string();
@@ -321,30 +316,34 @@ public class EsClient {
 
         } catch (UnknownHostException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< UnknownHostException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "UnknownHostException").inc();
+            PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "UnknownHostException").inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "UnknownHostException";
         } catch (SocketTimeoutException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketTimeoutException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "SocketTimeoutException").inc();
+            PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "SocketTimeoutException").inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketTimeoutException";
         } catch (SocketException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "SocketException").inc();
+            PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "SocketException").inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketException";
         } catch (Exception e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< Exception: " + e.getMessage());
             e.printStackTrace();
-            PromExporter.metricslib_failed_requests_total.labels("EsClient[" + clientId + "]", request.url().toString(), "Exception").inc();
+            PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "Exception").inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "Exception";
         }
+
+        double dur = t.observeDuration();
+        PromExporter.metricslib_http_request_time.labels(request.url().toString(), request.method(), metric).observe(dur);
+
 
         return httpResponse;
 
