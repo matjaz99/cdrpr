@@ -43,12 +43,11 @@ public class EsClient {
      * Create index. Well, first check if template exists and create it if it does not exist. Then check if alias exists
      * and create one if it does not exist yet. The name of alias is the same as the name of registry, while index gets
      * a numeric suffix (*-000000) for the sake of rotating index policy.
-     * @param metric
+     * @param index
      * @return success
      */
-    private boolean createIndex(PMetric metric) {
+    private boolean createIndex(String index) {
 
-        String index = metric.getParentRegistry();
         String templateName = index + "_tmpl";
 
         // 1. check if template exists
@@ -189,6 +188,16 @@ public class EsClient {
             return false;
         }
 
+        // parse first line to get an index. Example: {"index":{"_index":"pmon_cdr_business_group_idx"}}
+        String idx = body.split("\n")[0];
+        idx = idx.substring(20, idx.length() - 3);
+
+        boolean b = createIndex(idx);
+        if (b != true) {
+            // FIXME where to put setMapping=true on registry?
+            return false;
+        }
+
         Request request = new Request.Builder()
                 .url(esHost + ES_API_BULK_ENDPOINT)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
@@ -227,11 +236,17 @@ public class EsClient {
 
         // check if index exists in elastic
         if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated() && MetricsLib.ES_AUTO_CREATE_INDEX) {
-            boolean b = createIndex(metric);
+            boolean b = createIndex(metric.getName());
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
-                System.out.println("ERROR: EsClient[" + clientId + "]: index cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
+                if (MetricsLib.DUMP_TO_FILE_ENABLED) {
+                    System.out.println("WARN:  EsClient[" + clientId + "]: index cannot be created, metrics may not be inserted without index mapping. Dumping to file: " + metric.getName());
+                    FileClient.dumpToFile(this, metric);
+                    PromExporter.metricslib_dump_to_file_total.inc();
+                } else {
+                    System.out.println("ERROR: EsClient[" + clientId + "]: index cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
+                }
                 return false;
             }
         }

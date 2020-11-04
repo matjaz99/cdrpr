@@ -4,7 +4,7 @@
       "hot" : {
         "actions" : {
           "rollover" : {
-            "max_size" : "500mb",
+            "max_size" : "20gb",
             "max_docs" : 100000000,
             "max_age":"4h"
           },

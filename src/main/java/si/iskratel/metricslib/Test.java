@@ -13,12 +13,10 @@ public class Test {
 //        testMultipleRegistries();
 //        testMetrics();
 //        aggregateCalls();
-        System.out.println(new Date().toString());
 
-        EsClient es = new EsClient("elasticvm", 9200);
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\"name\":\"metricslib\",\"version\":\"v").append(MetricsLib.METRICSLIB_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
-        es.sendPost("/metricslib/_doc", sb.toString());
+        String s = "{\"index\":{\"_index\":\"pmon_cdr_business_group_idx\"}}";
+        s = s.substring(20, s.length() - 3);
+        System.out.println(s);
 
     }
 

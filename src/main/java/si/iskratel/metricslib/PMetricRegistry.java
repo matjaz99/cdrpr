@@ -58,6 +58,8 @@ public class PMetricRegistry {
         return new ArrayList<>(metricsMap.values());
     }
 
+    public PMetric getMetric(String metricName) { return metricsMap.get(metricName); }
+
     public boolean isMappingCreated() {
         return mappingCreated;
     }

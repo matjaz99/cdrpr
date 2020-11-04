@@ -12,8 +12,8 @@ public class TestCars {
     public static void main(String... args) throws Exception {
 
         MetricsLib.PROM_METRICS_EXPORT_ENABLE = true;
-        MetricsLib.DEFAULT_ES_HOST = "mcrk-docker-1";
-        MetricsLib.DEFAULT_ES_PORT = 9200;
+        MetricsLib.ES_DEFAULT_HOST = "mcrk-docker-1";
+        MetricsLib.ES_DEFAULT_PORT = 9200;
         MetricsLib.init();
 
         PMetric car_metric = PMetric.build()

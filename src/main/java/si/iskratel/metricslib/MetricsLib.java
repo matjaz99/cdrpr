@@ -47,10 +47,12 @@ public class MetricsLib {
     public static boolean DUMP_TO_FILE_ENABLED = false;
     /** Interval for uploading dumped files */
     public static int UPLOAD_INTERVAL_SECONDS = 125;
-    public static String DEFAULT_ES_HOST = "localhost";
-    public static int DEFAULT_ES_PORT = 9200;
+    public static String ES_DEFAULT_HOST = "localhost";
+    public static int ES_DEFAULT_PORT = 9200;
     /** Choose whether or not you want index to be automatically created */
     public static boolean ES_AUTO_CREATE_INDEX = true;
+    public static int ES_NUMBER_OF_SHARDS = 1;
+    public static int ES_NUMBER_OF_REPLICAS = 0;
     /** A separate thread for uploading files */
     public static FileUploadThread fut;
 
@@ -82,8 +84,8 @@ public class MetricsLib {
                     + "metricslib.client.dump.enabled=" + DUMP_TO_FILE_ENABLED + "\n"
                     + "metricslib.client.dump.directory=" + DUMP_DIRECTORY + "\n"
                     + "metricslib.upload.interval.seconds=" + UPLOAD_INTERVAL_SECONDS + "\n"
-                    + "metricslib.client.elasticsearch.default.host=" + DEFAULT_ES_HOST + "\n"
-                    + "metricslib.client.elasticsearch.default.port=" + DEFAULT_ES_PORT + "\n"
+                    + "metricslib.client.elasticsearch.default.host=" + ES_DEFAULT_HOST + "\n"
+                    + "metricslib.client.elasticsearch.default.port=" + ES_DEFAULT_PORT + "\n"
                     + "</pre>");
 
             resp.getWriter().println("<h3>Registries</h3>");
@@ -106,11 +108,11 @@ public class MetricsLib {
 
             PromExporter.metricslib_servlet_requests_total.labels("/indices").inc();
 
-            EsClient e = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT);
+            EsClient e = new EsClient(ES_DEFAULT_HOST, ES_DEFAULT_PORT);
             String s = e.sendGet(EsClient.ES_API_GET_INDICES_VERBOSE).responseText;
 
             resp.getWriter().println("<h1>Elasticsearch indices</h1>");
-            resp.getWriter().println("<h3>" + DEFAULT_ES_HOST + ":" + DEFAULT_ES_PORT + "</h3>");
+            resp.getWriter().println("<h3>" + ES_DEFAULT_HOST + ":" + ES_DEFAULT_PORT + "</h3>");
             resp.getWriter().println("<pre>" + s + "</pre>");
 
         }
@@ -151,17 +153,17 @@ public class MetricsLib {
      */
     public static void init(Properties props) throws Exception {
         METRICSLIB_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.jetty.port", "9099"));
-        PATH_PREFIX = (String) props.getOrDefault("metricslib.pathPrefix", "/");
+        PATH_PREFIX = (String) props.getOrDefault("metricslib.jetty.pathPrefix", "/");
         if (PATH_PREFIX.length() > 0 && !PATH_PREFIX.endsWith("/")) PATH_PREFIX += "/";
 
         RETRIES = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.count", "3"));
         RETRY_INTERVAL_MILLISECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.interval.millis", "1500"));
         BULK_SIZE = Integer.parseInt((String) props.getOrDefault("metricslib.client.bulk.size", "50000"));
-        String dd = (String) props.getOrDefault("metricslib.client.dump.directory", "");
+        String dd = (String) props.getOrDefault("metricslib.dump.directory", "");
         if (dd.length() > 0 && !dd.endsWith("/")) dd += "/";
         DUMP_DIRECTORY = dd;
-        DUMP_TO_FILE_ENABLED = Boolean.parseBoolean((String) props.getOrDefault("metricslib.client.dump.enabled", "true"));
-        UPLOAD_INTERVAL_SECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.upload.interval.seconds", "16"));
+        DUMP_TO_FILE_ENABLED = Boolean.parseBoolean((String) props.getOrDefault("metricslib.dump.enabled", "true"));
+        UPLOAD_INTERVAL_SECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.upload.interval.seconds", "55"));
 
         PROM_METRICS_EXPORT_ENABLE = Boolean.parseBoolean((String) props.getOrDefault("metricslib.prometheus.enable", "true"));
         String include = (String) props.getOrDefault("metricslib.prometheus.include.registry", "_all");
@@ -170,8 +172,11 @@ public class MetricsLib {
         String exclude = (String) props.getOrDefault("metricslib.prometheus.exclude.registry", "");
         PROM_EXCLUDE_REGISTRY = exclude.split(",");
 
-        DEFAULT_ES_HOST = (String) props.getOrDefault("metricslib.client.elasticsearch.default.host", null);
-        DEFAULT_ES_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.client.elasticsearch.default.port", "0"));
+        ES_DEFAULT_HOST = (String) props.getOrDefault("metricslib.elasticsearch.default.host", null);
+        ES_DEFAULT_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.default.port", "0"));
+        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean((String) props.getOrDefault("metricslib.elasticsearch.createIndexOnStart", "true"));
+        ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberofShards", "1"));
+        ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
 
         if (METRICSLIB_PORT > 0) startJetty(METRICSLIB_PORT);
     }
@@ -210,12 +215,12 @@ public class MetricsLib {
 
         PromExporter.metricslib_up_time.set(System.currentTimeMillis());
 
-        if (MetricsLib.DUMP_TO_FILE_ENABLED && DEFAULT_ES_HOST != null) {
-            MetricsLib.fut = new FileUploadThread(new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT));
+        if (MetricsLib.DUMP_TO_FILE_ENABLED && ES_DEFAULT_HOST != null) {
+            MetricsLib.fut = new FileUploadThread(new EsClient(ES_DEFAULT_HOST, ES_DEFAULT_PORT));
             MetricsLib.fut.start();
         }
 
-        EsClient es = new EsClient(DEFAULT_ES_HOST, DEFAULT_ES_PORT);
+        EsClient es = new EsClient(ES_DEFAULT_HOST, ES_DEFAULT_PORT);
         StringBuilder sb = new StringBuilder();
         sb.append("{\"name\":\"metricslib\",\"version\":\"v").append(MetricsLib.METRICSLIB_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
         es.sendPost("/metricslib/_doc/m37r1c5l1b4b0ut", sb.toString());

@@ -10,7 +10,7 @@ public class PMetricFormatter {
         StringBuilder sb = new StringBuilder();
 
         for (PTimeSeries ts : metric.getTimeSeries()) {
-            sb.append("{ \"index\":{ \"_index\":\"").append(metric.getParentRegistry()).append("\"} }\n");
+            sb.append("{\"index\":{\"_index\":\"").append(metric.getParentRegistry()).append("\"}}\n");
             sb.append("{");
             sb.append("\"metric_name\":\"").append(metric.getName()).append("\",");
             for (int i = 0; i < metric.getLabelNames().length; i++) {
@@ -95,8 +95,8 @@ public class PMetricFormatter {
         sb.append("  \"index_patterns\": [\"${INDEX_PATTERNS}\"],\n");
         sb.append("  \"settings\": {\n");
         sb.append("    \"index\": {\n");
-        sb.append("      \"number_of_shards\" : 1,\n");
-        sb.append("      \"number_of_replicas\" : 0,\n");
+        sb.append("      \"number_of_shards\" : ${NUMBER_OF_SHARDS},\n");
+        sb.append("      \"number_of_replicas\" : ${NUMBER_OF_REPLICAS},\n");
         sb.append("      \"lifecycle.name\": \"pmon_ilm_policy\",\n");
         sb.append("      \"lifecycle.rollover_alias\": \"${ROLLOVER_ALIAS}\"\n");
         sb.append("    }\n");
@@ -121,6 +121,8 @@ public class PMetricFormatter {
         String s = sb.toString();
         s = s.replace("${INDEX_PATTERNS}", indexPattern);
         s = s.replace("${ROLLOVER_ALIAS}", rolloverAlias);
+        s = s.replace("${NUMBER_OF_SHARDS}", Integer.toString(MetricsLib.ES_NUMBER_OF_SHARDS));
+        s = s.replace("${NUMBER_OF_REPLICAS}", Integer.toString(MetricsLib.ES_NUMBER_OF_REPLICAS));
         System.out.println(s);
         return s;
 
