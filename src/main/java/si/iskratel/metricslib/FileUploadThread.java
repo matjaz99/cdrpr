@@ -31,7 +31,7 @@ public class FileUploadThread extends Thread {
             File[] bkpFiles = dumpDir.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File f) {
-                    if (f.getName().startsWith("es_")) return true;
+                    if (f.getName().endsWith(".ndjson")) return true;
                     return false;
                 }
             });

@@ -38,12 +38,12 @@ public class PgClient {
 
         if (pMetric.getTimestamp() == 0) pMetric.setTimestamp(System.currentTimeMillis());
 
-        Histogram.Timer t = PromExporter.metricslib_http_request_time.labels("PgClient", url, "sendBulk").startTimer();
+        Histogram.Timer t = PromExporter.metricslib_http_request_duration_seconds.labels("PgClient", url, "sendBulk").startTimer();
 
         String INSERT_SQL = PMetricFormatter.toPgInsertMetricString(pMetric);
         System.out.println(INSERT_SQL);
 
-        PromExporter.metricslib_attempted_requests_total.labels("PgClient", url).inc();
+        PromExporter.metricslib_http_requests_total.labels("PgClient", url).inc();
 
         try (Connection connection = DriverManager.getConnection(url, user, password);
              PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL)) {
@@ -72,11 +72,10 @@ public class PgClient {
         }
 
         t.observeDuration();
-        PromExporter.metricslib_http_request_time.labels("PgClient", url, "sendBulk").observe(pMetric.getTimeSeriesSize());
+        PromExporter.metricslib_http_request_duration_seconds.labels("PgClient", url, "sendBulk").observe(pMetric.getTimeSeriesSize());
     }
 
     private void printBatchUpdateException(BatchUpdateException b) {
-        PromExporter.metricslib_failed_requests_total.labels("PgClient", url, "BatchUpdateException").inc();
         System.err.println("----BatchUpdateException----");
         System.err.println("SQLState:  " + b.getSQLState());
         System.err.println("Message:  " + b.getMessage());
@@ -90,7 +89,6 @@ public class PgClient {
     }
 
     private void printSQLException(SQLException ex) {
-        PromExporter.metricslib_failed_requests_total.labels("PgClient", url, "SQLException").inc();
         for (Throwable e: ex) {
             if (e instanceof SQLException) {
                 e.printStackTrace(System.err);

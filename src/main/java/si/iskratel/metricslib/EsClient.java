@@ -242,7 +242,7 @@ public class EsClient {
         Request request = new Request.Builder()
                 .url(esHost + ES_API_BULK_ENDPOINT)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
-                .addHeader("metric-name", metric.getName())
+                .addHeader("metric", metric.getName())
                 .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric), MEDIA_TYPE_JSON))
                 .build();
 
@@ -293,22 +293,19 @@ public class EsClient {
         HttpResponse httpResponse = new HttpResponse();
         long startTime = System.currentTimeMillis();
         long duration = 0;
-        String metric = request.headers().get("metric-name");
+        String metric = request.headers().get("metric");
         if (metric == null) metric = "null";
 
         System.out.println("INFO:  EsClient[" + clientId + "]: >>> " + request.method().toUpperCase() + " " + request.url().uri().getPath());
 
-        Histogram.Timer t = PromExporter.metricslib_http_request_time.labels(request.url().toString(), request.method(), metric).startTimer();
+        Histogram.Timer t = PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).startTimer();
 
         try {
 
-            PromExporter.metricslib_attempted_requests_total.labels(request.method().toUpperCase(), request.url().toString()).inc();
             Response response = httpClient.newCall(request).execute();
-            if (!response.isSuccessful()) {
-                PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "" + response.code()).inc();
-            }
             duration = System.currentTimeMillis() - startTime;
             System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + response.code() + " - [took " + duration + "ms]");
+            PromExporter.metricslib_http_requests_total.labels(Integer.toString(response.code()), request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = response.isSuccessful();
             httpResponse.responseCode = response.code();
             httpResponse.responseText = response.body().string();
@@ -316,34 +313,33 @@ public class EsClient {
 
         } catch (UnknownHostException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< UnknownHostException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "UnknownHostException").inc();
+            PromExporter.metricslib_http_requests_total.labels("UnknownHostException", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "UnknownHostException";
         } catch (SocketTimeoutException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketTimeoutException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "SocketTimeoutException").inc();
+            PromExporter.metricslib_http_requests_total.labels("SocketTimeoutException", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketTimeoutException";
         } catch (SocketException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketException: " + e.getMessage());
-            PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "SocketException").inc();
+            PromExporter.metricslib_http_requests_total.labels("SocketException", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketException";
         } catch (Exception e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< Exception: " + e.getMessage());
             e.printStackTrace();
-            PromExporter.metricslib_failed_requests_total.labels(request.method().toUpperCase(), request.url().toString(), "Exception").inc();
+            PromExporter.metricslib_http_requests_total.labels("Exception", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "Exception";
         }
 
         double dur = t.observeDuration();
-        PromExporter.metricslib_http_request_time.labels(request.url().toString(), request.method(), metric).observe(dur);
-
+        PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).observe(dur);
 
         return httpResponse;
 

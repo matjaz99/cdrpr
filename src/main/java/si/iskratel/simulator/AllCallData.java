@@ -98,16 +98,14 @@ public class AllCallData implements Runnable {
     private void executeHttpRequest(Request request) {
         try {
 
-            PromExporter.metricslib_attempted_requests_total.labels("EsClient", url).inc();
             Response response = httpClient.newCall(request).execute();
             while (!response.isSuccessful()) {
                 System.out.println("EsClient[0]: repeat, unexpected code: " + response);
-                PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "" + response.code()).inc();
-                PromExporter.metricslib_attempted_requests_total.labels("EsClient", url).inc();
+                PromExporter.metricslib_http_requests_total.labels(response.code() + "", request.method().toUpperCase(), url).inc();
                 Thread.sleep(1500);
                 response = httpClient.newCall(request).execute();
             }
-            PromExporter.metricslib_attempted_requests_total.labels(threadId + "").inc();
+            PromExporter.metricslib_http_requests_total.labels(response.code() + "", request.method().toUpperCase(), url).inc();
             sb = new StringBuilder();
 
             if (!response.isSuccessful()) System.out.println("ElasticPersistenceClient[" + threadId + "]: Unexpected code: " + response);
@@ -119,7 +117,7 @@ public class AllCallData implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("ElasticPersistenceClient[" + threadId + "]: Recursive call.");
-            PromExporter.metricslib_failed_requests_total.labels("EsClient", url, "Exception").inc();
+            PromExporter.metricslib_http_requests_total.labels("Exception", request.method().toUpperCase(), url).inc();
             executeHttpRequest(request);
         }
     }
