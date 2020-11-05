@@ -21,14 +21,14 @@ public class PMetricRegistry {
     private boolean mappingCreated = false;
 
 
-    public PMetricRegistry(String name) {
+    private PMetricRegistry(String name) {
         this.name = name;
     }
+
 
     public String getName() {
         return name;
     }
-
 
     /**
      * This method creates new registry if it does not exist yet and adds a new metric to the list of metrics.

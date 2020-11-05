@@ -236,16 +236,16 @@ public class EsClient {
 
         // check if index exists in elastic
         if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated() && MetricsLib.ES_AUTO_CREATE_INDEX) {
-            boolean b = createIndex(metric.getName());
+            boolean b = createIndex(metric.getParentRegistry());
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    System.out.println("WARN:  EsClient[" + clientId + "]: index cannot be created, metrics may not be inserted without index mapping. Dumping to file: " + metric.getName());
+                    System.out.println("WARN:  EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Dumping to file: " + metric.getName());
                     FileClient.dumpToFile(this, metric);
                     PromExporter.metricslib_dump_to_file_total.inc();
                 } else {
-                    System.out.println("ERROR: EsClient[" + clientId + "]: index cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
+                    System.out.println("ERROR: EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
                 }
                 return false;
             }

@@ -36,7 +36,7 @@ public class FileUploadThread extends Thread {
                 }
             });
 
-            System.out.println("INFO:  Files to be uploaded: " + bkpFiles.length);
+            System.out.println("INFO:  Files to upload: " + bkpFiles.length);
 
             for (int i = 0; i < bkpFiles.length; i++) {
                 String s = FileClient.readFile(bkpFiles[i]);

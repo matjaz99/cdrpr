@@ -46,7 +46,7 @@ public class MetricsLib {
     /** Dump only if dumping is enabled */
     public static boolean DUMP_TO_FILE_ENABLED = false;
     /** Interval for uploading dumped files */
-    public static int UPLOAD_INTERVAL_SECONDS = 125;
+    public static int UPLOAD_INTERVAL_SECONDS = 45;
     public static String ES_DEFAULT_HOST = "localhost";
     public static int ES_DEFAULT_PORT = 9200;
     /** Choose whether or not you want index to be automatically created */
@@ -115,6 +115,24 @@ public class MetricsLib {
             resp.getWriter().println("<h3>" + ES_DEFAULT_HOST + ":" + ES_DEFAULT_PORT + "</h3>");
             resp.getWriter().println("<pre>" + s + "</pre>");
 
+            long docCount = 0;
+            double docSize = 0.0;
+            String[] lines = s.split("\n");
+            for (int i = 1; i < lines.length; i++) {
+                String[] cols = lines[i].split("\\s+");
+                docCount += Long.parseLong(cols[6].trim());
+                if (cols[8].trim().endsWith("mb")) {
+                    docSize += Double.parseDouble(cols[8].trim().replace("mb", "")) / 1024;
+                }
+                if (cols[8].trim().endsWith("gb")) {
+                    docSize += Double.parseDouble(cols[8].trim().replace("gb", ""));
+                }
+            }
+
+            resp.getWriter().println("<pre>-----------------------------------------------------------------------------------------------------------------------------------------------------------</pre>");
+            resp.getWriter().println("<pre>Total documents: " + docCount + "</pre>");
+            resp.getWriter().println("<pre>Total size: " + docSize + " GB</pre>");
+
         }
     }
 
@@ -163,7 +181,7 @@ public class MetricsLib {
         if (dd.length() > 0 && !dd.endsWith("/")) dd += "/";
         DUMP_DIRECTORY = dd;
         DUMP_TO_FILE_ENABLED = Boolean.parseBoolean((String) props.getOrDefault("metricslib.dump.enabled", "true"));
-        UPLOAD_INTERVAL_SECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.upload.interval.seconds", "55"));
+        UPLOAD_INTERVAL_SECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.upload.interval.seconds", "45"));
 
         PROM_METRICS_EXPORT_ENABLE = Boolean.parseBoolean((String) props.getOrDefault("metricslib.prometheus.enable", "true"));
         String include = (String) props.getOrDefault("metricslib.prometheus.include.registry", "_all");
