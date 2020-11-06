@@ -1,0 +1,26 @@
+version: '3.6'
+
+networks:
+  net:
+    driver: overlay
+    attachable: true
+
+# https://github.com/bitsensor/elastalert
+services:
+  elastalert:
+    image: bitsensor/elastalert:latest
+    networks:
+      - net
+    ports:
+      - 3030:3030
+      - 3333:3333
+    volumes:
+      - ${PWD}/elastalert.yaml:/opt/elastalert/config.yaml
+      #- elastalert-test.yaml:/opt/elastalert/config-test.yaml
+      - ${PWD}/elastalert_config.json:/opt/elastalert-server/config/config.json
+      - ${PWD}/rules:/opt/elastalert/rules
+      - ${PWD}/rule_templates:/opt/elastalert/rule_templates
+    deploy:
+      mode: replicated
+      replicas: 1
+
