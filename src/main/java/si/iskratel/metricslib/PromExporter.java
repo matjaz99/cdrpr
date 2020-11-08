@@ -33,6 +33,7 @@ public class PromExporter {
             .register();
     public static final Counter metricslib_dump_files_uploads_total = Counter.build()
             .name("metricslib_dump_files_uploads_total")
+            .labelNames("status")
             .help("Number of successful file uploads.")
             .register();
     public static final Counter metricslib_dropped_metrics_total = Counter.build()
