@@ -14,16 +14,11 @@ public class Test {
 //        testMetrics();
 //        aggregateCalls();
 
-        String s = "{\"index\":{\"_index\":\"pmon_cdr_business_group_idx\"}}";
-        s = s.substring(20, s.length() - 3);
-        System.out.println(s);
+
 
     }
 
-    public static double getCosFactor(int periodSeconds) throws InterruptedException {
-        double t = System.currentTimeMillis() / 1000;
-        return Math.cos(t * 2 * 3.14 / periodSeconds);
-    }
+
 
     public static void testMultipleRegistries() throws Exception {
         MetricsLib.init();
@@ -166,6 +161,22 @@ public class Test {
                 .register();
 
 
+
+    }
+
+
+    public static void testStandaloneMetric() {
+        PMetric m = new PMetric();
+        m.setName("test_metric");
+        m.setHelp("description");
+        m.setLabelNames("node", "cause", "direction");
+        m.setTimestamp(System.currentTimeMillis());
+        m.setLabelValues("London", "Answered", "Local").inc();
+        m.setLabelValues("London", "Answered", "Local").inc();
+        m.setLabelValues("Berlin", "Busy", "Transit").inc();
+
+        EsClient e = new EsClient("elasticvm", 9200);
+        e.sendBulkPost(m);
 
     }
 

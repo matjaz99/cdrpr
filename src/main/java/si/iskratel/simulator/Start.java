@@ -58,7 +58,7 @@ public class Start {
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "48"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "64"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "25"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
@@ -99,6 +99,7 @@ public class Start {
         } catch (Exception e) {}
 
         System.out.println("HOSTNAME: " + HOSTNAME);
+        System.out.println("CURRENT_DIR: " + System.getProperty("user.dir"));
         System.out.println("NUM_OF_THREADS: " + SIMULATOR_NUM_OF_THREADS);
         System.out.println("SIMULATOR_DELAY: " + SIMULATOR_CALL_DELAY);
         System.out.println("SEND_INTERVAL_SEC: " + SEND_INTERVAL_SEC);

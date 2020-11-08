@@ -9,7 +9,7 @@ public class CdrSimulatorThread extends Thread {
     private boolean running = true;
     private int threadId = 0;
     private long totalCount = 0;
-    private static double randomFactor = Math.abs(getCosFactor(getRandomInRange(2, 12) * 3600) + 1.0);
+    private static int randomFactor = getRandomInRange(2, 12);
     private static String nodeId;
 
     public CdrSimulatorThread(int id) {
@@ -58,8 +58,8 @@ public class CdrSimulatorThread extends Thread {
         String b = "" + getRandomInRange(Start.SIMULATOR_BNUM_START, Start.SIMULATOR_BNUM_START + Start.SIMULATOR_BNUM_RANGE);
         cdrBean.setCalledNumber(b);
 
-        cdrBean.setCdrTimeBeforeRinging((int) (getRandomGaussian(2500, 100) * randomFactor / 2));
-        cdrBean.setCdrRingingTimeBeforeAnsw((int) (getRandomGaussian(25000, 1000) * randomFactor * 1.1357));
+        cdrBean.setCdrTimeBeforeRinging((int) (getRandomGaussian(2500, 100)));
+        cdrBean.setCdrRingingTimeBeforeAnsw((int) (getRandomGaussian(25000, 1000)));
 
         cdrBean.setCause(Start.SIMULATOR_CALL_REASON);
         if (Start.SIMULATOR_CALL_REASON == 0) {
@@ -101,6 +101,7 @@ public class CdrSimulatorThread extends Thread {
             }
             cdrBean.setCdrRingingTimeBeforeAnsw(getRandomGaussian(15000, 5000));
         }
+        duration = (int) (duration * Math.abs(getCosFactor(randomFactor))) + 60;
         duration = duration * 1000; // to millis
         cdrBean.setDuration(duration);
 

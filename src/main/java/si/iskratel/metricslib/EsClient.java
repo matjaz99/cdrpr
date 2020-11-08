@@ -313,9 +313,9 @@ public class EsClient {
 
         System.out.println("INFO:  EsClient[" + clientId + "]: >>> " + request.method().toUpperCase() + " " + request.url().uri().getPath());
 
-        Histogram.Timer t = PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).startTimer();
-
         try {
+
+            Histogram.Timer t = PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).startTimer();
 
             Response response = httpClient.newCall(request).execute();
             duration = System.currentTimeMillis() - startTime;
@@ -325,6 +325,11 @@ public class EsClient {
             httpResponse.responseCode = response.code();
             httpResponse.responseText = response.body().string();
             response.close();
+
+            double dur = t.observeDuration();
+            PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).observe(dur);
+
+            if (httpResponse.responseCode < 200 || httpResponse.responseCode > 399) System.out.println("WARN:  EsClient[" + clientId + "] response: " + httpResponse.responseText);
 
         } catch (UnknownHostException e) {
             System.err.println("ERROR: EsClient[" + clientId + "]: <<< UnknownHostException: " + e.getMessage());
@@ -352,9 +357,6 @@ public class EsClient {
             httpResponse.responseCode = 0;
             httpResponse.responseText = "Exception";
         }
-
-        double dur = t.observeDuration();
-        PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).observe(dur);
 
         return httpResponse;
 
