@@ -68,6 +68,7 @@ public class MetricsLib {
 
             resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/metrics\">/metrics</a>");
             resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/indices\">/indices</a>");
+            resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/alarms\">/alarms</a>");
 
             resp.getWriter().println("<h3>Configuration</h3>");
             resp.getWriter().println("<pre>"
@@ -155,6 +156,19 @@ public class MetricsLib {
         }
     }
 
+    static class AlarmsServlet extends MetricsServlet {
+
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+            PromExporter.metricslib_servlet_requests_total.labels("/alarms").inc();
+
+            String json = AlarmManager.toJsonString();
+            resp.getWriter().println(json);
+
+        }
+    }
+
     public static void init() throws Exception {
         init(METRICSLIB_PORT);
     }
@@ -225,6 +239,7 @@ public class MetricsLib {
         context.addServlet(new ServletHolder(hs), PATH_PREFIX + "hello");
         context.addServlet(new ServletHolder(new IndicesServlet()), PATH_PREFIX + "indices");
         context.addServlet(new ServletHolder(new MetricsServletExtended()), PATH_PREFIX + "metrics");
+        context.addServlet(new ServletHolder(new AlarmsServlet()), PATH_PREFIX + "alarms");
         // Add metrics about CPU, JVM memory etc.
         DefaultExports.initialize();
 

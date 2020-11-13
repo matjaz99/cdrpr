@@ -1,8 +1,6 @@
 package si.iskratel.simulator;
 
-import si.iskratel.metricslib.EsClient;
-import si.iskratel.metricslib.PMetric;
-import si.iskratel.metricslib.PMetricRegistry;
+import si.iskratel.metricslib.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +27,8 @@ public class XmlSimulatorThread extends Thread {
                 .setHelp("Inventory of PAM-CDR module")
                 .setLabelNames("nodeId", "nodeName", "productCategory", "subType", "status")
                 .register("pmon_inventory_idx");
+
+        boolean alarmSent = false;
 
         while (true) {
 
@@ -61,6 +61,30 @@ public class XmlSimulatorThread extends Thread {
                 inventory_metric.setLabelValues("" + n.hashCode(), n, "elementType", "subType", "No CDR files found").set(status);
             }
             esClient.sendBulkPost(inventory_metric);
+
+            // send dummy alarm
+            Alarm a = new Alarm();
+            a.setAlarmCode(1234);
+            a.setAlarmName("To je alarm");
+            a.setNodeId(1048888);
+            a.setSourceInfo("source info");
+            a.setSeverity(1);
+
+            Alarm a2 = new Alarm();
+            a2.setAlarmCode(552233);
+            a2.setAlarmName("To je alarm 2");
+            a2.setNodeId(1048888);
+            a2.setSourceInfo("source info");
+            a2.setSeverity(3);
+
+            if (alarmSent) {
+                a.setSeverity(5);
+                AlarmManager.clearAlarm(a);
+            } else {
+                AlarmManager.raiseAlarm(a);
+                AlarmManager.raiseAlarm(a2);
+            }
+            alarmSent = !alarmSent;
 
         }
 
