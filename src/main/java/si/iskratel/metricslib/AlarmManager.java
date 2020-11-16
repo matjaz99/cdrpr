@@ -16,6 +16,7 @@ public class AlarmManager {
     }
 
     public static synchronized void raiseAlarm(Alarm alarm, boolean send) {
+        if (activeAlarmsList.containsKey(alarm.getAlarmId())) return;
         activeAlarmsList.put(alarm.getAlarmId(), alarm);
         if (send) push(alarm);
     }
@@ -30,34 +31,48 @@ public class AlarmManager {
 
     private static void push(Alarm alarm) {
 
+        if (alarm.getTimestamp() == 0) alarm.setTimestamp(System.currentTimeMillis());
+
         OkHttpClient httpClient = new OkHttpClient();
         MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
-        String body = toJsonString();
-        System.out.println("JSON alarms: " + body);
+        String body = toJsonString(alarm);
+        System.out.println("push alarm: " + body);
 
         Request request = new Request.Builder()
-                .url("http://192.168.1.222:9070/webhook")
-                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                .url(MetricsLib.ALARM_DESTINATION)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_API_VERSION)
                 .post(RequestBody.create(body, MEDIA_TYPE_JSON))
                 .build();
 
         try {
 
             Response response = httpClient.newCall(request).execute();
-            System.out.println("INFO:  AlarmManager: alarm " + alarm.getAlarmName() + " sent; responseCode=" + response.code());
+            System.out.println("INFO:  AlarmManager: sending: " + alarm.getAlarmName() + "; responseCode=" + response.code());
             boolean success = response.isSuccessful();
             int responseCode = response.code();
             String responseText = response.body().string();
             response.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("ERROR: AlarmManager[0]: Could not send alarm. " + e.getMessage());
         }
+
+        PromExporter.metricslib_alarms_sent_total.inc();
 
     }
 
-    public static String toJsonString() {
+    public static String toJsonString(Alarm alarm) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return "[" + mapper.writeValueAsString(alarm) + "]";
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String toJsonStringAllAlarms() {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.writeValueAsString(activeAlarmsList.values());

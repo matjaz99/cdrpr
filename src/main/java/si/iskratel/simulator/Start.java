@@ -40,6 +40,7 @@ public class Start {
     public static boolean SIMULATOR_MINIMUM_DATA = false;
     public static boolean ENABLE_PROMETHEUS_METRICS = false;
     public static boolean ENABLE_DUMP_TO_FILE = false;
+    public static String ALARM_DESTINATION = "http://localhost:9097/webhook";
 
     public static long totalCount = 0;
     public static long badCdrRecordExceptionCount = 0;
@@ -58,7 +59,7 @@ public class Start {
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "52"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "48"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "25"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
@@ -93,6 +94,7 @@ public class Start {
         EXIT_AT_THE_END = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
         ENABLE_PROMETHEUS_METRICS = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ENABLE_PROMETHEUS_METRICS", "false"));
         ENABLE_DUMP_TO_FILE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DUMP_TO_FILE", "true"));
+        ALARM_DESTINATION = getenv.getOrDefault("CDRPR_ALARM_DESTINATION", "http://elasticvm:9070/webhook");
 
         try {
             HOSTNAME = InetAddress.getLocalHost().getHostName();
@@ -128,6 +130,7 @@ public class Start {
         MetricsLib.ES_NUMBER_OF_SHARDS = ES_NUMBER_OF_SHARDS;
         MetricsLib.ES_NUMBER_OF_REPLICAS = ES_NUMBER_OF_REPLICAS;
         MetricsLib.RETRIES = RETRIES;
+        MetricsLib.ALARM_DESTINATION = ALARM_DESTINATION;
         MetricsLib.init();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);

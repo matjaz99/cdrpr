@@ -12,6 +12,15 @@ public class Alarm {
     private String sourceInfo;
     private String additionalInfo;
 
+    public Alarm(int nodeId, int alarmCode, String alarmName, int severity, String sourceInfo, String additionalInfo) {
+        this.nodeId = nodeId;
+        this.alarmCode = alarmCode;
+        this.alarmName = alarmName;
+        this.severity = severity;
+        this.sourceInfo = sourceInfo;
+        this.additionalInfo = additionalInfo;
+    }
+
     public int getNodeId() {
         return nodeId;
     }

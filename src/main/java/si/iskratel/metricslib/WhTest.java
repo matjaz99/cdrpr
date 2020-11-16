@@ -27,7 +27,7 @@ public class WhTest {
 
             Request request = new Request.Builder()
                     .url("http://192.168.1.222:9099/alarms")
-                    .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_VERSION)
+                    .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_API_VERSION)
                     .get()
                     .build();
 

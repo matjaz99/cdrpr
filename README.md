@@ -20,4 +20,8 @@ Data:
 500M ... 25GB
 3,5B ... 175GB (?)
 
+1 primary, 0 replicas:
+Total documents: 1447477788
+Total size: 67.47001953124995 GB
+
 

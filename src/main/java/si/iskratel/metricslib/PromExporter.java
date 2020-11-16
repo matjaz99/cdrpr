@@ -40,6 +40,10 @@ public class PromExporter {
             .name("metricslib_dropped_metrics_total")
             .help("Number of metrics that were dropped because they could not be written")
             .register();
+    public static final Counter metricslib_alarms_sent_total = Counter.build()
+            .name("metricslib_alarms_sent_total")
+            .help("Number of alarms sent")
+            .register();
     public static final Histogram metricslib_http_request_duration_seconds = Histogram.build()
             .buckets(0.05, 0.1, 0.3, 0.5, 1.0, 3.0, 5.0, 10.0, 30.0)
             .name("metricslib_http_request_duration_seconds")

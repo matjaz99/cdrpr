@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 public class MetricsLib {
 
     /** Just a version */
-    public static String METRICSLIB_VERSION = "1.0";
+    public static String METRICSLIB_API_VERSION = "v1";
     /** Hostname where MetricsLib is running */
     public static String METRICSLIB_HOSTNAME;
     /** Port for Jetty http server */
@@ -49,10 +49,12 @@ public class MetricsLib {
     public static int UPLOAD_INTERVAL_SECONDS = 45;
     public static String ES_DEFAULT_HOST = "localhost";
     public static int ES_DEFAULT_PORT = 9200;
-    /** Choose whether or not you want index to be automatically created */
+    /** Choose whether or not you want index to be automatically created and how */
     public static boolean ES_AUTO_CREATE_INDEX = true;
     public static int ES_NUMBER_OF_SHARDS = 1;
     public static int ES_NUMBER_OF_REPLICAS = 0;
+    public static String ALARM_DESTINATION = "http://localhost:9097/webhook";
+
     /** A separate thread for uploading files */
     public static FileUploadThread fut;
 
@@ -64,7 +66,7 @@ public class MetricsLib {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
             PromExporter.metricslib_servlet_requests_total.labels("/hello").inc();
 
-            resp.getWriter().println("<h1>Iskratel MetricsLib v" + METRICSLIB_VERSION + "</h1>");
+            resp.getWriter().println("<h1>Iskratel MetricsLib " + METRICSLIB_API_VERSION + "</h1>");
 
             resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/metrics\">/metrics</a>");
             resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/indices\">/indices</a>");
@@ -85,8 +87,12 @@ public class MetricsLib {
                     + "metricslib.client.dump.enabled=" + DUMP_TO_FILE_ENABLED + "\n"
                     + "metricslib.client.dump.directory=" + DUMP_DIRECTORY + "\n"
                     + "metricslib.upload.interval.seconds=" + UPLOAD_INTERVAL_SECONDS + "\n"
-                    + "metricslib.client.elasticsearch.default.host=" + ES_DEFAULT_HOST + "\n"
-                    + "metricslib.client.elasticsearch.default.port=" + ES_DEFAULT_PORT + "\n"
+                    + "metricslib.elasticsearch.default.host=" + ES_DEFAULT_HOST + "\n"
+                    + "metricslib.elasticsearch.default.port=" + ES_DEFAULT_PORT + "\n"
+                    + "metricslib.elasticsearch.createIndexOnStart=" + ES_AUTO_CREATE_INDEX + "\n"
+                    + "metricslib.elasticsearch.numberOfShards=" + ES_NUMBER_OF_SHARDS + "\n"
+                    + "metricslib.elasticsearch.numberOfReplicas=" + ES_NUMBER_OF_REPLICAS + "\n"
+                    + "metricslib.alarm.destination=" + ALARM_DESTINATION + "\n"
                     + "</pre>");
 
             resp.getWriter().println("<h3>Registries</h3>");
@@ -163,7 +169,7 @@ public class MetricsLib {
 
             PromExporter.metricslib_servlet_requests_total.labels("/alarms").inc();
 
-            String json = AlarmManager.toJsonString();
+            String json = AlarmManager.toJsonStringAllAlarms();
             resp.getWriter().println(json);
 
         }
@@ -210,6 +216,8 @@ public class MetricsLib {
         ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberofShards", "1"));
         ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
 
+        ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", "http://localhost:9097/webhook");
+
         if (METRICSLIB_PORT > 0) startJetty(METRICSLIB_PORT);
     }
 
@@ -255,7 +263,7 @@ public class MetricsLib {
 
         EsClient es = new EsClient(ES_DEFAULT_HOST, ES_DEFAULT_PORT);
         StringBuilder sb = new StringBuilder();
-        sb.append("{\"name\":\"metricslib\",\"version\":\"v").append(MetricsLib.METRICSLIB_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
+        sb.append("{\"name\":\"metricslib\",\"api_version\":\"").append(MetricsLib.METRICSLIB_API_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
         es.sendPost("/metricslib/_doc/m37r1c5l1b4b0ut", sb.toString());
 
     }
