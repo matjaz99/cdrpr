@@ -15,7 +15,7 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -46,7 +46,7 @@ public class MetricsLib {
     /** Dump only if dumping is enabled */
     public static boolean DUMP_TO_FILE_ENABLED = false;
     /** Interval for uploading dumped files */
-    public static int UPLOAD_INTERVAL_SECONDS = 45;
+    public static int UPLOAD_INTERVAL_SECONDS = 16;
     public static String ES_DEFAULT_HOST = "localhost";
     public static int ES_DEFAULT_PORT = 9200;
     /** Choose whether or not you want index to be automatically created and how */
@@ -169,7 +169,7 @@ public class MetricsLib {
 
             PromExporter.metricslib_servlet_requests_total.labels("/alarms").inc();
 
-            String json = AlarmManager.toJsonStringAllAlarms();
+            String json = AlarmManager.getInstance().toJsonStringAllAlarms();
             resp.getWriter().println(json);
 
         }
@@ -184,8 +184,40 @@ public class MetricsLib {
         startJetty(port);
     }
 
+    public static void init(Map<String, String> props) throws Exception {
+        METRICSLIB_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.jetty.port", "9099"));
+        PATH_PREFIX = (String) props.getOrDefault("metricslib.jetty.pathPrefix", "/");
+        if (PATH_PREFIX.length() > 0 && !PATH_PREFIX.endsWith("/")) PATH_PREFIX += "/";
+
+        RETRIES = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.count", "3"));
+        RETRY_INTERVAL_MILLISECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.interval.millis", "1500"));
+        BULK_SIZE = Integer.parseInt((String) props.getOrDefault("metricslib.client.bulk.size", "50000"));
+        String dd = (String) props.getOrDefault("metricslib.dump.directory", "");
+        if (dd.length() > 0 && !dd.endsWith("/")) dd += "/";
+        DUMP_DIRECTORY = dd;
+        DUMP_TO_FILE_ENABLED = Boolean.parseBoolean((String) props.getOrDefault("metricslib.dump.enabled", "true"));
+        UPLOAD_INTERVAL_SECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.upload.interval.seconds", "45"));
+
+        PROM_METRICS_EXPORT_ENABLE = Boolean.parseBoolean((String) props.getOrDefault("metricslib.prometheus.enable", "true"));
+        String include = (String) props.getOrDefault("metricslib.prometheus.include.registry", "_all");
+        if (include.length() == 0) include = "_all";
+        PROM_INCLUDE_REGISTRY = include.split(",");
+        String exclude = (String) props.getOrDefault("metricslib.prometheus.exclude.registry", "");
+        PROM_EXCLUDE_REGISTRY = exclude.split(",");
+
+        ES_DEFAULT_HOST = (String) props.getOrDefault("metricslib.elasticsearch.default.host", null);
+        ES_DEFAULT_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.default.port", "0"));
+        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean((String) props.getOrDefault("metricslib.elasticsearch.createIndexOnStart", "true"));
+        ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberofShards", "1"));
+        ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
+
+        ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", "http://localhost:9097/webhook");
+
+        startJetty(METRICSLIB_PORT);
+    }
+
     /**
-     * Just give me the damn properties.
+     * Just give me the properties.
      * @param props
      * @throws Exception if properties contain invalid values
      */
@@ -218,7 +250,7 @@ public class MetricsLib {
 
         ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", "http://localhost:9097/webhook");
 
-        if (METRICSLIB_PORT > 0) startJetty(METRICSLIB_PORT);
+        startJetty(METRICSLIB_PORT);
     }
 
     private static void startJetty(int port) throws Exception {
@@ -238,21 +270,23 @@ public class MetricsLib {
             METRICSLIB_IS_CONTAINERIZED = false;
         }
 
-        Server server = new Server(port);
-        ServletContextHandler context = new ServletContextHandler();
-        context.setContextPath("/");
-        server.setHandler(context);
-        HelloServlet hs = new HelloServlet();
+        if (METRICSLIB_PORT > 0) {
+            Server server = new Server(port);
+            ServletContextHandler context = new ServletContextHandler();
+            context.setContextPath("/");
+            server.setHandler(context);
+            HelloServlet hs = new HelloServlet();
 //        context.addServlet(new ServletHolder(hs), "/");
-        context.addServlet(new ServletHolder(hs), PATH_PREFIX + "hello");
-        context.addServlet(new ServletHolder(new IndicesServlet()), PATH_PREFIX + "indices");
-        context.addServlet(new ServletHolder(new MetricsServletExtended()), PATH_PREFIX + "metrics");
-        context.addServlet(new ServletHolder(new AlarmsServlet()), PATH_PREFIX + "alarms");
-        // Add metrics about CPU, JVM memory etc.
-        DefaultExports.initialize();
+            context.addServlet(new ServletHolder(hs), PATH_PREFIX + "hello");
+            context.addServlet(new ServletHolder(new IndicesServlet()), PATH_PREFIX + "indices");
+            context.addServlet(new ServletHolder(new MetricsServletExtended()), PATH_PREFIX + "metrics");
+            context.addServlet(new ServletHolder(new AlarmsServlet()), PATH_PREFIX + "alarms");
+            // Add metrics about CPU, JVM memory etc.
+            DefaultExports.initialize();
 
-        server.start();
-        //server.join();
+            server.start();
+            //server.join();
+        }
 
         PromExporter.metricslib_up_time.set(System.currentTimeMillis());
 
@@ -261,10 +295,9 @@ public class MetricsLib {
             MetricsLib.fut.start();
         }
 
-        EsClient es = new EsClient(ES_DEFAULT_HOST, ES_DEFAULT_PORT);
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\"name\":\"metricslib\",\"api_version\":\"").append(MetricsLib.METRICSLIB_API_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
-        es.sendPost("/metricslib/_doc/m37r1c5l1b4b0ut", sb.toString());
+
+        Thread eht = new Thread(new EsHealthcheckThread());
+        eht.start();
 
     }
 

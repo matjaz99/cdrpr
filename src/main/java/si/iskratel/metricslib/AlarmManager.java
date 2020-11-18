@@ -3,25 +3,40 @@ package si.iskratel.metricslib;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class AlarmManager {
 
-    private static Map<String, Alarm> activeAlarmsList = new HashMap<>();
+    private Logger logger = LoggerFactory.getLogger(AlarmManager.class);
 
-    public static void raiseAlarm(Alarm alarm) {
+    private static AlarmManager alarmManager = null;
+
+    private Map<String, Alarm> activeAlarmsList = new HashMap<>();
+
+    private AlarmManager() {
+
+    }
+
+    public static AlarmManager getInstance() {
+        if (alarmManager == null) alarmManager = new AlarmManager();
+        return alarmManager;
+    }
+
+    public void raiseAlarm(Alarm alarm) {
         raiseAlarm(alarm, true);
     }
 
-    public static synchronized void raiseAlarm(Alarm alarm, boolean send) {
+    public synchronized void raiseAlarm(Alarm alarm, boolean send) {
         if (activeAlarmsList.containsKey(alarm.getAlarmId())) return;
         activeAlarmsList.put(alarm.getAlarmId(), alarm);
         if (send) push(alarm);
     }
 
-    public static synchronized void clearAlarm(Alarm alarm) {
+    public synchronized void clearAlarm(Alarm alarm) {
         Alarm a = activeAlarmsList.remove(alarm.getAlarmId());
         if (a != null) {
             a.setSeverity(5);
@@ -29,7 +44,7 @@ public class AlarmManager {
         }
     }
 
-    private static void push(Alarm alarm) {
+    private void push(Alarm alarm) {
 
         if (alarm.getTimestamp() == 0) alarm.setTimestamp(System.currentTimeMillis());
 
@@ -37,7 +52,7 @@ public class AlarmManager {
         MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
         String body = toJsonString(alarm);
-        System.out.println("push alarm: " + body);
+        logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
 
         Request request = new Request.Builder()
                 .url(MetricsLib.ALARM_DESTINATION)
@@ -48,21 +63,21 @@ public class AlarmManager {
         try {
 
             Response response = httpClient.newCall(request).execute();
-            System.out.println("INFO:  AlarmManager: sending: " + alarm.getAlarmName() + "; responseCode=" + response.code());
+            logger.info("push(): responseCode=" + response.code());
             boolean success = response.isSuccessful();
             int responseCode = response.code();
             String responseText = response.body().string();
             response.close();
 
         } catch (Exception e) {
-            System.out.println("ERROR: AlarmManager[0]: Could not send alarm. " + e.getMessage());
+            logger.error("push(): Could not send alarm. " + e.getMessage());
         }
 
         PromExporter.metricslib_alarms_sent_total.inc();
 
     }
 
-    public static String toJsonString(Alarm alarm) {
+    public String toJsonString(Alarm alarm) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return "[" + mapper.writeValueAsString(alarm) + "]";
@@ -72,7 +87,7 @@ public class AlarmManager {
         return null;
     }
 
-    public static String toJsonStringAllAlarms() {
+    public String toJsonStringAllAlarms() {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.writeValueAsString(activeAlarmsList.values());

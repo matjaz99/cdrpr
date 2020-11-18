@@ -1,5 +1,8 @@
 package si.iskratel.metricslib;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileFilter;
 
@@ -7,6 +10,8 @@ import java.io.FileFilter;
  * This thread periodically checks the dump directory, if there are any files waiting to be uploaded to ElasticSearch.
  */
 public class FileUploadThread extends Thread {
+
+    private Logger logger = LoggerFactory.getLogger(FileUploadThread.class);
 
     private EsClient esClient;
 
@@ -21,7 +26,7 @@ public class FileUploadThread extends Thread {
 
             File dumpDir = new File(MetricsLib.DUMP_DIRECTORY);
             if (!dumpDir.exists()) {
-                System.out.println("WARN:  dump directory does not exist: " + dumpDir.getAbsolutePath());
+                logger.warn("Dump directory does not exist: " + dumpDir.getAbsolutePath());
                 try {
                     Thread.sleep(MetricsLib.UPLOAD_INTERVAL_SECONDS * 1000);
                 } catch (InterruptedException e) {
@@ -36,12 +41,12 @@ public class FileUploadThread extends Thread {
                 }
             });
 
-            System.out.println("INFO:  Files to upload: " + bkpFiles.length);
+            logger.info("Files to upload: " + bkpFiles.length);
 
             for (int i = 0; i < bkpFiles.length; i++) {
                 String s = FileClient.readFile(bkpFiles[i]);
                 boolean b = esClient.sendBulkPost(s);
-                System.out.println("INFO:  uploading file: " + bkpFiles[i].getName() + " [result=" + b + "]");
+                logger.info("Uploading file: " + bkpFiles[i].getName() + " [result=" + b + "]");
                 if (b) {
                     bkpFiles[i].delete();
                     PromExporter.metricslib_dump_files_uploads_total.labels("success").inc();

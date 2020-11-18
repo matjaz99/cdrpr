@@ -2,12 +2,16 @@ package si.iskratel.metricslib;
 
 import io.prometheus.client.Histogram;
 import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 public class EsClient {
+
+    private Logger logger = LoggerFactory.getLogger(EsClient.class);
 
     public static int esClientCount = 0;
     private int clientId;
@@ -27,6 +31,8 @@ public class EsClient {
     public static final String ES_API_GET_INDICES_VERBOSE = "/_cat/indices?v";
     public static final String ES_API_BULK_ENDPOINT = "/_bulk";
 
+    /** Set this flag if Metricslib-about document is successfully inserted immediately after start */
+    public static boolean ES_IS_READY = false;
     private int retryCount = 0;
 
     /**
@@ -60,7 +66,7 @@ public class EsClient {
             // exception, exit
             return false;
         } else if (r1.responseCode == 200) {
-            System.out.println("INFO:  EsClient[" + clientId + "]: template already exists: " + templateName);
+            logger.info("EsClient[" + clientId + "]: template already exists: " + templateName);
         } else if (r1.responseCode == 404) {
             // 2. create template
             HttpResponse r2 = sendPut("/_template/" + templateName, PMetricFormatter.toTemplateJson(templateName));
@@ -73,7 +79,7 @@ public class EsClient {
             // exception, exit
             return false;
         } else if (r3.responseCode == 200) {
-            System.out.println("INFO:  EsClient[" + clientId + "]: alias already exists: " + index);
+            logger.info("EsClient[" + clientId + "]: alias already exists: " + index);
             // alias exists, nothing else to do
             return true;
         } else if (r3.responseCode != 404) {
@@ -85,11 +91,11 @@ public class EsClient {
 
         // 4. create index with alias
         String newIndex = index + "-000000";
-        System.out.println("INFO:  EsClient[" + clientId + "]: creating index: " + newIndex + " with alias: " + index);
+        logger.info("EsClient[" + clientId + "]: creating index: " + newIndex + " with alias: " + index);
         HttpResponse r4 = sendPut(newIndex, PMetricFormatter.toIndexJson(index));
         if (r4.success) return true;
 
-        System.out.println("WARN:  EsClient[" + clientId + "]: ...failed to create index.");
+        logger.warn("EsClient[" + clientId + "]: ...failed to create index.");
         return false;
 
     }
@@ -104,7 +110,7 @@ public class EsClient {
         HttpResponse response = new HttpResponse();
 
         if (uri == null) {
-            System.out.println("WARN:  uri is null. Request will be ignored.");
+            logger.warn("URI is null. Request will be ignored.");
             return response;
         }
 
@@ -133,7 +139,7 @@ public class EsClient {
         HttpResponse response = new HttpResponse();
 
         if (uri == null || body == null) {
-            System.out.println("WARN:  uri or body is null. Request will be ignored.");
+            logger.warn("URI or body is null. Request will be ignored.");
             return response;
         }
 
@@ -161,7 +167,7 @@ public class EsClient {
         HttpResponse response = new HttpResponse();
 
         if (uri == null || body == null) {
-            System.out.println("WARN:  uri or body is null. Request will be ignored.");
+            logger.warn("URI or body is null. Request will be ignored.");
             return response;
         }
 
@@ -188,9 +194,11 @@ public class EsClient {
     public boolean sendBulkPost(String body) {
 
         if (body == null) {
-            System.out.println("WARN:  Body is null. Request will be ignored.");
+            logger.warn("Body is null. Request will be ignored.");
             return false;
         }
+
+        if (!ES_IS_READY) return false;
 
         // parse first line to get an index. Example: {"index":{"_index":"pmon_cdr_business_group_idx"}}
         String idx = body.split("\n")[0];
@@ -234,7 +242,17 @@ public class EsClient {
         retryCount = 0;
 
         if (metric.getTimeSeriesSize() == 0) {
-            System.out.println("WARN:  EsClient[" + clientId + "]: Metric " + metric.getName() + " contains no time-series points. It will be ignored.");
+            logger.warn("EsClient[" + clientId + "]: Metric " + metric.getName() + " contains no time-series points. It will be ignored.");
+            return false;
+        }
+
+        // cannot proceed if ES is not ready; dump to file if enabled
+        if (!ES_IS_READY) {
+            if (MetricsLib.DUMP_TO_FILE_ENABLED) {
+                logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
+                FileClient.dumpToFile(this, metric);
+                PromExporter.metricslib_dump_to_file_total.inc();
+            }
             return false;
         }
 
@@ -245,11 +263,11 @@ public class EsClient {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    System.out.println("WARN:  EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Dumping to file: " + metric.getName());
+                    logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Dumping to file: " + metric.getName());
                     FileClient.dumpToFile(this, metric);
                     PromExporter.metricslib_dump_to_file_total.inc();
                 } else {
-                    System.out.println("ERROR: EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
+                    logger.error("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
                 }
                 return false;
             }
@@ -267,23 +285,23 @@ public class EsClient {
 
         try {
 
-            System.out.println("INFO:  EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + metric.getTimeSeriesSize() + "]");
+            logger.info("EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + metric.getTimeSeriesSize() + "]");
 
             while (retryCount <= MetricsLib.RETRIES) {
                 success = executeHttpRequest(request).success;
                 if (success) break;
                 retryCount++;
                 Thread.sleep(1500);
-                System.out.println("INFO:  EsClient[" + clientId + "]: Retrying to send " + metric.getName());
+                logger.info("EsClient[" + clientId + "]: Retrying to send " + metric.getName());
             }
             if (!success) {
-                System.out.println("WARN:  EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
+                logger.info("EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    System.out.println("INFO:  EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
+                    logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
                     FileClient.dumpToFile(this, metric);
                     PromExporter.metricslib_dump_to_file_total.inc();
                 } else {
-                    System.out.println("ERROR: EsClient[" + clientId + "]: Dumping is disabled. Metric will be dropped!!!");
+                    logger.warn("EsClient[" + clientId + "]: Dumping is disabled. Metric will be dropped!!!");
                     PromExporter.metricslib_dropped_metrics_total.inc(metric.getTimeSeriesSize());
                 }
             }
@@ -315,7 +333,7 @@ public class EsClient {
         String metric = request.headers().get("metric");
         if (metric == null) metric = "null";
 
-        System.out.println("INFO:  EsClient[" + clientId + "]: >>> " + request.method().toUpperCase() + " " + request.url().uri().getPath());
+        logger.info("EsClient[" + clientId + "]: >>> " + request.method().toUpperCase() + " " + request.url().uri().getPath());
 
         try {
 
@@ -323,7 +341,7 @@ public class EsClient {
 
             Response response = httpClient.newCall(request).execute();
             duration = System.currentTimeMillis() - startTime;
-            System.out.println("INFO:  EsClient[" + clientId + "]: <<< " + response.code() + " - [took " + duration + "ms]");
+            logger.info("EsClient[" + clientId + "]: <<< " + response.code() + " - [took " + duration + "ms]");
             PromExporter.metricslib_http_requests_total.labels(Integer.toString(response.code()), request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = response.isSuccessful();
             httpResponse.responseCode = response.code();
@@ -336,41 +354,41 @@ public class EsClient {
             if (httpResponse.responseCode < 200 || httpResponse.responseCode > 399) System.out.println("WARN:  EsClient[" + clientId + "] response: " + httpResponse.responseText);
 
             no_connection_to_es.setSeverity(5);
-            AlarmManager.clearAlarm(no_connection_to_es);
+            AlarmManager.getInstance().clearAlarm(no_connection_to_es);
 
         } catch (UnknownHostException e) {
-            System.err.println("ERROR: EsClient[" + clientId + "]: <<< UnknownHostException: " + e.getMessage());
-            PromExporter.metricslib_http_requests_total.labels("UnknownHostException", request.method().toUpperCase(), request.url().toString()).inc();
+            logger.error("EsClient[" + clientId + "]: <<< UnknownHostException: ", e);
+            PromExporter.metricslib_http_requests_total.labels("Unknown Host", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "UnknownHostException";
             no_connection_to_es.setAdditionalInfo("Unknown host");
-            AlarmManager.raiseAlarm(no_connection_to_es);
+            AlarmManager.getInstance().raiseAlarm(no_connection_to_es);
         } catch (SocketTimeoutException e) {
-            System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketTimeoutException: " + e.getMessage());
-            PromExporter.metricslib_http_requests_total.labels("SocketTimeoutException", request.method().toUpperCase(), request.url().toString()).inc();
+            logger.error("EsClient[" + clientId + "]: <<< SocketTimeoutException: ", e);
+            PromExporter.metricslib_http_requests_total.labels("Timeout", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketTimeoutException";
             no_connection_to_es.setAdditionalInfo("Timeout");
-            AlarmManager.raiseAlarm(no_connection_to_es);
+            AlarmManager.getInstance().raiseAlarm(no_connection_to_es);
         } catch (SocketException e) {
-            System.err.println("ERROR: EsClient[" + clientId + "]: <<< SocketException: " + e.getMessage());
-            PromExporter.metricslib_http_requests_total.labels("SocketException", request.method().toUpperCase(), request.url().toString()).inc();
+            logger.error("EsClient[" + clientId + "]: <<< SocketException: " + e.getMessage());
+            PromExporter.metricslib_http_requests_total.labels("Socket Exception", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketException";
             no_connection_to_es.setAdditionalInfo("SocketException");
-            AlarmManager.raiseAlarm(no_connection_to_es);
+            AlarmManager.getInstance().raiseAlarm(no_connection_to_es);
         } catch (Exception e) {
-            System.err.println("ERROR: EsClient[" + clientId + "]: <<< Exception: " + e.getMessage());
+            logger.error("EsClient[" + clientId + "]: <<< Exception: " + e.getMessage());
             e.printStackTrace();
             PromExporter.metricslib_http_requests_total.labels("Exception", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "Exception";
             no_connection_to_es.setAdditionalInfo("Unknown error");
-            AlarmManager.raiseAlarm(no_connection_to_es);
+            AlarmManager.getInstance().raiseAlarm(no_connection_to_es);
         }
 
         return httpResponse;

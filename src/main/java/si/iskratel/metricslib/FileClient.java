@@ -1,9 +1,14 @@
 package si.iskratel.metricslib;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 public class FileClient {
+
+    private  static Logger logger = LoggerFactory.getLogger(FileClient.class);
 
     public static void dumpToFile(EsClient esClient, PMetric metric) {
         try {
@@ -27,9 +32,9 @@ public class FileClient {
             reader.close();
             return sb.toString();
         } catch (FileNotFoundException e) {
-            System.err.println("ERROR: FileNotFoundException: file not found: " + file.getName());
+            logger.error("File not found: " + file.getName());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("IOException: ", e);
         }
 
         return null;
