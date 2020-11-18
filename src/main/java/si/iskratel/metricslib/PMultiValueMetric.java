@@ -1,5 +1,6 @@
 package si.iskratel.metricslib;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class PMultiValueMetric {
@@ -16,8 +17,8 @@ public class PMultiValueMetric {
     private long timestamp = 0;
     private String name;
     private String help;
-    private String[] labelNames;
-    private Map<String, Double> keyValuesMap;
+    private Map<String, String> labelsMap;
+    private Map<String, Double> valuesMap;
     private String parentRegistry;
 
     public static PMultiValueMetric build() {
@@ -31,7 +32,6 @@ public class PMultiValueMetric {
     }
 
     public String getHelp() {
-//        if (help == null) return "Help missing";
         if (help == null) throw new PMetricException("Help missing");
         return help;
     }
@@ -49,13 +49,33 @@ public class PMultiValueMetric {
         return parentRegistry;
     }
 
-    public PMultiValueMetric setLabelNames(String... labels) {
-        labelNames = labels;
+    public PMultiValueMetric addLabel(String key, String value) {
+        if (labelsMap == null) labelsMap = new HashMap<>();
+        labelsMap.put(key, value);
         return this;
     }
 
-    public String[] getLabelNames() {
-        return labelNames;
+    public PMultiValueMetric addValue(String key, Double value) {
+        if (valuesMap == null) valuesMap = new HashMap<>();
+        valuesMap.put(key, value);
+        return this;
     }
 
+    public PMultiValueMetric register(String registryName) {
+        PMetricRegistry.registerMultiValueMetric(registryName,this);
+        this.parentRegistry = registryName;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "PMultiValueMetric{" +
+                "timestamp=" + timestamp +
+                ", name='" + name + '\'' +
+                ", help='" + help + '\'' +
+                ", labelsMap=" + labelsMap +
+                ", valuesMap=" + valuesMap +
+                ", parentRegistry='" + parentRegistry + '\'' +
+                '}';
+    }
 }

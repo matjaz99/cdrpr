@@ -16,6 +16,7 @@ public class PMetricRegistry {
     private String name;
     private Map<String, PMetric> metricsMap = new HashMap<>();
     private Map<String, Gauge> promMetricsMap = new HashMap<>();
+    private Map<String, PMultiValueMetric> multiValueMetricsMap = new HashMap<>();
 
     /** Check if index mapping exists in ElasticSearch */
     private boolean mappingCreated = false;
@@ -120,6 +121,14 @@ public class PMetricRegistry {
             m.clear();
             m.setTimestamp(0);
         }
+    }
+
+
+    public static void registerMultiValueMetric(String registryName, PMultiValueMetric metric) {
+        PMetricRegistry r = registriesMap.getOrDefault(registryName, new PMetricRegistry(registryName));
+        r.multiValueMetricsMap.put(metric.getName(), metric);
+        registriesMap.put(registryName, r);
+        System.out.println("INFO:  PMetricRegistry: new multi_value_metric " + metric.getName() + " registered in: " + registryName);
     }
 
 

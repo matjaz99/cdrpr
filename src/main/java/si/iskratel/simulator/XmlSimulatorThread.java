@@ -28,6 +28,11 @@ public class XmlSimulatorThread extends Thread {
                 .setLabelNames("nodeId", "nodeName", "productCategory", "subType", "status")
                 .register("pmon_inventory_idx");
 
+        PMultiValueMetric test_mv_metric = PMultiValueMetric.build()
+                .setName("test_mv_metric")
+                .setHelp("test multi value metric")
+                .register("multi_value_metrics_registry");
+
         while (true) {
 
             try {
@@ -45,8 +50,12 @@ public class XmlSimulatorThread extends Thread {
                         "" + getRandomInRange(0, 5),
                         "" + getRandomInRange(1, 3)
                 ).set(getRandomInRange(0, 5000));
+                test_mv_metric.addLabel("nodeName", Start.getRandomNodeId())
+                        .addLabel("elementType", elementTypes[getRandomInRange(0, elementTypes.length - 1)])
+                        .addValue(measurements[i], 1.0 * getRandomInRange(0, 5000));
             }
             esClient.sendBulkPost(xml_metric);
+            esClient.sendBulkPost(test_mv_metric);
 
 
             Map<String, Object> nodesMap = new HashMap<>();

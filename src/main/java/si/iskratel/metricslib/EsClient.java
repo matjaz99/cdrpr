@@ -318,6 +318,11 @@ public class EsClient {
 
     }
 
+    public boolean sendBulkPost(PMultiValueMetric metric) {
+        System.out.println(metric.toString());
+        return true;
+    }
+
     /**
      * This method actually sends the HTTP request and does all the error handling. Method returns object HttpResponse,
      * which contains a boolean flag if request was successfully executed, a returned http error code and the response
