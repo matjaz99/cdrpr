@@ -27,6 +27,7 @@ public class Start {
     public static String PG_USER;
     public static String PG_PASS;
     public static boolean PG_CREATE_TABLES_ON_START = true;
+    public static String ES_INDEX_PREFIX = "";
     public static boolean EXIT_AT_THE_END = false;
     public static String SIMULATOR_MODE;
     public static String SIMULATOR_STORAGE_TYPE;
@@ -85,6 +86,7 @@ public class Start {
         ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "true"));
+        ES_INDEX_PREFIX = getenv.getOrDefault("CDRPR_ES_INDEX_PREFIX", "");
         ES_NUMBER_OF_SHARDS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_SHARDS", "1"));
         ES_NUMBER_OF_REPLICAS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_REPLICAS", "0"));
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);
@@ -109,6 +111,7 @@ public class Start {
         System.out.println("ES_HOST: " + ES_HOST);
         System.out.println("ES_PORT: " + ES_PORT);
         System.out.println("ES_AUTO_CREATE_INDEX: " + ES_AUTO_CREATE_INDEX);
+        System.out.println("ES_INDEX_PREFIX: " + ES_INDEX_PREFIX);
         System.out.println("ES_NUMBER_OF_SHARDS: " + ES_NUMBER_OF_SHARDS);
         System.out.println("ES_NUMBER_OF_REPLICAS: " + ES_NUMBER_OF_REPLICAS);
         System.out.println("PG_URL: " + PG_URL);
