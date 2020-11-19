@@ -250,7 +250,7 @@ public class EsClient {
         if (!ES_IS_READY) {
             if (MetricsLib.DUMP_TO_FILE_ENABLED) {
                 logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
-                FileClient.dumpToFile(this, metric);
+                FileClient.dumpToFile(metric);
                 PromExporter.metricslib_dump_to_file_total.inc();
             }
             return false;
@@ -264,7 +264,7 @@ public class EsClient {
             } else {
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
                     logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Dumping to file: " + metric.getName());
-                    FileClient.dumpToFile(this, metric);
+                    FileClient.dumpToFile(metric);
                     PromExporter.metricslib_dump_to_file_total.inc();
                 } else {
                     logger.error("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
@@ -298,7 +298,7 @@ public class EsClient {
                 logger.info("EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
                 if (MetricsLib.DUMP_TO_FILE_ENABLED) {
                     logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
-                    FileClient.dumpToFile(this, metric);
+                    FileClient.dumpToFile(metric);
                     PromExporter.metricslib_dump_to_file_total.inc();
                 } else {
                     logger.warn("EsClient[" + clientId + "]: Dumping is disabled. Metric will be dropped!!!");
@@ -319,8 +319,79 @@ public class EsClient {
     }
 
     public boolean sendBulkPost(PMultiValueMetric metric) {
-        System.out.println(metric.toString());
-        return true;
+
+        boolean success = false;
+        retryCount = 0;
+
+        // cannot proceed if ES is not ready; dump to file if enabled
+        if (!ES_IS_READY) {
+            if (MetricsLib.DUMP_TO_FILE_ENABLED) {
+                logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
+                FileClient.dumpToFile(metric);
+                PromExporter.metricslib_dump_to_file_total.inc();
+            }
+            return false;
+        }
+
+        // check if index exists in elastic
+        if (!PMetricRegistry.getRegistry(metric.getParentRegistry()).isMappingCreated() && MetricsLib.ES_AUTO_CREATE_INDEX) {
+            boolean b = createIndex(metric.getParentRegistry());
+            if (b == true) {
+                PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
+            } else {
+                if (MetricsLib.DUMP_TO_FILE_ENABLED) {
+                    logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Dumping to file: " + metric.getName());
+                    FileClient.dumpToFile(metric);
+                    PromExporter.metricslib_dump_to_file_total.inc();
+                } else {
+                    logger.error("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
+                }
+                return false;
+            }
+        }
+
+        // set timestamp if it is not set already
+        if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
+
+        Request request = new Request.Builder()
+                .url(esHost + ES_API_BULK_ENDPOINT)
+                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_API_VERSION)
+                .addHeader("metric", metric.getName())
+                .post(RequestBody.create(PMetricFormatter.toEsNdJsonString(metric), MEDIA_TYPE_JSON))
+                .build();
+
+        try {
+
+            logger.info("EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + "xxx]");
+
+            while (retryCount <= MetricsLib.RETRIES) {
+                success = executeHttpRequest(request).success;
+                if (success) break;
+                retryCount++;
+                Thread.sleep(1500);
+                logger.info("EsClient[" + clientId + "]: Retrying to send " + metric.getName());
+            }
+            if (!success) {
+                logger.info("EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
+                if (MetricsLib.DUMP_TO_FILE_ENABLED) {
+                    logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
+                    FileClient.dumpToFile(metric);
+                    PromExporter.metricslib_dump_to_file_total.inc();
+                } else {
+                    logger.warn("EsClient[" + clientId + "]: Dumping is disabled. Metric will be dropped!!!");
+                    PromExporter.metricslib_dropped_metrics_total.inc();
+                }
+            }
+
+        } catch (Exception e) {
+            success = false;
+            e.printStackTrace();
+        }
+
+        // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be usd when metric will be sent
+        metric.setTimestamp(0);
+
+        return success;
     }
 
     /**

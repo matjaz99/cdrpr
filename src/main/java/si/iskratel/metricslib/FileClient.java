@@ -10,7 +10,17 @@ public class FileClient {
 
     private  static Logger logger = LoggerFactory.getLogger(FileClient.class);
 
-    public static void dumpToFile(EsClient esClient, PMetric metric) {
+    public static void dumpToFile(PMetric metric) {
+        try {
+            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + ".ndjson");
+            myWriter.write(PMetricFormatter.toEsNdJsonString(metric));
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void dumpToFile(PMultiValueMetric metric) {
         try {
             FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + ".ndjson");
             myWriter.write(PMetricFormatter.toEsNdJsonString(metric));

@@ -24,6 +24,25 @@ public class PMetricFormatter {
         return sb.toString();
     }
 
+    public static String toEsNdJsonString(PMultiValueMetric metric) {
+
+        StringBuilder sb = new StringBuilder();
+
+        for (PTimeSeries ts : metric.getTimeSeries()) {
+            sb.append("{\"index\":{\"_index\":\"").append(metric.getParentRegistry()).append("\"}}\n");
+            sb.append("{");
+            sb.append("\"metric_name\":\"").append(metric.getName()).append("\",");
+            for (int i = 0; i < metric.getLabelNames().length; i++) {
+                sb.append("\"").append(metric.getLabelNames()[i]).append("\":\"").append(ts.getLabelValues()[i]).append("\",");
+            }
+            sb.append("\"value\":").append(ts.getValue()).append(",");
+            sb.append("\"timestamp\":").append(metric.getTimestamp());
+            sb.append("}\n");
+        }
+
+        return sb.toString();
+    }
+
     public static String toEsIndexMappingJsonString(PMetric metric) {
 
         // collect all labels from all metrics in registry
