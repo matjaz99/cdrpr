@@ -58,6 +58,8 @@ public class MetricsLib {
     /** A separate thread for uploading files */
     public static FileUploadThread fut;
 
+    private static Server server;
+
     private MetricsLib() { }
 
     static class HelloServlet extends HttpServlet {
@@ -270,8 +272,8 @@ public class MetricsLib {
             METRICSLIB_IS_CONTAINERIZED = false;
         }
 
-        if (METRICSLIB_PORT > 0) {
-            Server server = new Server(port);
+        if (METRICSLIB_PORT > 0 && server == null) {
+            server = new Server(port);
             ServletContextHandler context = new ServletContextHandler();
             context.setContextPath("/");
             server.setHandler(context);

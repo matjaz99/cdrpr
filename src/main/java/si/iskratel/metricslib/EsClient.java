@@ -362,7 +362,7 @@ public class EsClient {
             AlarmManager.getInstance().clearAlarm(no_connection_to_es);
 
         } catch (UnknownHostException e) {
-            logger.error("EsClient[" + clientId + "]: <<< UnknownHostException: ", e);
+            logger.error("EsClient[" + clientId + "]: <<< UnknownHostException: " + e.getMessage());
             PromExporter.metricslib_http_requests_total.labels("Unknown Host", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
@@ -370,7 +370,7 @@ public class EsClient {
             no_connection_to_es.setAdditionalInfo("Unknown host");
             AlarmManager.getInstance().raiseAlarm(no_connection_to_es);
         } catch (SocketTimeoutException e) {
-            logger.error("EsClient[" + clientId + "]: <<< SocketTimeoutException: ", e);
+            logger.error("EsClient[" + clientId + "]: <<< SocketTimeoutException: " + e.getMessage());
             PromExporter.metricslib_http_requests_total.labels("Timeout", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
@@ -386,7 +386,7 @@ public class EsClient {
             no_connection_to_es.setAdditionalInfo("SocketException");
             AlarmManager.getInstance().raiseAlarm(no_connection_to_es);
         } catch (Exception e) {
-            logger.error("EsClient[" + clientId + "]: <<< Exception: " + e.getMessage());
+            logger.error("EsClient[" + clientId + "]: <<< Exception: ", e);
             e.printStackTrace();
             PromExporter.metricslib_http_requests_total.labels("Exception", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
