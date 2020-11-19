@@ -69,6 +69,14 @@ public class PMultiValueMetric {
         return this;
     }
 
+    public Map<String, String> getLabelsMap() {
+        return labelsMap;
+    }
+
+    public Map<String, Double> getValuesMap() {
+        return valuesMap;
+    }
+
     public PMultiValueMetric register(String registryName) {
         PMetricRegistry.registerMultiValueMetric(registryName,this);
         this.parentRegistry = registryName;

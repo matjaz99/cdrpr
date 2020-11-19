@@ -20,13 +20,13 @@ public class XmlSimulatorThread extends Thread {
                 .setName("pmon_xml_metric")
                 .setHelp("Metric from xml")
                 .setLabelNames("nodeName", "measurement", "elementType", "measInfoId", "jobId")
-                .register("pmon_xml_measurements_idx");
+                .register(Start.ES_INDEX_PREFIX + "pmon_xml_measurements_idx");
 
         PMetric inventory_metric = PMetric.build()
                 .setName("pmon_cdr_inventory")
                 .setHelp("Inventory of PAM-CDR module")
                 .setLabelNames("nodeId", "nodeName", "productCategory", "subType", "status")
-                .register("pmon_inventory_idx");
+                .register(Start.ES_INDEX_PREFIX + "pmon_inventory_idx");
 
         PMultiValueMetric test_mv_metric = PMultiValueMetric.build()
                 .setName("test_mv_metric")
