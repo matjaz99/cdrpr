@@ -8,7 +8,7 @@ import java.io.*;
 
 public class FileClient {
 
-    private  static Logger logger = LoggerFactory.getLogger(FileClient.class);
+    private static Logger logger = LoggerFactory.getLogger(FileClient.class);
 
     public static void dumpToFile(PMetric metric) {
         try {
