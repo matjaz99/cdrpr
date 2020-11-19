@@ -80,13 +80,13 @@ public class Start {
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
 
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "50000"));
-        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "600"));
+        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "0"));
         ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "true"));
-        ES_INDEX_PREFIX = getenv.getOrDefault("CDRPR_ES_INDEX_PREFIX", "");
+        ES_INDEX_PREFIX = getenv.getOrDefault("CDRPR_ES_INDEX_PREFIX", "prefix_");
         ES_NUMBER_OF_SHARDS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_SHARDS", "1"));
         ES_NUMBER_OF_REPLICAS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_REPLICAS", "0"));
         PG_URL = getenv.getOrDefault("CDRPR_PG_URL", testPgUrl);

@@ -353,6 +353,8 @@ public class EsClient {
         // set timestamp if it is not set already
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
+        System.out.println("MVMetric:\n" + PMetricFormatter.toEsNdJsonString(metric));
+
         Request request = new Request.Builder()
                 .url(esHost + ES_API_BULK_ENDPOINT)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_API_VERSION)
@@ -417,12 +419,13 @@ public class EsClient {
 
             Response response = httpClient.newCall(request).execute();
             duration = System.currentTimeMillis() - startTime;
-            logger.info("EsClient[" + clientId + "]: <<< " + response.code() + " - [took " + duration + "ms]");
             PromExporter.metricslib_http_requests_total.labels(Integer.toString(response.code()), request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = response.isSuccessful();
             httpResponse.responseCode = response.code();
             httpResponse.responseText = response.body().string();
             response.close();
+
+            logger.info("EsClient[" + clientId + "]: <<< " + httpResponse.responseCode + " - [took " + duration + "ms]; response: " + httpResponse.responseText);
 
             double dur = t.observeDuration();
             PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).observe(dur);
