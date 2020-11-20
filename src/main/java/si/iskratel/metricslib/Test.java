@@ -14,7 +14,12 @@ public class Test {
 //        testMetrics();
 //        aggregateCalls();
 
+        String s = "12345678901";
+        if (s.length() > 10) {
+            s = s.substring(0, 10);
 
+        }
+        System.out.println(s);
 
     }
 
