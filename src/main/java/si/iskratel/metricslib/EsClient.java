@@ -425,9 +425,12 @@ public class EsClient {
             httpResponse.responseText = response.body().string();
             response.close();
 
-            String resp = httpResponse.responseText;
-            if (resp.length() > 1000) resp = resp.substring(0, 1000);
-            logger.info("EsClient[" + clientId + "]: <<< " + httpResponse.responseCode + " - [took " + duration + "ms]; response: " + resp);
+            logger.info("EsClient[" + clientId + "]: <<< " + httpResponse.responseCode + " - [took " + duration + "ms]");
+            if (logger.isDebugEnabled()) {
+                String resp = httpResponse.responseText;
+                if (resp.length() > 300) resp = resp.substring(0, 300);
+                logger.debug("EsClient[" + clientId + "]: <<< " + "response: " + resp);
+            }
 
             double dur = t.observeDuration();
             PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).observe(dur);

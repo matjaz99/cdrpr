@@ -57,7 +57,6 @@ public class XmlSimulatorThread extends Thread {
                 esClient.sendBulkPost(test_mv_metric);
             }
             esClient.sendBulkPost(xml_metric);
-            test_mv_metric.setTimestamp(0);
 
 
             Map<String, Object> nodesMap = new HashMap<>();
@@ -70,7 +69,6 @@ public class XmlSimulatorThread extends Thread {
                 inventory_metric.setLabelValues("" + n.hashCode(), n, "elementType", "subType", "No CDR files found").set(status);
             }
             esClient.sendBulkPost(inventory_metric);
-            inventory_metric.setTimestamp(0);
 
         }
 
