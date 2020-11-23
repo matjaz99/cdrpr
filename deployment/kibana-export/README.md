@@ -29,3 +29,7 @@ Added tables
 Added Forma_6 example
 Added piechart, tagcloud
 
+### rev010
+Added IMS registrations as PMultiValueMetric model
+
+

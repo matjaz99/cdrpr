@@ -1,0 +1,13 @@
+{
+  "metric_name":  "pmon_sc_attsessions_orig",
+  "nodeId":   "1150",
+  "nodeName":   "Moscow",
+  "measInfoId":   "Subscriber statistics",
+  "jobId":   "Subscriber statistics",
+  "SC.AttSessions":   200,
+  "SC.SuccSessions":   100,
+  "IT.SUBS.OrigIncmpl":   500,
+  "SC.FailSession.404":   250,
+  "timestamp":   15324568722,
+  "value":   0
+}

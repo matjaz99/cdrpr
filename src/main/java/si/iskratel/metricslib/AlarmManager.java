@@ -11,32 +11,25 @@ import java.util.Map;
 
 public class AlarmManager {
 
-    private Logger logger = LoggerFactory.getLogger(AlarmManager.class);
+    private static Logger logger = LoggerFactory.getLogger(AlarmManager.class);
 
-    private static AlarmManager alarmManager = null;
-
-    private Map<String, Alarm> activeAlarmsList = new HashMap<>();
+    private static Map<String, Alarm> activeAlarmsList = new HashMap<>();
 
     private AlarmManager() {
 
     }
 
-    public static AlarmManager getInstance() {
-        if (alarmManager == null) alarmManager = new AlarmManager();
-        return alarmManager;
-    }
-
-    public void raiseAlarm(Alarm alarm) {
+    public static void raiseAlarm(Alarm alarm) {
         raiseAlarm(alarm, true);
     }
 
-    public synchronized void raiseAlarm(Alarm alarm, boolean send) {
+    public static synchronized void raiseAlarm(Alarm alarm, boolean send) {
         if (activeAlarmsList.containsKey(alarm.getAlarmId())) return;
         activeAlarmsList.put(alarm.getAlarmId(), alarm);
         if (send) push(alarm);
     }
 
-    public synchronized void clearAlarm(Alarm alarm) {
+    public static synchronized void clearAlarm(Alarm alarm) {
         Alarm a = activeAlarmsList.remove(alarm.getAlarmId());
         if (a != null) {
             a.setSeverity(5);
@@ -44,7 +37,7 @@ public class AlarmManager {
         }
     }
 
-    private void push(Alarm alarm) {
+    private static void push(Alarm alarm) {
 
         if (alarm.getTimestamp() == 0) alarm.setTimestamp(System.currentTimeMillis());
 
@@ -77,7 +70,7 @@ public class AlarmManager {
 
     }
 
-    public String toJsonString(Alarm alarm) {
+    public static String toJsonString(Alarm alarm) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return "[" + mapper.writeValueAsString(alarm) + "]";
@@ -87,7 +80,7 @@ public class AlarmManager {
         return null;
     }
 
-    public String toJsonStringAllAlarms() {
+    public static String toJsonStringAllAlarms() {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.writeValueAsString(activeAlarmsList.values());

@@ -1,0 +1,9 @@
+{
+  "metric_name":  "pmon_sc_attsessions_orig",
+  "nodeId":   "1150",
+  "nodeName":   "Moscow",
+  "cause":   "Answered",
+  "trType":   "TRANSIT",
+  "timestamp":   15324568722,
+  "value":   10
+}
