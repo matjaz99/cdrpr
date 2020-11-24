@@ -15,7 +15,6 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -171,7 +170,7 @@ public class MetricsLib {
 
             PromExporter.metricslib_servlet_requests_total.labels("/alarms").inc();
 
-            String json = AlarmManager.getInstance().toJsonStringAllAlarms();
+            String json = AlarmManager.toJsonStringAllAlarms();
             resp.getWriter().println(json);
 
         }
@@ -184,38 +183,6 @@ public class MetricsLib {
     public static void init(int port) throws Exception {
         METRICSLIB_PORT = port;
         startJetty(port);
-    }
-
-    public static void init(Map<String, String> props) throws Exception {
-        METRICSLIB_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.jetty.port", "9099"));
-        PATH_PREFIX = (String) props.getOrDefault("metricslib.jetty.pathPrefix", "/");
-        if (PATH_PREFIX.length() > 0 && !PATH_PREFIX.endsWith("/")) PATH_PREFIX += "/";
-
-        RETRIES = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.count", "3"));
-        RETRY_INTERVAL_MILLISECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.client.retry.interval.millis", "1500"));
-        BULK_SIZE = Integer.parseInt((String) props.getOrDefault("metricslib.client.bulk.size", "50000"));
-        String dd = (String) props.getOrDefault("metricslib.dump.directory", "");
-        if (dd.length() > 0 && !dd.endsWith("/")) dd += "/";
-        DUMP_DIRECTORY = dd;
-        DUMP_TO_FILE_ENABLED = Boolean.parseBoolean((String) props.getOrDefault("metricslib.dump.enabled", "true"));
-        UPLOAD_INTERVAL_SECONDS = Integer.parseInt((String) props.getOrDefault("metricslib.upload.interval.seconds", "45"));
-
-        PROM_METRICS_EXPORT_ENABLE = Boolean.parseBoolean((String) props.getOrDefault("metricslib.prometheus.enable", "true"));
-        String include = (String) props.getOrDefault("metricslib.prometheus.include.registry", "_all");
-        if (include.length() == 0) include = "_all";
-        PROM_INCLUDE_REGISTRY = include.split(",");
-        String exclude = (String) props.getOrDefault("metricslib.prometheus.exclude.registry", "");
-        PROM_EXCLUDE_REGISTRY = exclude.split(",");
-
-        ES_DEFAULT_HOST = (String) props.getOrDefault("metricslib.elasticsearch.default.host", null);
-        ES_DEFAULT_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.default.port", "0"));
-        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean((String) props.getOrDefault("metricslib.elasticsearch.createIndexOnStart", "true"));
-        ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberofShards", "1"));
-        ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
-
-        ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", "http://localhost:9097/webhook");
-
-        startJetty(METRICSLIB_PORT);
     }
 
     /**
