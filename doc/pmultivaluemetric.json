@@ -2,6 +2,7 @@
   "metric_name":  "pmon_sc_attsessions_orig",
   "nodeId":   "1150",
   "nodeName":   "Moscow",
+  "elementType": "HSS",
   "measInfoId":   "Subscriber statistics",
   "jobId":   "Subscriber statistics",
   "SC.AttSessions":   200,

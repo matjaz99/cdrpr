@@ -11,6 +11,49 @@ docker run -d --network es_elastic -e CDRPR_DIRECTORY=/opt/cdr -e CDRPR_THREADS=
 ```
 
 
+
+Dodaj severity=6 za evente
+
+[{"nodeId":1048888,"alarmId":"55566699No connection1048888No connection to ElasticSearch","timestamp":1606170707527,"alarmCode":55566699,"alarmName":"No connection","severity":1,severityString":null,"sourceInfo":"No connection to ElasticSearch","additionalInfo":"Unknown host"}]
+
+
+PMetric model:
+{
+	"metric_name": "pmon_calls_by_cause",
+	"nodeName": "node1",
+	"cause": "Answered",
+	"timestamp": 164763762843,
+	"value": 123
+}
+
+
+{
+	"metric_name": "pmon_prefix",
+	"nodeName": "node1",
+	"prefix_out": "00389",
+	"prefix_in": "00386",
+	"prefix_out_country": "MK",
+	"prefix_in_country": "SLO",
+	"timestamp": 164763762843,
+	"value": 123
+}
+
+
+PMultiValueMetric:
+{
+	"metric_name": "pmon_xml_measurements",
+	"nodeName": "node1",
+	"cause": "Answered",
+	"IT.SuccSession": 100,
+	"IT.AttSession": 200,
+	"timestamp": 164763762843,
+	"value": 0
+}
+
+
+
+
+
 Število metrik:
 
 100k/15m == 400k/h == 9,6M/d == 288M/M == 3,456B/Y

@@ -1,0 +1,35 @@
+version: '3.6'
+
+networks:
+  esnet:
+    external:
+      name: esnet
+
+services:
+  cdrsim:
+    image: matjaz99/cdrpr:2.1
+    networks:
+      - esnet
+    ports:
+      - 9099:9099
+    environment:
+      - CDRPR_THREADS=36
+      - CDRPR_SIMULATOR_DELAY=50
+      - CDRPR_SEND_INTERVAL_SEC=900
+      - CDRPR_ES_HOST=data1
+      - CDRPR_ES_PORT=9200
+      # if true, create ILM (pmon_ilm_policy) manually before running simulator!
+      # if false, create mapping manually before running simulator (if you want to use timestamp)!
+      - CDRPR_ES_AUTO_CREATE_INDEX=true
+      - CDRPR_ES_INDEX_PREFIX=
+      - CDRPR_ES_NUMBER_OF_SHARDS=1
+      - CDRPR_ES_NUMBER_OF_REPLICAS=2
+      - CDRPR_DUMP_TO_FILE=true
+      - CDRPR_ALARM_DESTINATION=http://172.29.100.32:9070/webhook
+    volumes:
+      - ./cluster.json:/opt/cluster.json
+      - ./pmon_ilm_policy.json:/opt/pmon_ilm_policy.json
+      - ./configure_elastic.sh:/opt/configure_elastic.sh
+    deploy:
+      mode: replicated
+      replicas: 1
