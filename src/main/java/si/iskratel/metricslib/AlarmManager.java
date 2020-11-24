@@ -19,33 +19,36 @@ public class AlarmManager {
 
     }
 
-    public static void raiseAlarm(Alarm alarm) {
-        raiseAlarm(alarm, true);
+    public static synchronized void raiseAlarm(Alarm alarm) {
+        raiseAlarm(alarm, alarm.getSeverity());
     }
 
-    public static synchronized void raiseAlarm(Alarm alarm, boolean send) {
+    public static synchronized void raiseAlarm(Alarm alarm, int severity) {
         if (activeAlarmsList.containsKey(alarm.getAlarmId())) return;
+        if (alarm.getTimestamp() == 0) alarm.setTimestamp(System.currentTimeMillis());
         activeAlarmsList.put(alarm.getAlarmId(), alarm);
-        if (send) push(alarm);
+        String body = toJsonString(alarm);
+        logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
+        push(body);
     }
 
     public static synchronized void clearAlarm(Alarm alarm) {
+        alarm.setTimestamp(0);
         Alarm a = activeAlarmsList.remove(alarm.getAlarmId());
         if (a != null) {
+            int sev = a.getSeverity();
             a.setSeverity(5);
-            push(a);
+            String body = toJsonString(alarm);
+            logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
+            push(body);
+            a.setSeverity(sev);
         }
     }
 
-    private static void push(Alarm alarm) {
-
-        if (alarm.getTimestamp() == 0) alarm.setTimestamp(System.currentTimeMillis());
+    private static void push(String body) {
 
         OkHttpClient httpClient = new OkHttpClient();
         MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
-
-        String body = toJsonString(alarm);
-        logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
 
         Request request = new Request.Builder()
                 .url(MetricsLib.ALARM_DESTINATION)

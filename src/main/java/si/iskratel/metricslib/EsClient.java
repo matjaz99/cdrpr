@@ -437,7 +437,6 @@ public class EsClient {
 
             if (httpResponse.responseCode < 200 || httpResponse.responseCode > 399) System.out.println("WARN:  EsClient[" + clientId + "] response: " + httpResponse.responseText);
 
-            no_connection_to_es.setSeverity(5);
             AlarmManager.clearAlarm(no_connection_to_es);
 
         } catch (UnknownHostException e) {
