@@ -37,7 +37,6 @@ public class PMetricFormatter {
         for (String key : metric.getValuesMap().keySet()) {
             sb.append("\"").append(key).append("\":").append(metric.getValuesMap().get(key)).append(",");
         }
-        sb.append("\"value\":").append(0).append(",");
         sb.append("\"timestamp\":").append(metric.getTimestamp());
         sb.append("}\n");
 

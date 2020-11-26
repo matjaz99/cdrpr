@@ -121,6 +121,9 @@ public class PMetricRegistry {
             m.clear();
             m.setTimestamp(0);
         }
+        for (PMultiValueMetric m : multiValueMetricsMap.values()) {
+            m.clear();
+        }
     }
 
 

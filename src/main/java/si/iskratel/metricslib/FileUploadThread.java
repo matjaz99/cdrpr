@@ -42,6 +42,7 @@ public class FileUploadThread extends Thread {
             });
 
             logger.info("Files to upload: " + bkpFiles.length);
+            PromExporter.metricslib_dump_to_file_current.set(bkpFiles.length);
 
             for (int i = 0; i < bkpFiles.length; i++) {
                 String s = FileClient.readFile(bkpFiles[i]);

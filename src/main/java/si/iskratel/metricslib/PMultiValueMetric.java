@@ -17,8 +17,8 @@ public class PMultiValueMetric {
     private long timestamp = 0;
     private String name;
     private String help;
-    private Map<String, String> labelsMap;
-    private Map<String, Double> valuesMap;
+    private Map<String, String> labelsMap = new HashMap<>();
+    private Map<String, Double> valuesMap = new HashMap<>();
     private String parentRegistry;
 
     public static PMultiValueMetric build() {
@@ -63,7 +63,7 @@ public class PMultiValueMetric {
         return this;
     }
 
-    public PMultiValueMetric addValue(String key, Double value) {
+    public PMultiValueMetric addValue(String key, double value) {
         if (valuesMap == null) valuesMap = new HashMap<>();
         valuesMap.put(key, value);
         return this;
@@ -81,6 +81,11 @@ public class PMultiValueMetric {
         PMetricRegistry.registerMultiValueMetric(registryName,this);
         this.parentRegistry = registryName;
         return this;
+    }
+
+    public void clear() {
+        labelsMap.clear();
+        valuesMap.clear();
     }
 
     @Override
