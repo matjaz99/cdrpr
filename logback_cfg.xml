@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- debug="true" -> show status to console -->
+<!-- scan="true" -> auto reload of configuration in case of changes -->
+<!-- packagingData="true" -> includes packaging information in stack-trace if trowable is logged -->
+<configuration debug="true" scan="true" scanPeriod="30 seconds" packagingData="true">
+  <!-- in the absence of the class attribute, assume ch.qos.logback.core.hook.DelayingShutdownHook -->
+
+  <!-- <property file="cfg/StandardLogger/logbackProps.properties" /> -->
+  <property scope="local" name="logDir" value="../log" />
+  <contextName>pam_cdr</contextName>
+  <jmxConfigurator />
+  <!-- <shutdownHook /> -->
+  <property name="logToConsole" value="true" />
+
+  <timestamp key="secondsStamp" datePattern="yyyyMMdd'T'HHmmss" />
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+    <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+      <evaluator>
+        <expression>return message.contains("Cookie rejected: ");</expression>
+      </evaluator>
+      <onMatch>DENY</onMatch>
+    </filter>
+    <encoder>
+      <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger{36}.%M - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="FILE_STANDARD" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+      <evaluator>
+        <expression>return message.contains("Cookie rejected: ");</expression>
+      </evaluator>
+      <onMatch>DENY</onMatch>
+    </filter>
+    <file>${logDir:-defDirForLog}/${CONTEXT_NAME}-${SERVICE_ID}.log</file>
+    <append>true</append>
+    <prudent>false</prudent>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${logDir:-defDirForLog}/${CONTEXT_NAME}-${SERVICE_ID}-%d{yyyy-MM-dd}.%i.gz
+      </fileNamePattern>
+      <maxFileSize>50MB</maxFileSize>
+      <maxHistory>60</maxHistory>
+      <totalSizeCap>2GB</totalSizeCap>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} [%contextName] [%thread] [%-5level] [%logger{10}] [%file:%line] [%mdc] - %msg%n</pattern>
+      <outputPatternAsHeader>true</outputPatternAsHeader>
+    </encoder>
+  </appender>
+
+  <!-- level -> TRACE, DEBUG, INFO, WARN, ERROR, ALL, OFF, INHERITED or NULL -->
+  <root level="INFO">
+    <!-- if system property "development=true" is defined, messages will be logged to console also -->
+    <if condition='property("logToConsole").contains("true")'>
+      <then>
+        <appender-ref ref="STDOUT" />
+      </then>
+    </if>
+    <appender-ref ref="FILE_STANDARD" />
+  </root>
+
+  <logger name="org.apache" level="WARN" />
+</configuration>
