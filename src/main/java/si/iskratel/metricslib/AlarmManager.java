@@ -20,9 +20,11 @@ public class AlarmManager {
     }
 
     public static synchronized void raiseAlarm(Alarm alarm) {
-        if (activeAlarmsList.containsKey(alarm.getAlarmId())) return;
         if (alarm.getTimestamp() == 0) alarm.setTimestamp(System.currentTimeMillis());
-        activeAlarmsList.put(alarm.getAlarmId(), alarm);
+        if (alarm.getNotificationType().equalsIgnoreCase("alarm")) {
+            if (activeAlarmsList.containsKey(alarm.getAlarmId())) return;
+            activeAlarmsList.put(alarm.getAlarmId(), alarm);
+        }
         String body = toJsonString(alarm);
         logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
         push(body);
@@ -34,6 +36,7 @@ public class AlarmManager {
         if (a != null) {
             int sev = a.getSeverity();
             a.setSeverity(5);
+            alarm.setTimestamp(System.currentTimeMillis());
             String body = toJsonString(alarm);
             logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
             push(body);
