@@ -70,6 +70,12 @@ public class XmlSimulatorThread extends Thread {
             }
             esClient.sendBulkPost(inventory_metric);
 
+            // send random event
+            if (System.currentTimeMillis() % 3 == 0) {
+                Alarm a = new Alarm(1234567, "Test event", 4, "Test source info", "Test add info", true);
+                AlarmManager.raiseAlarm(a);
+            }
+
         }
 
     }

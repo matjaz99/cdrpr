@@ -20,10 +20,6 @@ public class AlarmManager {
     }
 
     public static synchronized void raiseAlarm(Alarm alarm) {
-        raiseAlarm(alarm, alarm.getSeverity());
-    }
-
-    public static synchronized void raiseAlarm(Alarm alarm, int severity) {
         if (activeAlarmsList.containsKey(alarm.getAlarmId())) return;
         if (alarm.getTimestamp() == 0) alarm.setTimestamp(System.currentTimeMillis());
         activeAlarmsList.put(alarm.getAlarmId(), alarm);

@@ -20,8 +20,7 @@ public class EsClient {
     private int port;
     private String esHost = "http://elasticvm:9200";
 
-    private Alarm no_connection_to_es = new Alarm(1048888, 55566699,
-            "No connection", 1, "No connection to ElasticSearch",
+    private Alarm no_connection_to_es = new Alarm(3730080, "Database Connection Fault", 1, "No connection to ElasticSearch",
             "Cannot connect");
 
     private OkHttpClient httpClient = new OkHttpClient();
