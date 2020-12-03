@@ -14,6 +14,7 @@ public class AggregatedCalls implements Runnable {
     private EsClient esClient;
 
     private static final String INDEX_CDR_CALLS = Start.ES_INDEX_PREFIX + "pmon_cdr_node_calls_idx";
+    private static final String INDEX_CDR_KPI_ASR = Start.ES_INDEX_PREFIX + "pmon_cdr_node_calls_asr_idx";
     private static final String INDEX_CDR_ACTIVE_CALLS = Start.ES_INDEX_PREFIX + "pmon_cdr_node_active_calls_idx";
     private static final String INDEX_CDR_CALL_DURATION = Start.ES_INDEX_PREFIX + "pmon_cdr_node_durations_idx";
     private static final String INDEX_CDR_BG = Start.ES_INDEX_PREFIX + "pmon_cdr_business_group_idx";
@@ -29,6 +30,11 @@ public class AggregatedCalls implements Runnable {
             .setHelp("Count calls by release cause")
             .setLabelNames("nodeName", "cause", "trafficType")
             .register(INDEX_CDR_CALLS);
+    public static PMetric pmon_cdr_calls_asr = PMetric.build()
+            .setName("pmon_cdr_calls_asr")
+            .setHelp("Answer to seizure ratio - success rate")
+            .setLabelNames("nodeName")
+            .register(INDEX_CDR_KPI_ASR);
     public static PMetric pmon_cdr_calls_in_progress = PMetric.build()
             .setName("pmon_cdr_calls_in_progress")
             .setHelp("Current number of calls in progress (answered only)")
@@ -115,6 +121,7 @@ public class AggregatedCalls implements Runnable {
             // reset metrics: clear all time-series data
 //            PMetricRegistry.getRegistry(INDEX_CDR_CALLS_TEST).resetMetrics();
             PMetricRegistry.getRegistry(INDEX_CDR_CALLS).resetMetrics();
+            PMetricRegistry.getRegistry(INDEX_CDR_KPI_ASR).resetMetrics();
             PMetricRegistry.getRegistry(INDEX_CDR_CALL_DURATION).resetMetrics();
             PMetricRegistry.getRegistry(INDEX_CDR_BG).resetMetrics();
             PMetricRegistry.getRegistry(INDEX_CDR_SUPP_SERVICE).resetMetrics();

@@ -352,8 +352,6 @@ public class EsClient {
         // set timestamp if it is not set already
         if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
-        System.out.println("MVMetric:\n" + PMetricFormatter.toEsNdJsonString(metric));
-
         Request request = new Request.Builder()
                 .url(esHost + ES_API_BULK_ENDPOINT)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_API_VERSION)
@@ -363,7 +361,7 @@ public class EsClient {
 
         try {
 
-            logger.info("EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + "xxx]");
+            logger.info("EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + "1]");
 
             while (retryCount <= MetricsLib.RETRIES) {
                 success = executeHttpRequest(request).success;
@@ -386,7 +384,7 @@ public class EsClient {
 
         } catch (Exception e) {
             success = false;
-            e.printStackTrace();
+            logger.error("Exception: ", e);
         }
 
         // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be usd when metric will be sent
@@ -427,14 +425,19 @@ public class EsClient {
             logger.info("EsClient[" + clientId + "]: <<< " + httpResponse.responseCode + " - [took " + duration + "ms]");
             if (logger.isDebugEnabled()) {
                 String resp = httpResponse.responseText;
-                if (resp.length() > 300) resp = resp.substring(0, 300);
+                if (resp.length() > 300) resp = resp.substring(0, 300) + "...";
                 logger.debug("EsClient[" + clientId + "]: <<< " + "response: " + resp);
             }
 
             double dur = t.observeDuration();
             PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).observe(dur);
 
-            if (httpResponse.responseCode < 200 || httpResponse.responseCode > 399) System.out.println("WARN:  EsClient[" + clientId + "] response: " + httpResponse.responseText);
+            if (httpResponse.responseText.contains("\"status\" : 400")) {
+                httpResponse.responseCode = 400;
+                httpResponse.success = false;
+            }
+
+            if (httpResponse.responseCode < 200 || httpResponse.responseCode > 399) logger.warn("EsClient[" + clientId + "] response: " + httpResponse.responseText);
 
             AlarmManager.clearAlarm(no_connection_to_es);
 
