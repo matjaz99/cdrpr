@@ -13,7 +13,6 @@ public class PMetric {
     private Double value;
     // the name of registry that this metric belongs to
     private String parentRegistry;
-    private Double[] buckets;
 
     public static PMetric build() {
         PMetric m = new PMetric();
@@ -94,19 +93,6 @@ public class PMetric {
         value += d;
     }
 
-    public PMetric setBuckets(Double... buckets) {
-//        Double[] numbers = new Double[buckets.length];
-//        for(int i = 0;i < buckets.length;i++) {
-//            numbers[i] = Double.parseDouble(buckets[i]);
-//        }
-        this.buckets = buckets;
-        return this;
-    }
-
-    public void observe(double value) {
-
-    }
-
     public PMetric register() {
         PMetricRegistry.registerMetric("default",this);
         this.parentRegistry = "default";
@@ -130,6 +116,71 @@ public class PMetric {
     public synchronized List<PTimeSeries> getTimeSeries() {
         return new ArrayList<>(timeSeries.values());
     }
+
+    public double getSUM(String labelName, String filterLabelValue) {
+        double sum = 0.0;
+        int lblPosition = -1;
+
+        for (int i = 0; i < labelNames.length; i++) {
+            if (labelNames[i].equals(labelName)) {
+                lblPosition = i;
+            }
+        }
+
+        for (PTimeSeries ts : timeSeries.values()) {
+
+            if (ts.getLabelValues()[lblPosition].equals(filterLabelValue)) {
+                sum += ts.getValue();
+            }
+
+        }
+
+        return sum;
+    }
+
+//    public PMetric SUM(PMetric metric1, PMetric metric2) {
+//        PMetric m = PMetric.build()
+//                .setName(metric1.getName() + "#" + metric2.getName())
+//                .setHelp("SUM of " + metric1.getName() + "+" + metric2.getName())
+//                .setLabelNames(labelNames);
+//
+//        // merge labels
+//
+//    }
+
+    /**
+     * Multiply all values by factor. This method is also used for dividing. For example to divide value by 60,
+     * simply multiply it with 1/60.
+     * @param factor
+     */
+    public void MULTIPLY(double factor) {
+        for (PTimeSeries t : timeSeries.values()) {
+            t.set(t.getValue() * factor);
+        }
+        if (value != null) value = value * factor;
+    }
+
+    public PMetric filterSUM(String labels) {
+        PMetric m = PMetric.build()
+                .setName(name + "_filterSUM")
+                .setHelp("filter sum")
+                .setLabelNames(labels);
+
+        int lblPosition = -1;
+        for (int i = 0; i < labelNames.length; i++) {
+            if (labelNames[i].equals(labels)) {
+                lblPosition = i;
+            }
+        }
+
+
+        for (PTimeSeries t : timeSeries.values()) {
+//            if (t.getLabelValues()[lblPosition])
+        }
+        return m;
+    }
+
+
 
     @Override
     public String toString() {

@@ -16,8 +16,6 @@ public class EsClient {
     public static int esClientCount = 0;
     private int clientId;
 
-    private String host;
-    private int port;
     private String esHost = "http://elasticvm:9200";
 
     private Alarm no_connection_to_es = new Alarm(3730080, "Database Connection Fault", 1, "No connection to ElasticSearch",
@@ -42,9 +40,16 @@ public class EsClient {
      */
     public EsClient(String host, int port) {
         this.clientId = esClientCount++;
-        this.host = host;
-        this.port = port;
         esHost = "http://" + host + ":" + port;
+    }
+
+    /**
+     * Host URL can be: http://hostname:port or https://usr:pass@hostname:port, but nothing more.
+     * @param hostUrl
+     */
+    public EsClient(String hostUrl) {
+        this.clientId = esClientCount++;
+        esHost = hostUrl;
     }
 
 
@@ -247,11 +252,7 @@ public class EsClient {
 
         // cannot proceed if ES is not ready; dump to file if enabled
         if (!ES_IS_READY) {
-            if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
-                FileClient.dumpToFile(metric);
-                PromExporter.metricslib_dump_to_file_total.inc();
-            }
+            FileClient.dumpToFile(metric);
             return false;
         }
 
@@ -261,13 +262,8 @@ public class EsClient {
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
-                if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Dumping to file: " + metric.getName());
-                    FileClient.dumpToFile(metric);
-                    PromExporter.metricslib_dump_to_file_total.inc();
-                } else {
-                    logger.error("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
-                }
+                logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping.");
+                FileClient.dumpToFile(metric);
                 return false;
             }
         }
@@ -295,14 +291,7 @@ public class EsClient {
             }
             if (!success) {
                 logger.info("EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
-                if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
-                    FileClient.dumpToFile(metric);
-                    PromExporter.metricslib_dump_to_file_total.inc();
-                } else {
-                    logger.warn("EsClient[" + clientId + "]: Dumping is disabled. Metric will be dropped!!!");
-                    PromExporter.metricslib_dropped_metrics_total.inc(metric.getTimeSeriesSize());
-                }
+                FileClient.dumpToFile(metric);
             }
 
         } catch (Exception e) {
@@ -324,11 +313,7 @@ public class EsClient {
 
         // cannot proceed if ES is not ready; dump to file if enabled
         if (!ES_IS_READY) {
-            if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
-                FileClient.dumpToFile(metric);
-                PromExporter.metricslib_dump_to_file_total.inc();
-            }
+            FileClient.dumpToFile(metric);
             return false;
         }
 
@@ -338,13 +323,8 @@ public class EsClient {
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
-                if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Dumping to file: " + metric.getName());
-                    FileClient.dumpToFile(metric);
-                    PromExporter.metricslib_dump_to_file_total.inc();
-                } else {
-                    logger.error("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping. Now what? I will drop this metric!!!!!");
-                }
+                logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping.");
+                FileClient.dumpToFile(metric);
                 return false;
             }
         }
@@ -372,14 +352,7 @@ public class EsClient {
             }
             if (!success) {
                 logger.info("EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
-                if (MetricsLib.DUMP_TO_FILE_ENABLED) {
-                    logger.info("EsClient[" + clientId + "]: Dumping to file: " + metric.getName());
-                    FileClient.dumpToFile(metric);
-                    PromExporter.metricslib_dump_to_file_total.inc();
-                } else {
-                    logger.warn("EsClient[" + clientId + "]: Dumping is disabled. Metric will be dropped!!!");
-                    PromExporter.metricslib_dropped_metrics_total.inc();
-                }
+                FileClient.dumpToFile(metric);
             }
 
         } catch (Exception e) {
@@ -432,8 +405,11 @@ public class EsClient {
             double dur = t.observeDuration();
             PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).observe(dur);
 
-            if (httpResponse.responseText.contains("\"status\" : 400")) {
-                httpResponse.responseCode = 400;
+            // in some cases (eg. disk is full or too many requests) elastic does not insert the data,
+            // although errorCode 200 is returned. In such cases, check the response text if contains status:4xx.
+            // FIXME improve this check (correctly parse whole json, or regex...)
+            if (httpResponse.responseText.replace(" ", "").contains("\"status\":4")) {
+                httpResponse.responseCode = 999; // this code indicates that original response code was changed
                 httpResponse.success = false;
             }
 

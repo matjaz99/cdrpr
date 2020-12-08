@@ -10,24 +10,42 @@ public class FileClient {
 
     private static Logger logger = LoggerFactory.getLogger(FileClient.class);
 
+    private static int count = 1;
+
     public static void dumpToFile(PMetric metric) {
+        if (!MetricsLib.DUMP_TO_FILE_ENABLED) {
+            logger.warn("dumpToFile(): Dumping is disabled. Metric will be dropped!!!");
+            PromExporter.metricslib_dropped_metrics_total.inc();
+            return;
+        }
         try {
-            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + ".ndjson");
+            logger.info("dumpToFile(): Dumping to file: " + metric.getName());
+            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + "_" + (count++) + ".ndjson");
             myWriter.write(PMetricFormatter.toEsNdJsonString(metric));
             myWriter.close();
+            PromExporter.metricslib_dump_to_file_total.inc();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if (count > 9999) count = 1;
     }
 
     public static void dumpToFile(PMultiValueMetric metric) {
+        if (!MetricsLib.DUMP_TO_FILE_ENABLED) {
+            logger.warn("dumpToFile(): Dumping is disabled. Metric will be dropped!!!");
+            PromExporter.metricslib_dropped_metrics_total.inc();
+            return;
+        }
         try {
-            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + ".ndjson");
+            logger.info("dumpToFile(): Dumping to file: " + metric.getName());
+            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + "_" + (count++) + ".ndjson");
             myWriter.write(PMetricFormatter.toEsNdJsonString(metric));
             myWriter.close();
+            PromExporter.metricslib_dump_to_file_total.inc();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if (count > 9999) count = 1;
     }
 
     public static String readFile(File file) {

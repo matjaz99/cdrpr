@@ -214,7 +214,7 @@ public class MetricsLib {
         ES_DEFAULT_HOST = (String) props.getOrDefault("metricslib.elasticsearch.default.host", null);
         ES_DEFAULT_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.default.port", "0"));
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean((String) props.getOrDefault("metricslib.elasticsearch.createIndexOnStart", "true"));
-        ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberofShards", "1"));
+        ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfShards", "1"));
         ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
 
         ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", "http://localhost:9097/webhook");

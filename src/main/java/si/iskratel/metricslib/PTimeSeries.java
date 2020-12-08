@@ -22,17 +22,28 @@ public class PTimeSeries {
     }
 
     public void set(double value) {
-        this.value = new Double(value);
+        this.value = value;
     }
 
     public void inc() {
-        if (value == null) value = new Double(0);
+        if (value == null) value = (double) 0;
         value += 1.0;
     }
 
     public void inc(double d) {
-        if (value == null) value = new Double(0);
+        if (value == null) value = Double.valueOf(0);
         value += d;
+    }
+
+    /**
+     * Return true if this TS contains given label value (like filtering)
+     * @param labelValue
+     */
+    public boolean containsLabelValue(String labelValue) {
+        for (int i = 0; i < labelValues.length; i++) {
+            if (labelValues[i].equals(labelValue)) return true;
+        }
+        return false;
     }
 
     @Override

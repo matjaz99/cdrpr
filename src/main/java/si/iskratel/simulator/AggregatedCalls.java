@@ -100,6 +100,11 @@ public class AggregatedCalls implements Runnable {
             .setHelp("VOIP tx/rx codec")
             .setLabelNames("nodeName", "rxCodec", "txCodec")
             .register(INDEX_CDR_VOIP);
+    public static PMetric test_multiply = PMetric.build()
+            .setName("pmon_test_multiply")
+            .setHelp("test_multiply")
+            .setLabelNames("nodeName", "duration")
+            .register(INDEX_CDR_KPI_ASR);
 
     public AggregatedCalls(int id) {
         threadId = id;
@@ -150,6 +155,7 @@ public class AggregatedCalls implements Runnable {
                     m_voipRxCodec.setLabelValues(cdr.getNodeId(), cdr.getVoipRxCodecType() + "").inc();
                     m_voipTxCodec.setLabelValues(cdr.getNodeId(), cdr.getVoipTxCodecType() + "").inc();
                     m_voipTxRxCodec.setLabelValues(cdr.getNodeId(), cdr.getVoipTxCodecType() + "", cdr.getVoipRxCodecType() + "").inc();
+//                    pmon_cdr_calls_asr.setLabelValues(cdr.getNodeId()).set(pmon_cdr_calls_by_cause.getSUM("cause", "Answered") / pmon_cdr_calls_by_cause.getTimeSeriesSize());
                 } else {
                     break;
                 }
@@ -160,8 +166,13 @@ public class AggregatedCalls implements Runnable {
 
             pmon_cdr_calls_in_progress.setLabelValues(Start.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
 
+            // TEST operations on metrics
+            // convert millis to hours
+            pmon_cdr_call_duration.MULTIPLY(1.0/1000 * 1.0/3600);
+
             if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_CALLS));
+                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_KPI_ASR));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_CALL_DURATION));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_BG));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_SUPP_SERVICE));

@@ -10,10 +10,11 @@ RUN mkdir -p /opt/dump
 COPY --from=build /usr/src/app/target/cdrpr-2.0-jar-with-dependencies.jar /opt/cdrpr-2.0-jar-with-dependencies.jar
 COPY call_release_causes.properties /opt/call_release_causes.properties
 COPY init.sh /opt/init.sh
+COPY logback.xml /opt/logback.xml
 
 WORKDIR /opt
 
 EXPOSE 9099
 
-#CMD java -jar cdrpr-2.0-jar-with-dependencies.jar
-CMD sh init.sh
+CMD java -jar -Dlogback.configurationFile=logback.xml cdrpr-2.0-jar-with-dependencies.jar
+#CMD sh init.sh

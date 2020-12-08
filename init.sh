@@ -30,6 +30,6 @@ echo -e \\nLoading pmon_ilm_policy.json
 curl -s -H 'Content-Type: application/json' -XPUT ${ES_URL}/_ilm/policy/pmon_ilm_policy -d@pmon_ilm_policy.json
 echo -e \\n${GREEN}DONE${NC}
 
-java -jar cdrpr-2.0-jar-with-dependencies.jar
+java -jar -Dlogback.configurationFile=logback.xml cdrpr-2.0-jar-with-dependencies.jar
 
 

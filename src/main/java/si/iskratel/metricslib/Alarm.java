@@ -5,16 +5,17 @@ public class Alarm {
     private int nodeId;
     private String alarmId;
     private long timestamp;
-    private int alarmCode;
-    private String alarmName;
-    private int severity;
-    private String severityString;
+    private int alarmCode = 7774777;
+    private String alarmName = "Alarm incident";
+    private int severity = 4;
+    private String severityString = "warning";
     private String notificationType = "alarm";
     private String sourceInfo;
-    private String additionalInfo;
-    private int probableCause;
-    private int eventType;
+    private String additionalInfo = "";
+    private int probableCause = 1024;
+    private int eventType = 5;
 
+    public Alarm() {}
 
     public Alarm(int alarmCode, String alarmName, int severity, String sourceInfo, String additionalInfo) {
         this.alarmCode = alarmCode;
@@ -33,6 +34,17 @@ public class Alarm {
         if (isEvent) this.notificationType = "event";
     }
 
+    public Alarm(int alarmCode, String alarmName, int severity, String sourceInfo, String additionalInfo, int probableCause, int eventType, boolean isEvent) {
+        this.alarmCode = alarmCode;
+        this.alarmName = alarmName;
+        this.severity = severity;
+        this.sourceInfo = sourceInfo;
+        this.additionalInfo = additionalInfo;
+        this.probableCause = probableCause;
+        this.eventType = eventType;
+        if (isEvent) this.notificationType = "event";
+    }
+
     public int getNodeId() {
         return nodeId;
     }
@@ -42,7 +54,7 @@ public class Alarm {
     }
 
     public String getAlarmId() {
-        return alarmCode + alarmName + nodeId + sourceInfo;
+        return MD5Checksum.getMd5Checksum(alarmCode + alarmName + nodeId + sourceInfo);
     }
 
     public long getTimestamp() {
@@ -129,7 +141,7 @@ public class Alarm {
     public String toString() {
         return "Alarm{" +
                 "nodeId=" + nodeId +
-                ", alarmId='" + alarmId + '\'' +
+                ", alarmId='" + getAlarmId() + '\'' +
                 ", timestamp=" + timestamp +
                 ", alarmCode=" + alarmCode +
                 ", alarmName='" + alarmName + '\'' +

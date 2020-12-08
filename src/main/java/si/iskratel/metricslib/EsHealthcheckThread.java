@@ -19,14 +19,14 @@ public class EsHealthcheckThread implements Runnable {
         boolean succ = false;
         while (!succ) {
             succ = es.sendPost("/metricslib/_doc/m37r1c5l1b4b0ut", sb.toString()).success;
-            logger.info("INFO:  Waiting for ElasticSearch...");
+            logger.info("Healthcheck: Waiting for ElasticSearch...");
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
             }
         }
         EsClient.ES_IS_READY = true;
-        logger.info("INFO:  ElasticSearch is ready");
+        logger.info("Healthcheck:  ElasticSearch is ready");
 
     }
 }

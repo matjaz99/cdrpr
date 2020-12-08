@@ -12,6 +12,10 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['192.168.0.170:9100', '192.168.1.170:9100']
+
   - job_name: 'metricslib'
     static_configs:
       - targets: ['localhost:9099', '192.168.0.170:9099', '192.168.1.170:9099', '192.168.0.18:9099', '192.168.1.222:9099']

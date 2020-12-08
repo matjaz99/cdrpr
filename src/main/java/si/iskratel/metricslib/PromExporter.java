@@ -31,8 +31,8 @@ public class PromExporter {
             .name("metricslib_dump_to_file_total")
             .help("Number of files being dumped")
             .register();
-    public static final Gauge metricslib_dump_to_file_current = Gauge.build()
-            .name("metricslib_dump_to_file_current")
+    public static final Gauge metricslib_files_waiting_for_upload = Gauge.build()
+            .name("metricslib_files_waiting_for_upload")
             .help("Number of files waiting to be uploaded")
             .register();
     public static final Counter metricslib_dump_files_uploads_total = Counter.build()

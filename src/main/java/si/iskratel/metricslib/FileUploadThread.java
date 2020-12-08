@@ -19,6 +19,8 @@ public class FileUploadThread extends Thread {
         esClient = client;
     }
 
+    private Alarm alarm_files_dumped = new Alarm(5999999, "PMON is dumping data", 3, "Elasticsearch is not accepting data", "Data is dumping to file");
+
     @Override
     public void run() {
 
@@ -41,8 +43,11 @@ public class FileUploadThread extends Thread {
                 }
             });
 
-            logger.info("Files to upload: " + bkpFiles.length);
-            PromExporter.metricslib_dump_to_file_current.set(bkpFiles.length);
+            logger.debug("Files to upload: " + bkpFiles.length);
+            PromExporter.metricslib_files_waiting_for_upload.set(bkpFiles.length);
+
+            if (bkpFiles.length == 0) AlarmManager.clearAlarm(alarm_files_dumped);
+            if (bkpFiles.length > 50) AlarmManager.raiseAlarm(alarm_files_dumped);
 
             for (int i = 0; i < bkpFiles.length; i++) {
                 String s = FileClient.readFile(bkpFiles[i]);

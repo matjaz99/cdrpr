@@ -28,6 +28,7 @@ public class AlarmManager {
         String body = toJsonString(alarm);
         logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
         push(body);
+        alarm.setTimestamp(0);
     }
 
     public static synchronized void clearAlarm(Alarm alarm) {
@@ -36,11 +37,12 @@ public class AlarmManager {
         if (a != null) {
             int sev = a.getSeverity();
             a.setSeverity(5);
-            alarm.setTimestamp(System.currentTimeMillis());
+            if (alarm.getTimestamp() == 0) alarm.setTimestamp(System.currentTimeMillis());
             String body = toJsonString(alarm);
             logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
             push(body);
             a.setSeverity(sev);
+            alarm.setTimestamp(0);
         }
     }
 

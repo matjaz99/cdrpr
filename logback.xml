@@ -2,13 +2,13 @@
 
 <!-- debug="true" -> show status to console -->
 <!-- scan="true" -> auto reload of configuration in case of changes -->
-<!-- packagingData="true" -> includes packaging information in stack-trace if trowable is logged -->
+<!-- packagingData="true" -> includes packaging information in stack-trace if throwable is logged -->
 <configuration debug="true" scan="true" scanPeriod="30 seconds" packagingData="true">
   <!-- in the absence of the class attribute, assume ch.qos.logback.core.hook.DelayingShutdownHook -->
 
   <!-- <property file="cfg/StandardLogger/logbackProps.properties" /> -->
-  <property scope="local" name="logDir" value="../log" />
-  <contextName>pam_cdr</contextName>
+  <property scope="local" name="logDir" value="./log" />
+  <contextName>metricslib</contextName>
   <jmxConfigurator />
   <!-- <shutdownHook /> -->
   <property name="logToConsole" value="true" />
@@ -35,11 +35,11 @@
       </evaluator>
       <onMatch>DENY</onMatch>
     </filter>
-    <file>${logDir:-defDirForLog}/${CONTEXT_NAME}-${SERVICE_ID}.log</file>
+    <file>${logDir:-defDirForLog}/${CONTEXT_NAME}.log</file>
     <append>true</append>
     <prudent>false</prudent>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-      <fileNamePattern>${logDir:-defDirForLog}/${CONTEXT_NAME}-${SERVICE_ID}-%d{yyyy-MM-dd}.%i.gz
+      <fileNamePattern>${logDir:-defDirForLog}/${CONTEXT_NAME}-%d{yyyy-MM-dd}.%i.gz
       </fileNamePattern>
       <maxFileSize>50MB</maxFileSize>
       <maxHistory>60</maxHistory>
