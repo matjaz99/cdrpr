@@ -60,7 +60,7 @@ public class Start {
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "16"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "24"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "50"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
@@ -96,7 +96,7 @@ public class Start {
         EXIT_AT_THE_END = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT", "true"));
         ENABLE_PROMETHEUS_METRICS = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ENABLE_PROMETHEUS_METRICS", "false"));
         ENABLE_DUMP_TO_FILE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DUMP_TO_FILE", "true"));
-        ALARM_DESTINATION = getenv.getOrDefault("CDRPR_ALARM_DESTINATION", "http://elasticvm:9070/webhook");
+        ALARM_DESTINATION = getenv.getOrDefault("CDRPR_ALARM_DESTINATION", "http://172.29.100.32:9070/webhook");
 
         try {
             HOSTNAME = InetAddress.getLocalHost().getHostName();

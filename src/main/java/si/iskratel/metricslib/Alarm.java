@@ -2,7 +2,6 @@ package si.iskratel.metricslib;
 
 public class Alarm {
 
-    private int nodeId;
     private String alarmId;
     private long timestamp;
     private int alarmCode = 7774777;
@@ -45,16 +44,8 @@ public class Alarm {
         if (isEvent) this.notificationType = "event";
     }
 
-    public int getNodeId() {
-        return nodeId;
-    }
-
-    public void setNodeId(int nodeId) {
-        this.nodeId = nodeId;
-    }
-
     public String getAlarmId() {
-        return MD5Checksum.getMd5Checksum(alarmCode + alarmName + nodeId + sourceInfo);
+        return MD5Checksum.getMd5Checksum(alarmCode + alarmName + sourceInfo);
     }
 
     public long getTimestamp() {
@@ -140,8 +131,7 @@ public class Alarm {
     @Override
     public String toString() {
         return "Alarm{" +
-                "nodeId=" + nodeId +
-                ", alarmId='" + getAlarmId() + '\'' +
+                "alarmId='" + getAlarmId() + '\'' +
                 ", timestamp=" + timestamp +
                 ", alarmCode=" + alarmCode +
                 ", alarmName='" + alarmName + '\'' +
