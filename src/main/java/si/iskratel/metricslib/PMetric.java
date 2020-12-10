@@ -117,26 +117,6 @@ public class PMetric {
         return new ArrayList<>(timeSeries.values());
     }
 
-    public double getSUM(String labelName, String filterLabelValue) {
-        double sum = 0.0;
-        int lblPosition = -1;
-
-        for (int i = 0; i < labelNames.length; i++) {
-            if (labelNames[i].equals(labelName)) {
-                lblPosition = i;
-            }
-        }
-
-        for (PTimeSeries ts : timeSeries.values()) {
-
-            if (ts.getLabelValues()[lblPosition].equals(filterLabelValue)) {
-                sum += ts.getValue();
-            }
-
-        }
-
-        return sum;
-    }
 
 //    public PMetric SUM(PMetric metric1, PMetric metric2) {
 //        PMetric m = PMetric.build()
@@ -160,26 +140,86 @@ public class PMetric {
         if (value != null) value = value * factor;
     }
 
-    public PMetric filterSUM(String labels) {
+    /**
+     * Return only metrics that suite selected criteria. Map of labelNames and concrete labelValues.
+     * Eg. Get all metrics where node=abc and cause=Busy.
+     * Other labels will be aggregated (summed-up).
+     * @return metric with one time-series point
+     */
+    public PMetric FILTER(String[] labels, String[] values) {
+
+        if (labels.length > labelNames.length) throw new PMetricException("Length mismatch");
+
         PMetric m = PMetric.build()
-                .setName(name + "_filterSUM")
+                .setName(name + "_filter")
                 .setHelp("filter sum")
                 .setLabelNames(labels);
 
-        int lblPosition = -1;
-        for (int i = 0; i < labelNames.length; i++) {
-            if (labelNames[i].equals(labels)) {
-                lblPosition = i;
+        for (PTimeSeries ts : timeSeries.values()) {
+            // if all labels match, then increment
+            int[] res = new int[labels.length];
+            for (int i = 0; i < labels.length; i++) {
+                if (ts.containsLabelValue(values[i])) res[i] = 1;
+            }
+//            System.out.println("res: " + Arrays.toString(res));
+            // if sum of result array equals length, then all labels matched
+            int sum = 0;
+            for (int i = 0; i < res.length; i++) {
+                sum += res[i];
+            }
+            if (sum == res.length) {
+                m.setLabelValues(values).inc(ts.getValue());
             }
         }
 
-
-        for (PTimeSeries t : timeSeries.values()) {
-//            if (t.getLabelValues()[lblPosition])
-        }
         return m;
     }
 
+
+    /**
+     * Summarize all metrics which match the labels. This comes handy to reduce the number of labels.
+     * @param labels
+     * @return metric with many time-series points according to given label names
+     */
+    public PMetric AGGREGATE(String[] labels) {
+
+        PMetric m = PMetric.build()
+                .setName(name + "_aggregate")
+                .setHelp("filter sum")
+                .setLabelNames(labels);
+
+        int[] lblPosition = new int[labels.length];
+        for (int i = 0; i < labels.length; i++) {
+            for (int j = 0; j < labelNames.length; j++) {
+                if (labels[i].equals(labelNames[j])) {
+                    lblPosition[i] = j;
+                }
+            }
+        }
+        System.out.println("lblPosition: " + Arrays.toString(lblPosition));
+
+        for (PTimeSeries ts : timeSeries.values()) {
+
+            String[] arr = new String[lblPosition.length];
+            for (int i = 0; i < lblPosition.length; i++) {
+                arr[i] = ts.getLabelValues()[lblPosition[i]];
+            }
+
+            System.out.println("arr: " + Arrays.toString(arr));
+
+            m.setLabelValues(arr).inc(ts.getValue());
+
+        }
+
+        return m;
+    }
+
+    public boolean containsLabelName(String labelName) {
+        for (int i = 0; i < labelNames.length; i++) {
+            if (labelNames[i].equals(labelName)) return true;
+        }
+        return false;
+    }
 
 
     @Override
@@ -188,7 +228,7 @@ public class PMetric {
     }
 
     public String toStringDetail() {
-        String s = "PMetric[" + "timestamp=" + timestamp + ", metric_name=" + name + ", timeseries=\n";
+        String s = "PMetric[" + "timestamp=" + timestamp + ", metric_name=" + name+ ", labels=" + Arrays.toString(labelNames) + ", timeseries=\n";
         for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
             s += "\t" + entry.getValue().toString() + "\n";
         }

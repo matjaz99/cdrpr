@@ -55,7 +55,7 @@ public class MetricsLib {
     public static String ALARM_DESTINATION = "http://localhost:9097/webhook";
 
     /** A separate thread for uploading files */
-    public static FileUploadThread fut;
+    public static FileClient fut;
 
     private static Server server;
 
@@ -260,7 +260,7 @@ public class MetricsLib {
         PromExporter.metricslib_up_time.set(System.currentTimeMillis());
 
         if (MetricsLib.DUMP_TO_FILE_ENABLED && ES_DEFAULT_HOST != null) {
-            MetricsLib.fut = new FileUploadThread(new EsClient(ES_DEFAULT_HOST, ES_DEFAULT_PORT));
+            MetricsLib.fut = new FileClient(new EsClient(ES_DEFAULT_HOST, ES_DEFAULT_PORT));
             MetricsLib.fut.start();
         }
 
