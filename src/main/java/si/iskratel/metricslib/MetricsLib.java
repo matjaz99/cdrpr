@@ -2,6 +2,7 @@ package si.iskratel.metricslib;
 
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import okhttp3.OkHttpClient;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -291,6 +292,12 @@ public class MetricsLib {
         }
         return false;
 
+    }
+
+    public static OkHttpClient instantiateHttpClient() {
+        OkHttpClient httpClient = new OkHttpClient();
+        // TODO SSL support
+        return httpClient;
     }
 
 }

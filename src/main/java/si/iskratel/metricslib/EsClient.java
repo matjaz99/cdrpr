@@ -21,7 +21,7 @@ public class EsClient {
     private Alarm no_connection_to_es = new Alarm(3730080, "Database Connection Fault", 1, "No connection to ElasticSearch",
             "Cannot connect");
 
-    private OkHttpClient httpClient = new OkHttpClient();
+//    private OkHttpClient httpClient = new OkHttpClient();
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
     // Elastic endpoints
@@ -387,6 +387,7 @@ public class EsClient {
 
             Histogram.Timer t = PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).startTimer();
 
+            OkHttpClient httpClient = MetricsLib.instantiateHttpClient();
             Response response = httpClient.newCall(request).execute();
             duration = System.currentTimeMillis() - startTime;
             PromExporter.metricslib_http_requests_total.labels(Integer.toString(response.code()), request.method().toUpperCase(), request.url().toString()).inc();

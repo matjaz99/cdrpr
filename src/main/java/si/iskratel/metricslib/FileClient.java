@@ -17,7 +17,7 @@ public class FileClient extends Thread {
 
     private static long count = 0;
 
-    private Alarm alarm_files_dumped = new Alarm(5999999, "PMON is dumping data", 3, "Elasticsearch is not accepting data", "Data is dumping to file");
+    private Alarm alarm_files_dumped = new Alarm(3200010, "Database inaccessible", 3, "Elasticsearch is not accepting data", "Data is dumping to file");
 
     public FileClient(EsClient client) {
         esClient = client;

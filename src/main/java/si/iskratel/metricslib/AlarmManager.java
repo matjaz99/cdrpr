@@ -51,13 +51,13 @@ public class AlarmManager {
         OkHttpClient httpClient = new OkHttpClient();
         MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
-        Request request = new Request.Builder()
-                .url(MetricsLib.ALARM_DESTINATION)
-                .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_API_VERSION)
-                .post(RequestBody.create(body, MEDIA_TYPE_JSON))
-                .build();
-
         try {
+
+            Request request = new Request.Builder()
+                    .url(MetricsLib.ALARM_DESTINATION)
+                    .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_API_VERSION)
+                    .post(RequestBody.create(body, MEDIA_TYPE_JSON))
+                    .build();
 
             Response response = httpClient.newCall(request).execute();
             logger.info("push(): responseCode=" + response.code());
