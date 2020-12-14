@@ -54,6 +54,8 @@ public class MetricsLib {
     public static int ES_NUMBER_OF_SHARDS = 1;
     public static int ES_NUMBER_OF_REPLICAS = 0;
     public static String ALARM_DESTINATION = "http://localhost:9097/webhook";
+    public static boolean EXPORT_ENABLED = false;
+    public static String EXPORT_DIRECTORY = "export/";
 
     /** A separate thread for uploading files */
     public static FileClient fut;

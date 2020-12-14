@@ -134,6 +134,7 @@ public class Start {
         MetricsLib.ES_NUMBER_OF_REPLICAS = ES_NUMBER_OF_REPLICAS;
         MetricsLib.RETRIES = RETRIES;
         MetricsLib.ALARM_DESTINATION = ALARM_DESTINATION;
+//        MetricsLib.EXPORT_ENABLED = true;
         MetricsLib.init();
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
@@ -162,9 +163,6 @@ public class Start {
 
         XmlSimulatorThread xst = new XmlSimulatorThread();
         xst.start();
-
-        TestMetricsThread tmt = new TestMetricsThread();
-        tmt.start();
 
     }
 

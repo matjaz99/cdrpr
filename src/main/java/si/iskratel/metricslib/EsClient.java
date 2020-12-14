@@ -250,6 +250,8 @@ public class EsClient {
             return false;
         }
 
+        if (MetricsLib.EXPORT_ENABLED) FileClient.exportToCsv(metric);
+
         // cannot proceed if ES is not ready; dump to file if enabled
         if (!ES_IS_READY) {
             FileClient.dumpToFile(metric);
@@ -296,7 +298,7 @@ public class EsClient {
 
         } catch (Exception e) {
             success = false;
-            e.printStackTrace();
+            logger.error("Exception: ", e);
         }
 
         // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be usd when metric will be sent
@@ -409,9 +411,12 @@ public class EsClient {
             // in some cases (eg. disk is full or too many requests) elastic does not insert the data,
             // although errorCode 200 is returned. In such cases, check the response text if contains status:4xx.
             // FIXME improve this check (correctly parse whole json, or regex...)
-            if (httpResponse.responseText.replace(" ", "").contains("\"status\":4")) {
-                httpResponse.responseCode = 999; // this code indicates that original response code was changed
-                httpResponse.success = false;
+            if (!metric.equals("null")) {
+                // only for inserting metrics
+                if (httpResponse.responseText.replace(" ", "").contains("\"status\":4")) {
+                    httpResponse.responseCode = 999; // this code indicates that original response code was changed
+                    httpResponse.success = false;
+                }
             }
 
             if (httpResponse.responseCode < 200 || httpResponse.responseCode > 399) logger.warn("EsClient[" + clientId + "] response: " + httpResponse.responseText);

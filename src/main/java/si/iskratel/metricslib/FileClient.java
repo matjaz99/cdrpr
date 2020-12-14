@@ -15,9 +15,10 @@ public class FileClient extends Thread {
 
     private EsClient esClient;
 
-    private static long count = 0;
+    private static long dump_count = 0;
+    private static long export_count = 0;
 
-    private Alarm alarm_files_dumped = new Alarm(3200010, "Database inaccessible", 3, "Elasticsearch is not accepting data", "Data is dumping to file");
+    private Alarm alarm_files_dumped = new Alarm(3200010, "Database inaccessible", 3, "Elasticsearch temporarily not available", "Data is dumping to file");
 
     public FileClient(EsClient client) {
         esClient = client;
@@ -31,7 +32,7 @@ public class FileClient extends Thread {
         }
         try {
             logger.info("dumpToFile(): Dumping to file: " + metric.getName());
-            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + "_" + (count++) + ".ndjson");
+            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + "_" + (dump_count++) + ".ndjson");
             myWriter.write(PMetricFormatter.toEsNdJsonString(metric));
             myWriter.close();
             PromExporter.metricslib_dump_to_file_total.inc();
@@ -48,7 +49,7 @@ public class FileClient extends Thread {
         }
         try {
             logger.info("dumpToFile(): Dumping to file: " + metric.getName());
-            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + "_" + (count++) + ".ndjson");
+            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + "_" + (dump_count++) + ".ndjson");
             myWriter.write(PMetricFormatter.toEsNdJsonString(metric));
             myWriter.close();
             PromExporter.metricslib_dump_to_file_total.inc();
@@ -75,6 +76,38 @@ public class FileClient extends Thread {
         }
 
         return null;
+
+    }
+
+    public static void exportToCsv(PMetric metric) {
+
+        if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Timestamp,DateTime,");
+        for (int i = 0; i < metric.getLabelNames().length; i++) {
+            sb.append(metric.getLabelNames()[i]).append(",");
+        }
+        sb.append("count\n");
+
+        for (PTimeSeries ts : metric.getTimeSeries()) {
+            sb.append(metric.getTimestamp()).append(",").append("DATE").append(",");
+            for (int i = 0; i < ts.getLabelValues().length; i++) {
+                sb.append(ts.getLabelValues()[i]).append(",");
+            }
+            sb.append(ts.getValue()).append("\n");
+        }
+
+        try {
+            logger.info("exportToCsv(): Exporting to file: " + metric.getName());
+            FileWriter myWriter = new FileWriter(MetricsLib.EXPORT_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + "_" + (export_count++) + ".csv");
+            myWriter.write(sb.toString());
+            myWriter.close();
+            PromExporter.metricslib_dump_to_file_total.inc();
+        } catch (IOException e) {
+            logger.error("dumpToFile(): IOException: " + e.getMessage());
+        }
 
     }
 
