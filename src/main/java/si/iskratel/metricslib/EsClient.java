@@ -2,49 +2,51 @@ package si.iskratel.metricslib;
 
 import io.prometheus.client.Histogram;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import si.iskratel.simulator.Start;
 
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 public class EsClient {
 
-    private Logger logger = LoggerFactory.getLogger(EsClient.class);
-
-    public static int esClientCount = 0;
-    private int clientId;
-
-    private String esHost = "http://elasticvm:9200";
-
-    private Alarm no_connection_to_es = new Alarm(3730080, "Database Connection Fault", 1, "No connection to ElasticSearch",
-            "Cannot connect");
-
-//    private OkHttpClient httpClient = new OkHttpClient();
-    private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
-
     // Elastic endpoints
     public static final String ES_API_GET_INDICES_VERBOSE = "/_cat/indices?v";
     public static final String ES_API_BULK_ENDPOINT = "/_bulk";
-
-    /** Set this flag if Metricslib-about document is successfully inserted immediately after start */
+    public static int esClientCount = 0;
+    /**
+     * Set this flag if Metricslib-about document is successfully inserted immediately after start
+     */
     public static boolean ES_IS_READY = false;
+    private Logger logger = LoggerFactory.getLogger(EsClient.class);
+    private int clientId;
+    private String esHost = "http://elasticvm:9200";
+    private Alarm no_connection_to_es = new Alarm(3730080, "Database Connection Fault", 1, "No connection to ElasticSearch",
+            "Cannot connect");
+    //    private OkHttpClient httpClient = new OkHttpClient();
+    private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
     private int retryCount = 0;
 
     /**
      * Use this constructor to create ES clients that are bound to this host:port instance, but independent of indices.
      * Index will be used from the name of metrics registry. This client can handle all indices on given host:port.
+     *
      * @param host
      * @param port
      */
-    public EsClient(String host, int port) {
+    public EsClient(String schema, String host, int port) {
         this.clientId = esClientCount++;
-        esHost = "http://" + host + ":" + port;
+        esHost = schema + "://" + host + ":" + port;
     }
 
     /**
      * Host URL can be: http://hostname:port or https://usr:pass@hostname:port, but nothing more.
+     *
      * @param hostUrl
      */
     public EsClient(String hostUrl) {
@@ -57,6 +59,7 @@ public class EsClient {
      * Create index. Well, first check if template exists and create it if it does not exist. Then check if alias exists
      * and create one if it does not exist yet. The name of alias is the same as the name of registry, while index gets
      * a numeric suffix (*-000000) for the sake of rotating index policy.
+     *
      * @param index
      * @return success
      */
@@ -106,6 +109,7 @@ public class EsClient {
 
     /**
      * Send any GET request to elastic.
+     *
      * @param uri relative path
      * @return http response
      */
@@ -134,7 +138,8 @@ public class EsClient {
 
     /**
      * Send any POST request to elastic. Body of the message must be properly formatted according to Elastic requirements.
-     * @param uri relative path
+     *
+     * @param uri  relative path
      * @param body json body
      * @return http response
      */
@@ -162,7 +167,8 @@ public class EsClient {
 
     /**
      * Send any PUT request to elastic. Body of the message must be properly formatted according to Elastic requirements.
-     * @param uri relative path
+     *
+     * @param uri  relative path
      * @param body json body
      * @return http response
      */
@@ -192,6 +198,7 @@ public class EsClient {
     /**
      * Send any custom JSON body to ElasticSearch. The body must have a properly formed NDJSON structure for
      * bulk inserts and the metadata object must include a valid index.
+     *
      * @param body custom body in ndjson format
      * @return success
      */
@@ -226,6 +233,7 @@ public class EsClient {
 
     /**
      * Send all metrics in given registry to ElasticSearch.
+     *
      * @param registry registry name
      */
     public void sendBulkPost(PMetricRegistry registry) {
@@ -237,6 +245,7 @@ public class EsClient {
     /**
      * Send given metric to ElasticSearch. Method will retry to send the metric until max retries (configurable) is reached.
      * Then it will dump the metrics to file in 'dump' directory (if enabled).
+     *
      * @param metric object
      * @return true if successful, false if it fails
      */
@@ -264,7 +273,8 @@ public class EsClient {
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
-                logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping.");
+                logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be " +
+                        "inserted without index mapping.");
                 FileClient.dumpToFile(metric);
                 return false;
             }
@@ -325,7 +335,8 @@ public class EsClient {
             if (b == true) {
                 PMetricRegistry.getRegistry(metric.getParentRegistry()).setMappingCreated(true);
             } else {
-                logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be inserted without index mapping.");
+                logger.warn("EsClient[" + clientId + "]: index " + metric.getParentRegistry() + " cannot be created, metrics may not be " +
+                        "inserted without index mapping.");
                 FileClient.dumpToFile(metric);
                 return false;
             }
@@ -372,6 +383,7 @@ public class EsClient {
      * This method actually sends the HTTP request and does all the error handling. Method returns object HttpResponse,
      * which contains a boolean flag if request was successfully executed, a returned http error code and the response
      * itself. Error code 0 means exception, otherwise http error code is returned (200-OK, 404-Not found...).
+     *
      * @param request http request
      * @return http response
      */
@@ -387,12 +399,15 @@ public class EsClient {
 
         try {
 
-            Histogram.Timer t = PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).startTimer();
+            Histogram.Timer t = PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(),
+                    metric).startTimer();
 
             OkHttpClient httpClient = MetricsLib.instantiateHttpClient();
+
             Response response = httpClient.newCall(request).execute();
             duration = System.currentTimeMillis() - startTime;
-            PromExporter.metricslib_http_requests_total.labels(Integer.toString(response.code()), request.method().toUpperCase(), request.url().toString()).inc();
+            PromExporter.metricslib_http_requests_total.labels(Integer.toString(response.code()), request.method().toUpperCase(),
+                    request.url().toString()).inc();
             httpResponse.success = response.isSuccessful();
             httpResponse.responseCode = response.code();
             httpResponse.responseText = response.body().string();
@@ -419,7 +434,8 @@ public class EsClient {
                 }
             }
 
-            if (httpResponse.responseCode < 200 || httpResponse.responseCode > 399) logger.warn("EsClient[" + clientId + "] response: " + httpResponse.responseText);
+            if (httpResponse.responseCode < 200 || httpResponse.responseCode > 399)
+                logger.warn("EsClient[" + clientId + "] response: " + httpResponse.responseText);
 
             AlarmManager.clearAlarm(no_connection_to_es);
 
@@ -441,7 +457,8 @@ public class EsClient {
             AlarmManager.raiseAlarm(no_connection_to_es);
         } catch (SocketException e) {
             logger.error("EsClient[" + clientId + "]: <<< SocketException: " + e.getMessage());
-            PromExporter.metricslib_http_requests_total.labels("Socket Exception", request.method().toUpperCase(), request.url().toString()).inc();
+            PromExporter.metricslib_http_requests_total.labels("Socket Exception", request.method().toUpperCase(),
+                    request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketException";

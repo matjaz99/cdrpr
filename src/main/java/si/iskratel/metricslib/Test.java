@@ -88,7 +88,7 @@ public class Test {
         PMetric test_without_timeseries_points = PMetric.build().setName("test_without_timeseries_points").setHelp("Coutning calls")
                 .setLabelNames("node", "trunkgroup", "direction").register();
 
-        EsClient es = new EsClient("mcrk-docker-1", 9200);
+        EsClient es = new EsClient("http", "mcrk-docker-1", 9200);
         es.sendBulkPost(calls_by_cause);
         es.sendBulkPost(test_without_timeseries_points);
 
@@ -113,7 +113,7 @@ public class Test {
 
         MetricsLib.init(9099);
 //        EsClient e = new EsClient("http://mcrk-docker-1:9200/cdraggs/_bulk");
-        EsClient e = new EsClient("mcrk-docker-1", 9200);
+        EsClient e = new EsClient("http", "mcrk-docker-1", 9200);
 
         PMetric pmon_calls_by_cause = PMetric.build()
                 .setName("pmon_calls_by_cause")
@@ -180,7 +180,7 @@ public class Test {
         m.setLabelValues("London", "Answered", "Local").inc();
         m.setLabelValues("Berlin", "Busy", "Transit").inc();
 
-        EsClient e = new EsClient("elasticvm", 9200);
+        EsClient e = new EsClient("http", "elasticvm", 9200);
         e.sendBulkPost(m);
 
     }

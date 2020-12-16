@@ -15,7 +15,7 @@ public class XmlSimulatorThread extends Thread {
     @Override
     public void run() {
 
-        EsClient esClient = new EsClient(Start.ES_HOST, Start.ES_PORT);
+        EsClient esClient = new EsClient(Start.ES_SCHEMA, Start.ES_HOST, Start.ES_PORT);
 
         PMetric xml_metric = PMetric.build()
                 .setName("pmon_xml_metric")

@@ -109,7 +109,7 @@ public class AggregatedCalls implements Runnable {
     public AggregatedCalls(int id) {
         threadId = id;
         pgClient = new PgClient(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
-        esClient = new EsClient(Start.ES_HOST, Start.ES_PORT);
+        esClient = new EsClient(Start.ES_SCHEMA, Start.ES_HOST, Start.ES_PORT);
     }
 
 

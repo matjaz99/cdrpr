@@ -18,6 +18,9 @@ public class Start {
     public static int SIMULATOR_NUM_OF_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
     public static int RETRIES = 3;
+    public static String ES_SCHEMA;
+    public static String ES_BASIC_USER;
+    public static String ES_BASIC_PASS;
     public static String ES_HOST;
     public static int ES_PORT;
     public static boolean ES_AUTO_CREATE_INDEX;
@@ -83,6 +86,9 @@ public class Start {
         SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "0"));
+        ES_SCHEMA = getenv.getOrDefault("CDRPR_ES_SCHEMA", "http");
+        ES_BASIC_USER = getenv.getOrDefault("CDRPR_ES_BASIC_USER", "admin");
+        ES_BASIC_PASS = getenv.getOrDefault("CDRPR_ES_BASIC_PASS", "admin");
         ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "true"));
@@ -108,6 +114,9 @@ public class Start {
         System.out.println("SIMULATOR_DELAY: " + SIMULATOR_CALL_DELAY);
         System.out.println("SEND_INTERVAL_SEC: " + SEND_INTERVAL_SEC);
         System.out.println("BULK_SIZE: " + BULK_SIZE);
+        System.out.println("ES_SCHEMA: " + ES_SCHEMA);
+        System.out.println("ES_BASIC_USER: " + ES_BASIC_USER);
+        System.out.println("ES_BASIC_PASS: " + ES_BASIC_PASS);
         System.out.println("ES_HOST: " + ES_HOST);
         System.out.println("ES_PORT: " + ES_PORT);
         System.out.println("ES_AUTO_CREATE_INDEX: " + ES_AUTO_CREATE_INDEX);
@@ -127,6 +136,9 @@ public class Start {
 
         MetricsLib.PROM_METRICS_EXPORT_ENABLE = ENABLE_PROMETHEUS_METRICS;
         MetricsLib.DUMP_TO_FILE_ENABLED = ENABLE_DUMP_TO_FILE;
+        MetricsLib.ES_DEFAULT_SCHEMA = ES_SCHEMA;
+        MetricsLib.ES_BASIC_USER = ES_BASIC_USER;
+        MetricsLib.ES_BASIC_PASS = ES_BASIC_PASS;
         MetricsLib.ES_DEFAULT_HOST = ES_HOST;
         MetricsLib.ES_DEFAULT_PORT = ES_PORT;
         MetricsLib.ES_AUTO_CREATE_INDEX = ES_AUTO_CREATE_INDEX;

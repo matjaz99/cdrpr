@@ -22,7 +22,7 @@ public class TestCars {
                 .setLabelNames("car", "color", "type")
                 .register("car_statistics");
 
-        EsClient es = new EsClient("mcrk-docker-1", 9200);
+        EsClient es = new EsClient("http", "mcrk-docker-1", 9200);
 
         while (true) {
 
