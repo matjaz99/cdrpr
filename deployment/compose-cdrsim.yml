@@ -25,6 +25,8 @@ services:
       - CDRPR_ES_NUMBER_OF_SHARDS=1
       - CDRPR_ES_NUMBER_OF_REPLICAS=0
       - CDRPR_DUMP_TO_FILE=false
+    volumes:
+      - /var/log:/opt/log
     deploy:
       mode: replicated
       replicas: 1
