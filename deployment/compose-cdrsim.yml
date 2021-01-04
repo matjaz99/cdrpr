@@ -7,7 +7,9 @@ networks:
 
 services:
   cdrsim:
-    image: matjaz99/cdrpr:2.1
+    #image: matjaz99/cdrpr:2.1
+    # support for ssl in 2.2
+    image: matjaz99/cdrpr:2.2
     networks:
       - net
     ports:
