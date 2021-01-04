@@ -2,11 +2,14 @@ package si.iskratel.metricslib;
 
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
+import org.codehaus.commons.nullanalysis.NotNull;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
+import javax.net.ssl.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +18,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.stream.Stream;
@@ -47,6 +51,9 @@ public class MetricsLib {
     public static boolean DUMP_TO_FILE_ENABLED = false;
     /** Interval for uploading dumped files */
     public static int UPLOAD_INTERVAL_SECONDS = 16;
+    public static String ES_DEFAULT_SCHEMA = "http";
+    public static String ES_BASIC_USER = "admin";
+    public static String ES_BASIC_PASS = "admin";
     public static String ES_DEFAULT_HOST = "localhost";
     public static int ES_DEFAULT_PORT = 9200;
     /** Choose whether or not you want index to be automatically created and how */
@@ -119,7 +126,7 @@ public class MetricsLib {
 
             PromExporter.metricslib_servlet_requests_total.labels("/indices").inc();
 
-            EsClient e = new EsClient(ES_DEFAULT_HOST, ES_DEFAULT_PORT);
+            EsClient e = new EsClient(ES_DEFAULT_SCHEMA, ES_DEFAULT_HOST, ES_DEFAULT_PORT);
             String s = e.sendGet(EsClient.ES_API_GET_INDICES_VERBOSE).responseText;
 
             resp.getWriter().println("<h1>Elasticsearch indices</h1>");
@@ -263,7 +270,7 @@ public class MetricsLib {
         PromExporter.metricslib_up_time.set(System.currentTimeMillis());
 
         if (MetricsLib.DUMP_TO_FILE_ENABLED && ES_DEFAULT_HOST != null) {
-            MetricsLib.fut = new FileClient(new EsClient(ES_DEFAULT_HOST, ES_DEFAULT_PORT));
+            MetricsLib.fut = new FileClient(new EsClient(ES_DEFAULT_SCHEMA, ES_DEFAULT_HOST, ES_DEFAULT_PORT));
             MetricsLib.fut.start();
         }
 
@@ -297,9 +304,71 @@ public class MetricsLib {
     }
 
     public static OkHttpClient instantiateHttpClient() {
-        OkHttpClient httpClient = new OkHttpClient();
-        // TODO SSL support
-        return httpClient;
+
+        if (ES_DEFAULT_SCHEMA.equalsIgnoreCase("http")) {
+            return new OkHttpClient();
+        }
+
+        // continue if https
+
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        try {
+
+            // Create a trust manager that does not validate certificate chains
+            final TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
+                                throws CertificateException {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
+                                throws CertificateException {
+                        }
+
+                        @Override
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                    }
+            };
+
+            // Install the all-trusting trust manager
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
+            builder.hostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            });
+
+            if (ES_BASIC_USER != null && ES_BASIC_PASS != null) {
+                builder.authenticator(new Authenticator() {
+                    @Nullable
+                    @Override
+                    public Request authenticate(@Nullable Route route, @NotNull Response response) throws IOException {
+                        if (response.request().header("Authorization") != null)
+                            return null;  //if you've tried to authorize and failed, give up
+
+                        String credential = Credentials.basic(ES_BASIC_USER, ES_BASIC_PASS);
+                        return response.request().newBuilder().header("Authorization", credential).build();
+                    }
+                });
+            }
+
+            return builder.build();
+
+        } catch (Exception e) {
+            return null;
+        }
+
     }
 
 }

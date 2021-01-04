@@ -16,8 +16,11 @@ services:
       - CDRPR_THREADS=48
       - CDRPR_SIMULATOR_DELAY=30
       - CDRPR_SEND_INTERVAL_SEC=60
+      - CDRPR_ES_SCHEMA=http
       - CDRPR_ES_HOST=172.29.6.6
       - CDRPR_ES_PORT=9200
+      - CDRPR_ES_BASIC_USER=admin
+      - CDRPR_ES_BASIC_PASS=admin
       # if true, create ILM (pmon_ilm_policy) manually before running simulator!
       # if false, create mapping manually before running simulator (if you want to use timestamp)!
       - CDRPR_ES_AUTO_CREATE_INDEX=true

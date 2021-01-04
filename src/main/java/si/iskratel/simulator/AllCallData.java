@@ -21,7 +21,7 @@ public class AllCallData implements Runnable {
 
     public AllCallData(int id) {
         this.threadId = id;
-        url = "http://" + Start.ES_HOST + ":" + Start.ES_PORT + "/cdrs/_bulk";
+        url = Start.ES_SCHEMA + "://" + Start.ES_HOST + ":" + Start.ES_PORT + "/cdrs/_bulk";
     }
 
 

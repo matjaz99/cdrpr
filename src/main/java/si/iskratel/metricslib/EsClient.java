@@ -2,9 +2,12 @@ package si.iskratel.metricslib;
 
 import io.prometheus.client.Histogram;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -38,9 +41,9 @@ public class EsClient {
      * @param host
      * @param port
      */
-    public EsClient(String host, int port) {
+    public EsClient(String schema, String host, int port) {
         this.clientId = esClientCount++;
-        esHost = "http://" + host + ":" + port;
+        esHost = schema + "://" + host + ":" + port;
     }
 
     /**
