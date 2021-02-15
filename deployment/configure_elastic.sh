@@ -5,7 +5,8 @@
 
 ES_HOST=$1
 #ES_HOST=mcrk-docker-1
-ES_URL=http://$ES_HOST:9200
+#ES_URL=http://$ES_HOST:9200
+ES_URL=http://$ES_HOST
 echo Hostname: $ES_HOST
 
 RED='\033[0;31m'
@@ -21,14 +22,14 @@ done
 echo -e ${GREEN}Elasticsearch is up${NC}
 
 # Wait for Kibana to start up before doing anything.
-until curl -s http://$ES_HOST:5601/ -o /dev/null; do
-    echo -e ${YELLOW}Waiting for Kibana...${NC}
-    sleep 3
-done
-echo -e ${GREEN}Kibana is up${NC}
+#until curl -s http://$ES_HOST:5601/ -o /dev/null; do
+#    echo -e ${YELLOW}Waiting for Kibana...${NC}
+#    sleep 3
+#done
+#echo -e ${GREEN}Kibana is up${NC}
 
 echo Loading cluster.json
-curl -s -H 'Content-Type: application/json' -XPUT ${ES_URL}/_cluster/settings -d@cluster.json
+curl -s -H 'Content-Type: application/json' -u admin:admin -XPUT ${ES_URL}/_cluster/settings -d@cluster.json
 echo -e \\nLoading pmon_ilm_policy.json
-curl -s -H 'Content-Type: application/json' -XPUT ${ES_URL}/_ilm/policy/pmon_ilm_policy -d@pmon_ilm_policy.json
+curl -s -H 'Content-Type: application/json' -u admin:admin -XPUT ${ES_URL}/_ilm/policy/pmon_ilm_policy -d@pmon_ilm_policy.json
 echo -e \\n${GREEN}DONE${NC}
