@@ -49,6 +49,7 @@ public class Start {
     public static long totalCount = 0;
     public static long badCdrRecordExceptionCount = 0;
 
+    /** Main list which contains generated CDRs (CdrBeans) */
     private static LinkedBlockingQueue<CdrBean> queue = new LinkedBlockingQueue();
     public static boolean running = true;
 
@@ -151,6 +152,8 @@ public class Start {
         PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
         PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
 
+        // this is the simulator, which generates CdrBean objects
+        // and adds them to Start#queue
         for (int i = 1; i < SIMULATOR_NUM_OF_THREADS + 1; i++) {
             CdrSimulatorThread t = new CdrSimulatorThread(i);
             t.start();
@@ -167,6 +170,9 @@ public class Start {
             aggregator = new AllCallData(1);
         }
         if (SIMULATOR_MODE.equalsIgnoreCase("STORE_AGGREGATED_CALLS")) {
+            aggregator = new AggregatedCalls(1);
+        }
+        if (SIMULATOR_MODE.equalsIgnoreCase("STORE_ALL_TO_KAFKA")) {
             aggregator = new AggregatedCalls(1);
         }
 

@@ -53,10 +53,10 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setCallType(0);
         cdrBean.setNodeId(Start.getRandomNodeId());
 
-        String a = getANumber();
-        cdrBean.setCallingNumber(a);
-        String b = "" + getRandomInRange(Start.SIMULATOR_BNUM_START, Start.SIMULATOR_BNUM_START + Start.SIMULATOR_BNUM_RANGE);
-        cdrBean.setCalledNumber(b);
+        String aNumber = getANumber();
+        cdrBean.setCallingNumber(aNumber);
+        String bNumber = "" + getRandomInRange(Start.SIMULATOR_BNUM_START, Start.SIMULATOR_BNUM_START + Start.SIMULATOR_BNUM_RANGE);
+        cdrBean.setCalledNumber(bNumber);
 
         cdrBean.setCdrTimeBeforeRinging((int) (getRandomGaussian(2500, 100)));
         cdrBean.setCdrRingingTimeBeforeAnsw((int) (getRandomGaussian(25000, 1000)));
@@ -135,7 +135,7 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setVoipTxCodecType(getRandomInRange(11, 27));
 
         if (duration > 0) {
-            StorageThread.addCall(a, et);
+            StorageThread.addCall(aNumber, et);
         }
 
         return cdrBean;
