@@ -1,27 +1,34 @@
 package si.iskratel.simulator;
 
 import okhttp3.*;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.metricslib.PromExporter;
+
+import java.util.Properties;
 
 public class AllCallKafkaProducer implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
     private int sendInterval = Start.SEND_INTERVAL_SEC * 1000;
-    private int bulkCount = 0;
-    private String url;
-
-    private StringBuilder sb = new StringBuilder();
-
-    private OkHttpClient httpClient = new OkHttpClient();
-    private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
-
-    private int dynamicBulkSize = Start.BULK_SIZE;
+    private Properties props = new Properties();
+    private String TOPIC_NAME = "pmon_all_calls_topic";
+    private long counter = 0L;
 
     public AllCallKafkaProducer(int id) {
         this.threadId = id;
-        url = Start.ES_SCHEMA + "://" + Start.ES_HOST + ":" + Start.ES_PORT + "/cdrs/_bulk";
+
+        props.put("bootstrap.servers", "centosvm:9092");
+        props.put("acks", "all");
+        props.put("retries", 0);
+        props.put("batch.size", 16384);
+        props.put("linger.ms", 1);
+        props.put("buffer.memory", 33554432);
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
     }
 
 
@@ -35,94 +42,31 @@ public class AllCallKafkaProducer implements Runnable {
             } catch (InterruptedException e) {
             }
 
-            while (Start.getQueueSize() > 0 && bulkCount < dynamicBulkSize) {
+            while (Start.getQueueSize() > 0) {
 
                 CdrBean c = Start.pollCdr();
                 if (c != null) {
-                    putToStringBuilder(c);
-                    bulkCount++;
+                    String call = toJson(c);
+                    Producer<String, String> producer = new KafkaProducer<String, String>(props);
+
+                    producer.send(new ProducerRecord<String, String>(TOPIC_NAME, Long.toString(counter), call));
+
+                    System.out.println("Message sent successfully");
+                    counter++;
+
                 } else {
                     break;
                 }
 
             }
-
-            if (Start.getQueueSize() > 3 * Start.BULK_SIZE) {
-                sendInterval = sendInterval - 10;
-                if (sendInterval < 1) sendInterval = 1;
-            }
-            if (Start.getQueueSize() > 5 * Start.BULK_SIZE) {
-                dynamicBulkSize = dynamicBulkSize + 100;
-                if (dynamicBulkSize > 100000) dynamicBulkSize = 100000;
-            }
-            if (Start.getQueueSize() < Start.BULK_SIZE) {
-                sendInterval = Start.SEND_INTERVAL_SEC * 1000;
-                dynamicBulkSize = Start.BULK_SIZE;
-            }
-
-            PrometheusMetrics.bulkCount.set(bulkCount);
-            PrometheusMetrics.bulkSize.set(dynamicBulkSize);
-            PrometheusMetrics.sendInterval.set(sendInterval);
-
-            sendBulkPost();
-            bulkCount = 0;
-
-//            if (totalCount % 20000 == 0) {
-//                endTime = System.currentTimeMillis();
-//                long processingTime = endTime - startTime;
-//                System.out.println("----- Results -----");
-////                System.out.println("\tThread ID: " + threadId);
-//                System.out.println("\tRecords count: " + totalCount);
-//                System.out.println("\tProcessing time: " + processingTime);
-//                System.out.println("\tRate: " + (totalCount * 1.0 / processingTime / 1.0 * 1000));
-//                System.out.println("\tPost requests count: " + postCount);
-//                System.out.println("\tResend count: " + resendCount);
-//            }
         }
 
     }
 
-    public void sendBulkPost() {
 
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader("User-Agent", "OkHttp Bot")
-//                .addHeader("Content-Type", "application/json")
-                .post(RequestBody.create(sb.toString(), MEDIA_TYPE_JSON))
-                .build();
 
-        executeHttpRequest(request);
-
-    }
-
-    private void executeHttpRequest(Request request) {
-        try {
-
-            Response response = httpClient.newCall(request).execute();
-            while (!response.isSuccessful()) {
-                System.out.println("EsClient[0]: repeat, unexpected code: " + response);
-                PromExporter.metricslib_http_requests_total.labels(response.code() + "", request.method().toUpperCase(), url).inc();
-                Thread.sleep(1500);
-                response = httpClient.newCall(request).execute();
-            }
-            PromExporter.metricslib_http_requests_total.labels(response.code() + "", request.method().toUpperCase(), url).inc();
-            sb = new StringBuilder();
-
-            if (!response.isSuccessful()) System.out.println("ElasticPersistenceClient[" + threadId + "]: Unexpected code: " + response);
-
-            response.close();
-
-//        System.out.println(response.body().string());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("ElasticPersistenceClient[" + threadId + "]: Recursive call.");
-            PromExporter.metricslib_http_requests_total.labels("Exception", request.method().toUpperCase(), url).inc();
-            executeHttpRequest(request);
-        }
-    }
-
-    private void putToStringBuilderMinimalistic(CdrBean cdrBean) {
+    private String toJsonMinimalistic(CdrBean cdrBean) {
+        StringBuilder sb = new StringBuilder();
         sb.append("{ \"index\":{} }\n").append("{");
         sb.append("\"callingNumber\":\"").append(cdrBean.getCallingNumber()).append("\",");
         sb.append("\"calledNumber\":\"").append(cdrBean.getCalledNumber()).append("\",");
@@ -130,16 +74,18 @@ public class AllCallKafkaProducer implements Runnable {
         sb.append("\"cause\":").append(cdrBean.getCause()).append(",");
         sb.append("\"nodeId\":\"").append(cdrBean.getNodeId()).append("\",");
         sb.append("\"timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
+        return sb.toString();
     }
 
-    private void putToStringBuilder(CdrBean cdrBean) {
+    private String toJson(CdrBean cdrBean) {
 
         if (Start.SIMULATOR_MINIMUM_DATA) {
-            putToStringBuilderMinimalistic(cdrBean);
-            return;
+            return toJsonMinimalistic(cdrBean);
         }
 
-        sb.append("{ \"index\":{} }\n").append("{");
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{");
         sb.append("\"id\":\"").append(cdrBean.getId()).append("\",");
         sb.append("\"callId\":\"").append(cdrBean.getCallid()).append("\",");
         sb.append("\"sequence\":\"").append(cdrBean.getSequence()).append("\",");
@@ -176,7 +122,10 @@ public class AllCallKafkaProducer implements Runnable {
         sb.append("\"bgidOrig\":\"").append(cdrBean.getBgidOrig()).append("\",");
         sb.append("\"bgidTerm\":\"").append(cdrBean.getBgidTerm()).append("\",");
         sb.append("\"nodeId\":\"").append(cdrBean.getNodeId()).append("\",");
-        sb.append("\"timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
+        sb.append("\"timestamp\":").append(cdrBean.getStartTime().getTime());
+        sb.append("}");
+
+        return sb.toString();
     }
 
 }

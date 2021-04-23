@@ -78,8 +78,8 @@ public class Start {
                 "Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris," +
                 "Moscow, Oslo, Helsinki, Dublin, Sarajevo, Skopje");
 
-        // possible values: STORE_ALL_CALLS, STORE_AGGREGATED_CALLS
-        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "STORE_AGGREGATED_CALLS");
+        // possible values: STORE_ALL_CALLS, STORE_AGGREGATED_CALLS, STORE_ALL_TO_KAFKA
+        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "STORE_ALL_TO_KAFKA");
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
 
