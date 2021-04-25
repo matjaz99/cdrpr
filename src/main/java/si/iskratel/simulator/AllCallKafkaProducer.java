@@ -13,7 +13,6 @@ public class AllCallKafkaProducer implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
-    private int sendInterval = Start.SEND_INTERVAL_SEC * 1000;
     private Properties props = new Properties();
     private String TOPIC_NAME = "pmon_all_calls_topic";
     private long counter = 0L;
@@ -35,10 +34,14 @@ public class AllCallKafkaProducer implements Runnable {
     @Override
     public void run() {
 
+        System.out.println("Starting Kafka producer");
+
+        Producer<String, String> producer = new KafkaProducer<String, String>(props);
+
         while (running) {
 
             try {
-                Thread.sleep(sendInterval);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
             }
 
@@ -47,11 +50,11 @@ public class AllCallKafkaProducer implements Runnable {
                 CdrBean c = Start.pollCdr();
                 if (c != null) {
                     String call = toJson(c);
-                    Producer<String, String> producer = new KafkaProducer<String, String>(props);
+
 
                     producer.send(new ProducerRecord<String, String>(TOPIC_NAME, Long.toString(counter), call));
 
-                    System.out.println("Message sent successfully");
+                    if (counter % 100 == 0) System.out.println("Kafka messages sent: " + counter);
                     counter++;
 
                 } else {
