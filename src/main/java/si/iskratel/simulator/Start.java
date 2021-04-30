@@ -64,7 +64,7 @@ public class Start {
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "1"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "4"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "190"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
@@ -149,8 +149,8 @@ public class Start {
         MetricsLib.ALARM_DESTINATION = ALARM_DESTINATION;
 //        MetricsLib.EXPORT_ENABLED = true;
         MetricsLib.init();
-        PrometheusMetrics.defaultBulkSize.set(BULK_SIZE);
-        PrometheusMetrics.maxQueueSize.set(200 * BULK_SIZE);
+        SimulatorMetrics.defaultBulkSize.set(BULK_SIZE);
+        SimulatorMetrics.maxQueueSize.set(200 * BULK_SIZE);
 
         // this is the simulator, which generates CdrBean objects
         // and adds them to Start#queue

@@ -60,9 +60,9 @@ public class AllCallData implements Runnable {
                 dynamicBulkSize = Start.BULK_SIZE;
             }
 
-            PrometheusMetrics.bulkCount.set(bulkCount);
-            PrometheusMetrics.bulkSize.set(dynamicBulkSize);
-            PrometheusMetrics.sendInterval.set(sendInterval);
+            SimulatorMetrics.bulkCount.set(bulkCount);
+            SimulatorMetrics.bulkSize.set(dynamicBulkSize);
+            SimulatorMetrics.sendInterval.set(sendInterval);
 
             sendBulkPost();
             bulkCount = 0;

@@ -5,6 +5,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import si.iskratel.cdr.parser.CdrBean;
+import si.iskratel.metricslib.KafkaClient;
 import si.iskratel.metricslib.PromExporter;
 
 import java.util.Properties;
@@ -13,21 +14,13 @@ public class AllCallKafkaProducer implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
-    private Properties props = new Properties();
+    private KafkaClient kafkaClient;
     private String TOPIC_NAME = "pmon_all_calls_topic";
-    private long counter = 0L;
+
 
     public AllCallKafkaProducer(int id) {
         this.threadId = id;
-
-        props.put("bootstrap.servers", "centosvm:9092");
-        props.put("acks", "all");
-        props.put("retries", 0);
-        props.put("batch.size", 16384);
-        props.put("linger.ms", 1);
-        props.put("buffer.memory", 33554432);
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        kafkaClient = new KafkaClient();
     }
 
 
@@ -35,8 +28,6 @@ public class AllCallKafkaProducer implements Runnable {
     public void run() {
 
         System.out.println("Starting Kafka producer");
-
-        Producer<String, String> producer = new KafkaProducer<String, String>(props);
 
         while (running) {
 
@@ -50,13 +41,7 @@ public class AllCallKafkaProducer implements Runnable {
                 CdrBean c = Start.pollCdr();
                 if (c != null) {
                     String call = toJson(c);
-
-
-                    producer.send(new ProducerRecord<String, String>(TOPIC_NAME, Long.toString(counter), call));
-
-                    if (counter % 100 == 0) System.out.println("Kafka messages sent: " + counter);
-                    counter++;
-
+                    kafkaClient.sendCdr(TOPIC_NAME, call);
                 } else {
                     break;
                 }

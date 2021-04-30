@@ -162,7 +162,7 @@ public class AggregatedCalls implements Runnable {
 
             }
 
-            PrometheusMetrics.bulkCount.set(pmon_cdr_calls_by_cause.getTimeSeriesSize());
+            SimulatorMetrics.bulkCount.set(pmon_cdr_calls_by_cause.getTimeSeriesSize());
 
             pmon_cdr_calls_in_progress.setLabelValues(Start.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
 

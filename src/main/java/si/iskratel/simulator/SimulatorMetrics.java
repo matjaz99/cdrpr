@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class PrometheusMetrics {
+public class SimulatorMetrics {
 
 	public static final Gauge defaultBulkSize = Gauge.build().name("cdrpr_default_bulk_size")
 			.help("Default bulk size.").register();

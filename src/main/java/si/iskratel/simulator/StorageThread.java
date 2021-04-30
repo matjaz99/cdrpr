@@ -12,7 +12,7 @@ public class StorageThread extends Thread {
 
         while (true) {
 
-            PrometheusMetrics.queueSize.set(Start.getQueueSize());
+            SimulatorMetrics.queueSize.set(Start.getQueueSize());
             clearMap();
 
             try {
@@ -47,11 +47,11 @@ public class StorageThread extends Thread {
             while (it.hasNext()) {
                 Map.Entry<String, Long> pair = (Map.Entry) it.next();
                 if (pair.getValue() < now) {
-                    PrometheusMetrics.callsInProgressRemoved.inc();
+                    SimulatorMetrics.callsInProgressRemoved.inc();
                     it.remove(); // avoids a ConcurrentModificationException
                 }
             }
-            PrometheusMetrics.callsInProgress.set(callsInProgress.size());
+            SimulatorMetrics.callsInProgress.set(callsInProgress.size());
             System.out.println("calls in progress: " + callsInProgress.size());
         } catch (Exception e) {
             System.err.println("StorageThread: Error cleaning table callsInProgress");

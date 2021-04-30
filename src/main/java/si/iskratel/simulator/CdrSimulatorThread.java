@@ -38,7 +38,7 @@ public class CdrSimulatorThread extends Thread {
             CdrBean cdrBean = simulateCall();
             Start.addCdr(cdrBean);
             totalCount++;
-            PrometheusMetrics.totalCdrGenerated.labels(threadId + "").inc();
+            SimulatorMetrics.totalCdrGenerated.labels(threadId + "").inc();
 
         }
 
@@ -53,7 +53,7 @@ public class CdrSimulatorThread extends Thread {
         cdrBean.setCallType(0);
         cdrBean.setNodeId(Start.getRandomNodeId());
 
-        String aNumber = getANumber();
+        String aNumber = getAvailableANumber();
         cdrBean.setCallingNumber(aNumber);
         String bNumber = "" + getRandomInRange(Start.SIMULATOR_BNUM_START, Start.SIMULATOR_BNUM_START + Start.SIMULATOR_BNUM_RANGE);
         cdrBean.setCalledNumber(bNumber);
@@ -142,17 +142,10 @@ public class CdrSimulatorThread extends Thread {
 
     }
 
-    private String getANumber() {
-        int a = 0;
-        while (true) {
-            if (a == 0) {
-                a = getRandomInRange(Start.SIMULATOR_ANUM_START, Start.SIMULATOR_ANUM_START + Start.SIMULATOR_ANUM_RANGE);
-            } else {
-                a++;
-            }
-            if (!StorageThread.contains(a + "")) {
-                break;
-            }
+    private String getAvailableANumber() {
+        int a = getRandomInRange(Start.SIMULATOR_ANUM_START, Start.SIMULATOR_ANUM_START + Start.SIMULATOR_ANUM_RANGE);
+        while (StorageThread.contains(a + "")) {
+            a++;
         }
         return a + "";
     }
