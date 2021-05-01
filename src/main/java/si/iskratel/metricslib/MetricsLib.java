@@ -276,6 +276,7 @@ public class MetricsLib {
 
 
         Thread eht = new Thread(new EsHealthcheckThread());
+        eht.setName("EsHealthcheckThread");
         eht.start();
 
     }

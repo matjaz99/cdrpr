@@ -64,8 +64,8 @@ public class Start {
         String testPgUrl = "jdbc:postgresql://elasticvm:5432/cdraggs";
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "4"));
-        SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "190"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "64"));
+        SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "30"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
         SIMULATOR_ANUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_RANGE", "99999999"));
@@ -76,7 +76,8 @@ public class Start {
                 "Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, " +
                 "Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, " +
                 "Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris," +
-                "Moscow, Oslo, Helsinki, Dublin, Sarajevo, Skopje");
+                "Moscow, Oslo, Helsinki, Dublin, Sarajevo, Skopje, Minsk, Barcelona, Lyon, Copenhagen, Stockholm, Moscow," +
+                "London, Zurich, Minsk, Manchester, Frankfurt, Grenoble, Madrid, Moscow");
 
         // possible values: STORE_ALL_CALLS, STORE_AGGREGATED_CALLS, STORE_ALL_TO_KAFKA
         SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "STORE_ALL_TO_KAFKA");
@@ -84,7 +85,7 @@ public class Start {
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
 
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "50000"));
-        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
+        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "900"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "0"));
         ES_SCHEMA = getenv.getOrDefault("CDRPR_ES_SCHEMA", "http");
@@ -156,12 +157,14 @@ public class Start {
         // and adds them to Start#queue
         for (int i = 1; i < SIMULATOR_NUM_OF_THREADS + 1; i++) {
             CdrSimulatorThread t = new CdrSimulatorThread(i);
+            t.setName("CdrSimulatorThread");
             t.start();
             simulatorThreads.add(t);
             System.out.println("Simulator thread created: " + t.getThreadId());
         }
 
         StorageThread ct = new StorageThread();
+        ct.setName("Storage");
         ct.start();
 
         Runnable aggregator = null;
@@ -177,9 +180,11 @@ public class Start {
         }
 
         Thread t = new Thread(aggregator);
+        t.setName("aggregator");
         t.start();
 
         XmlSimulatorThread xst = new XmlSimulatorThread();
+        xst.setName("XmlSimulatorThread");
         xst.start();
 
     }

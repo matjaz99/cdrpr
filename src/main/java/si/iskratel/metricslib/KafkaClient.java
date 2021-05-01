@@ -8,11 +8,15 @@ import java.util.Properties;
 
 public class KafkaClient {
 
+    private static int kafkaClientsCount = 0;
+    private int clientId;
     private Properties props = new Properties();
     private Producer<String, String> producer;
     private long msgCounter = 0L;
 
     public KafkaClient() {
+
+        clientId = kafkaClientsCount++;
 
         props.put("bootstrap.servers", "centosvm:9092");
         props.put("acks", "all");
@@ -31,8 +35,10 @@ public class KafkaClient {
 
         producer.send(new ProducerRecord<String, String>(topic, Long.toString(msgCounter), cdrJson));
 
-        if (msgCounter % 100 == 0) System.out.println("Kafka messages sent: " + msgCounter);
+        if (msgCounter % 1000 == 0) System.out.println("Kafka messages sent: " + msgCounter);
         msgCounter++;
+
+        PromExporter.metricslib_http_requests_total.labels("0", "KafkaProducer-" + clientId, topic).inc();
 
     }
 }
