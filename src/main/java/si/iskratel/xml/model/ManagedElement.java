@@ -22,5 +22,11 @@ public class ManagedElement {
 	public void setLocalDn(String localDn) {
 		this.localDn = localDn;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "ManagedElement{" +
+				"localDn='" + localDn + '\'' +
+				'}';
+	}
 }

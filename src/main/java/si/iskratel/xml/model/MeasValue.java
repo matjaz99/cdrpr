@@ -25,6 +25,12 @@ public class MeasValue {
 	public void setMeasResults(String measResults) {
 		this.measResults = measResults;
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "MeasValue{" +
+				"measObjLdn='" + measObjLdn + '\'' +
+				", measResults='" + measResults + '\'' +
+				'}';
+	}
 }

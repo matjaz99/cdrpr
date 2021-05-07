@@ -2,6 +2,7 @@ package si.iskratel.xml.model;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import java.util.Arrays;
 
 public class MeasInfo {
 	
@@ -68,7 +69,18 @@ public class MeasInfo {
 	public void setMeasValue(MeasValue measValue) {
 		this.measValue = measValue;
 	}
-	
-	
-	
+
+	@Override
+	public String toString() {
+		return "MeasInfo{" +
+				"measInfoId='" + measInfoId + '\'' +
+				", job=" + job +
+				", granPeriod=" + granPeriod +
+				", repPeriod=" + repPeriod +
+				", measTypes='" + measTypes + '\'' +
+				", measValue=" + measValue +
+				", measurements=" + Arrays.toString(measurements) +
+				", values=" + Arrays.toString(values) +
+				'}';
+	}
 }

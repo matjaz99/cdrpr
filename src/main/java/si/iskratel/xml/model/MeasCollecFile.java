@@ -4,7 +4,7 @@ import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name="measCollecFile")
 //@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(propOrder={"fileHeader", "measData", "fileFooter"})
+@XmlType(name="", propOrder={"fileHeader", "measData", "fileFooter"})
 public class MeasCollecFile {
 	
 	private String xmlns = "http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec";

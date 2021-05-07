@@ -26,5 +26,12 @@ public class MeasData {
 	public void setMeasInfoList(List<MeasInfo> measInfoList) {
 		this.measInfoList = measInfoList;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "MeasData{" +
+				"managedElement=" + managedElement +
+				", measInfoList=" + measInfoList +
+				'}';
+	}
 }

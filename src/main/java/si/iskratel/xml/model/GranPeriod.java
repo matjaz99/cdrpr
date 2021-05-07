@@ -25,4 +25,11 @@ public class GranPeriod {
 		this.duration = duration;
 	}
 
+	@Override
+	public String toString() {
+		return "GranPeriod{" +
+				"endTime='" + endTime + '\'' +
+				", duration='" + duration + '\'' +
+				'}';
+	}
 }

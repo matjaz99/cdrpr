@@ -1,6 +1,7 @@
 package si.iskratel.xml;
 
 import si.iskratel.xml.model.MeasCollecFile;
+import si.iskratel.xml.model.MeasCollecFile3;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -34,10 +35,10 @@ public class FileLoader implements Runnable {
                     Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
                     mcf = (MeasCollecFile) jaxbUnmarshaller.unmarshal(f);
 
-                    System.out.println("DAO:parse(): " + mcf.toString());
+                    System.out.println("parse(): " + mcf.toString());
 
                 } catch (JAXBException e) {
-                    System.out.println("DAO:parse(): JAXBException: " + e.getMessage());
+                    System.out.println("parse(): JAXBException: " + e.getMessage());
                 }
             }
 

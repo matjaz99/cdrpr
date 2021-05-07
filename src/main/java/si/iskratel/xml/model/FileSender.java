@@ -33,4 +33,11 @@ public class FileSender {
 		this.localDn = localDn;
 	}
 
+	@Override
+	public String toString() {
+		return "FileSender{" +
+				"elementType='" + elementType + '\'' +
+				", localDn='" + localDn + '\'' +
+				'}';
+	}
 }

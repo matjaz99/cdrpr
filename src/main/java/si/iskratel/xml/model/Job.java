@@ -14,5 +14,11 @@ public class Job {
 	public void setJobId(String jobId) {
 		this.jobId = jobId;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "Job{" +
+				"jobId='" + jobId + '\'' +
+				'}';
+	}
 }

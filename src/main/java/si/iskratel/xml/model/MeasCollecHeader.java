@@ -21,4 +21,6 @@ public class MeasCollecHeader {
 				"beginTime='" + beginTime + '\'' +
 				'}';
 	}
+
+
 }
