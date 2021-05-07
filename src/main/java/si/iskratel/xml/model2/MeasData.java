@@ -1,7 +1,6 @@
-package si.iskratel.xml.model;
+package si.iskratel.xml.model2;
 
 import javax.xml.bind.annotation.XmlElement;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MeasData {

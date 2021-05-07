@@ -1,10 +1,11 @@
-package si.iskratel.xml.model;
+package si.iskratel.xml.model2;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-public class MeasCollecFooter {
-	
+public class GranPeriod {
+
 	private String endTime;
+	private String duration;
 
 	public String getEndTime() {
 		return endTime;
@@ -15,10 +16,20 @@ public class MeasCollecFooter {
 		this.endTime = endTime;
 	}
 
+	public String getDuration() {
+		return duration;
+	}
+
+	@XmlAttribute
+	public void setDuration(String duration) {
+		this.duration = duration;
+	}
+
 	@Override
 	public String toString() {
-		return "MeasCollecFooter{" +
+		return "GranPeriod{" +
 				"endTime='" + endTime + '\'' +
+				", duration='" + duration + '\'' +
 				'}';
 	}
 }

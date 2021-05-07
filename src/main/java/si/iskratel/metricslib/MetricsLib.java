@@ -56,6 +56,7 @@ public class MetricsLib {
     public static String ES_BASIC_PASS = "admin";
     public static String ES_DEFAULT_HOST = "localhost";
     public static int ES_DEFAULT_PORT = 9200;
+    public static int ES_HEALTHCHECK_INTERVAL = 3000;
     /** Choose whether or not you want index to be automatically created and how */
     public static boolean ES_AUTO_CREATE_INDEX = true;
     public static int ES_NUMBER_OF_SHARDS = 1;
@@ -221,8 +222,10 @@ public class MetricsLib {
         String exclude = (String) props.getOrDefault("metricslib.prometheus.exclude.registry", "");
         PROM_EXCLUDE_REGISTRY = exclude.split(",");
 
+        ES_DEFAULT_SCHEMA = (String) props.getOrDefault("metricslib.elasticsearch.default.schema", "http");
         ES_DEFAULT_HOST = (String) props.getOrDefault("metricslib.elasticsearch.default.host", null);
         ES_DEFAULT_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.default.port", "0"));
+        ES_HEALTHCHECK_INTERVAL = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.healthcheck.interval.millis", "3000"));
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean((String) props.getOrDefault("metricslib.elasticsearch.createIndexOnStart", "true"));
         ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfShards", "1"));
         ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));

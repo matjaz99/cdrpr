@@ -7,13 +7,13 @@
 	<measData>
 		<managedElement localDn="560062"/>
 			<measInfo measInfoId="Trunk Groups Statistics">
-			<job jobId="Trunk Groups Statistics"/>
-			<granPeriod endTime="2021-03-01T05:00:00+07:00" duration="PT15S"/>
-			<repPeriod duration="PT30S"/>
-			<measTypes>IT.TG.IncCallAtt IT.TG.IncIncmpl IT.TG.IncWrongDN IT.TG.IncUnsuccOther IT.TG.IncTermBusy IT.TG.IncTermNoAnswer IT.TG.IncAnswer IT.TG.IncNoTrunk IT.TG.IncTraffic IT.TG.OutCallAtt IT.TG.OutTermBusy IT.TG.OutTermNoAnswer IT.TG.OutAnswer IT.TG.OutUnsuccOther IT.TG.OutNoTrunk IT.TG.OutTraffic</measTypes>
-			<measValue measObjLdn="2">
-				<measResults>0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 </measResults>
-			</measValue>
+				<job jobId="Trunk Groups Statistics"/>
+				<granPeriod endTime="2021-03-01T05:00:00+07:00" duration="PT15S"/>
+				<repPeriod duration="PT30S"/>
+				<measTypes>IT.TG.IncCallAtt IT.TG.IncIncmpl IT.TG.IncWrongDN IT.TG.IncUnsuccOther IT.TG.IncTermBusy IT.TG.IncTermNoAnswer IT.TG.IncAnswer IT.TG.IncNoTrunk IT.TG.IncTraffic IT.TG.OutCallAtt IT.TG.OutTermBusy IT.TG.OutTermNoAnswer IT.TG.OutAnswer IT.TG.OutUnsuccOther IT.TG.OutNoTrunk IT.TG.OutTraffic</measTypes>
+				<measValue measObjLdn="2">
+					<measResults>1 2 3 4 5 0 0 0 0 0 0 0 0 0 0 0 </measResults>
+				</measValue>
 			</measInfo>
 	</measData>
 	<fileFooter>

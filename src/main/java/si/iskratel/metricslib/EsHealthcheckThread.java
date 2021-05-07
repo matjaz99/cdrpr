@@ -23,7 +23,7 @@ public class EsHealthcheckThread implements Runnable {
             succ = es.sendPost("/metricslib/_doc/m37r1c5l1b4b0ut", sb.toString()).success;
             logger.info("Healthcheck: Waiting for ElasticSearch...");
             try {
-                Thread.sleep(3000);
+                Thread.sleep(MetricsLib.ES_HEALTHCHECK_INTERVAL);
             } catch (InterruptedException e) {
             }
         }
