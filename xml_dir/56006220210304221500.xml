@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<measCollecFile xmlns="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec">
+	<fileHeader fileFormatVersion="1.0" vendorName="Iskratel" dnPrefix="">
+		<fileSender elementType="AGCF" localDn="560062"/>
+		<measCollec beginTime="2021-03-03T23:00:00+07:00"/>
+	</fileHeader>
+	<measData>
+		<managedElement localDn="560062"/>
+			<measInfo measInfoId="Trunk Groups Statistics">
+			<job jobId="Trunk Groups Statistics"/>
+			<granPeriod endTime="2021-03-03T23:15:00+07:00" duration="PT15S"/>
+			<repPeriod duration="PT30S"/>
+			<measTypes>IT.TG.IncCallAtt IT.TG.IncIncmpl IT.TG.IncWrongDN IT.TG.IncUnsuccOther IT.TG.IncTermBusy IT.TG.IncTermNoAnswer IT.TG.IncAnswer IT.TG.IncNoTrunk IT.TG.IncTraffic IT.TG.OutCallAtt IT.TG.OutTermBusy IT.TG.OutTermNoAnswer IT.TG.OutAnswer IT.TG.OutUnsuccOther IT.TG.OutNoTrunk IT.TG.OutTraffic</measTypes>
+			<measValue measObjLdn="2">
+				<measResults>0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 </measResults>
+			</measValue>
+			</measInfo>
+			<measInfo measInfoId="AGCF Statistics">
+			<job jobId="AGCF Statistics"/>
+			<granPeriod endTime="2021-03-03T23:15:00+07:00" duration="PT15S"/>
+			<repPeriod duration="PT30S"/>
+			<measTypes>IT.AGCFOrgCallAtt IT.AGCFOrgEstablCall IT.AGCFOrgAnswer IT.AGCFTermCallAtt IT.AGCFTermEstablCall IT.AGCFTermAnswer IT.AGCFCummDurOrgCalls  IT.AGCFCummDurTermCalls </measTypes>
+			<measValue measObjLdn="3">
+				<measResults>0 0 0 0 0 0 0 0 </measResults>
+			</measValue>
+			</measInfo>
+	</measData>
+	<fileFooter>
+	<measCollec endTime="2021-03-03T23:15:00+07:00"/>
+	</fileFooter>
+</measCollecFile>
