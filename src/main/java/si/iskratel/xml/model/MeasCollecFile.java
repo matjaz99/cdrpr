@@ -8,8 +8,6 @@
 
 package si.iskratel.xml.model;
 
-import si.iskratel.xml.model2.MeasCollecFile2;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;

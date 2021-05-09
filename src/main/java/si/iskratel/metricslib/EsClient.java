@@ -2,12 +2,9 @@ package si.iskratel.metricslib;
 
 import io.prometheus.client.Histogram;
 import okhttp3.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -76,7 +73,7 @@ public class EsClient {
             logger.info("EsClient[" + clientId + "]: template already exists: " + templateName);
         } else if (r1.responseCode == 404) {
             // 2. create template
-            HttpResponse r2 = sendPut("/_template/" + templateName, PMetricFormatter.toTemplateJson(templateName));
+            HttpResponse r2 = sendPut("/_template/" + templateName, PMetricFormatter.getTemplateJson(templateName));
             if (!r2.success) return false;
         }
 
@@ -99,7 +96,7 @@ public class EsClient {
         // 4. create index with alias
         String newIndex = index + "-000000";
         logger.info("EsClient[" + clientId + "]: creating index: " + newIndex + " with alias: " + index);
-        HttpResponse r4 = sendPut(newIndex, PMetricFormatter.toIndexJson(index));
+        HttpResponse r4 = sendPut(newIndex, PMetricFormatter.getIndexJson(index));
         if (r4.success) return true;
 
         logger.warn("EsClient[" + clientId + "]: ...failed to create index.");
@@ -292,10 +289,10 @@ public class EsClient {
                 if (success) break;
                 retryCount++;
                 Thread.sleep(1500);
-                logger.info("EsClient[" + clientId + "]: Retrying to send " + metric.getName());
+                logger.info("EsClient[" + clientId + "]: Retrying [" + retryCount + "] to send " + metric.getName());
             }
             if (!success) {
-                logger.info("EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
+                logger.info("EsClient[" + clientId + "]: ...retrying [" + retryCount + "] failed for " + metric.getName());
                 FileClient.dumpToFile(metric);
             }
 
@@ -353,10 +350,10 @@ public class EsClient {
                 if (success) break;
                 retryCount++;
                 Thread.sleep(1500);
-                logger.info("EsClient[" + clientId + "]: Retrying to send " + metric.getName());
+                logger.info("EsClient[" + clientId + "]: Retrying [" + retryCount + "] to send " + metric.getName());
             }
             if (!success) {
-                logger.info("EsClient[" + clientId + "]: ...retrying failed for " + metric.getName());
+                logger.info("EsClient[" + clientId + "]: ...retrying [" + retryCount + "] failed for " + metric.getName());
                 FileClient.dumpToFile(metric);
             }
 

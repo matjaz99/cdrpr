@@ -61,6 +61,7 @@ public class MetricsLib {
     public static boolean ES_AUTO_CREATE_INDEX = true;
     public static int ES_NUMBER_OF_SHARDS = 1;
     public static int ES_NUMBER_OF_REPLICAS = 0;
+    public static String ES_ILM_POLICY_NAME = "pmon_ilm_policy";
     public static String ALARM_DESTINATION = "http://localhost:9097/webhook";
     public static boolean EXPORT_ENABLED = false;
     public static String EXPORT_DIRECTORY = "export/";
@@ -104,6 +105,8 @@ public class MetricsLib {
                     + "metricslib.elasticsearch.createIndexOnStart=" + ES_AUTO_CREATE_INDEX + "\n"
                     + "metricslib.elasticsearch.numberOfShards=" + ES_NUMBER_OF_SHARDS + "\n"
                     + "metricslib.elasticsearch.numberOfReplicas=" + ES_NUMBER_OF_REPLICAS + "\n"
+                    + "metricslib.elasticsearch.ilm.policy.name=" + ES_ILM_POLICY_NAME + "\n"
+                    + "metricslib.elasticsearch.healthcheck.interval.seconds=" + ES_HEALTHCHECK_INTERVAL + "\n"
                     + "metricslib.alarm.destination=" + ALARM_DESTINATION + "\n"
                     + "</pre>");
 
@@ -225,10 +228,11 @@ public class MetricsLib {
         ES_DEFAULT_SCHEMA = (String) props.getOrDefault("metricslib.elasticsearch.default.schema", "http");
         ES_DEFAULT_HOST = (String) props.getOrDefault("metricslib.elasticsearch.default.host", null);
         ES_DEFAULT_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.default.port", "0"));
-        ES_HEALTHCHECK_INTERVAL = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.healthcheck.interval.millis", "3000"));
+        ES_HEALTHCHECK_INTERVAL = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.healthcheck.interval.seconds", "3000"));
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean((String) props.getOrDefault("metricslib.elasticsearch.createIndexOnStart", "true"));
         ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfShards", "1"));
         ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
+        ES_ILM_POLICY_NAME = (String) props.getOrDefault("metricslib.elasticsearch.ilm.policy.name", "pmon_ilm_policy");
 
         ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", "http://localhost:9097/webhook");
 

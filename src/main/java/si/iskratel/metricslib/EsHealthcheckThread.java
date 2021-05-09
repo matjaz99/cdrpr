@@ -22,8 +22,9 @@ public class EsHealthcheckThread implements Runnable {
             logger.info("Healthcheck:  ES schema: " + MetricsLib.ES_DEFAULT_SCHEMA + " ES host: " + MetricsLib.ES_DEFAULT_HOST + " ES port: " + MetricsLib.ES_DEFAULT_PORT);
             succ = es.sendPost("/metricslib/_doc/m37r1c5l1b4b0ut", sb.toString()).success;
             logger.info("Healthcheck: Waiting for ElasticSearch...");
+            if (succ) break;
             try {
-                Thread.sleep(MetricsLib.ES_HEALTHCHECK_INTERVAL);
+                Thread.sleep(MetricsLib.ES_HEALTHCHECK_INTERVAL * 1000);
             } catch (InterruptedException e) {
             }
         }

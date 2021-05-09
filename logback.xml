@@ -35,7 +35,7 @@
       </evaluator>
       <onMatch>DENY</onMatch>
     </filter>
-    <file>${logDir:-defDirForLog}/${CONTEXT_NAME}.log</file>
+    <file>${logDir:-defDirForLog}/metricslib.log</file>
     <append>true</append>
     <prudent>false</prudent>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -63,4 +63,5 @@
   </root>
 
   <logger name="org.apache" level="WARN" />
+  <logger name="si.iskratel" level="INFO" />
 </configuration>

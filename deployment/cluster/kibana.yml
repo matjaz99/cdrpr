@@ -1,9 +1,0 @@
-server.name: kibana
-server.host: "0"
-elasticsearch.hosts:
-  #- "http://es01:9200"
-  #- "http://es02:9200"
-  #- "http://es03:9200"
-  - "http://192.168.0.171:9200"
-  - "http://192.168.0.172:9200"
-  - "http://192.168.0.173:9200"

@@ -1,0 +1,82 @@
+Here are examples of the same data in different formats
+There are two measurements:
+- CallAttempts
+- CallsAnswered
+
+To Do
+- Visualize them as time-series data
+  Change the values and timestamp to fill the data in ES
+- Show ratio of CallsAnswered/CallAttempts
+
+# Type 1: PMetric format
+
+You need two metrics because each contains only one value
+
+{
+  "metric_name":"pm_xml_metric",
+  "nodeId":"560062",
+  "elementType":"AGCF",
+  "measurementType":"Trunk Groups Statistics",
+  "statisticGroup":"2",
+  "measName":"CallAttempts",
+  "value":24.0,
+  "@timestamp":1620550432649
+}
+{
+  "metric_name":"pm_xml_metric",
+  "nodeId":"560062",
+  "elementType":"AGCF",
+  "measurementType":"Trunk Groups Statistics",
+  "statisticGroup":"2",
+  "measName":"CallsAnswered",
+  "value":18.0,
+  "@timestamp":1620550432649
+}
+
+{"index":{"_index":"test_1"}}
+{"metric_name":"pm_xml_metric","nodeId":"560062","elementType":"AGCF","measurementType":"Trunk Groups Statistics","statisticGroup":"2","measName":"CallAttempts","value":24.0,"@timestamp":1620550432649}
+{"index":{"_index":"test_1"}}
+{"metric_name":"pm_xml_metric","nodeId":"560062","elementType":"AGCF","measurementType":"Trunk Groups Statistics","statisticGroup":"2","measName":"CallsAnswered","value":18.0,"@timestamp":1620550432649}
+
+# Type 2: PMultiValueMetric
+
+This metric contains all measurements and its values (as key-value pairs)
+
+{
+  "metric_name":"pm_xml_metric",
+  "nodeId":"560062",
+  "elementType":"AGCF",
+  "measurementType":"Trunk Groups Statistics",
+  "statisticGroup":"2",
+  "CallAttempts":24.0,
+  "CallsAnswered":18.0,
+  "@timestamp":1620550432649
+}
+
+
+{"index":{"_index":"test_2"}}
+{"metric_name":"pm_xml_metric","nodeId":"560062","elementType":"AGCF","measurementType":"Trunk Groups Statistics","statisticGroup":"2","measName":"IT.TG.IncAnswer","value":7.0,"@timestamp":1620550432649}
+{"index":{"_index":"test_2"}}
+{"metric_name":"pm_xml_metric","nodeId":"560062","elementType":"AGCF","measurementType":"Trunk Groups Statistics","statisticGroup":"2","measName":"IT.TG.OutTermNoAnswer","value":12.0,"@timestamp":1620550432649}
+
+
+# Type 3
+
+{
+  "metric_name":"pm_xml_metric",
+  "nodeId":"560062",
+  "elementType":"AGCF",
+  "measurementType":"Trunk Groups Statistics",
+  "statisticGroup":"2",
+  "measName":
+  {
+    "CallAttempts":24.0,
+    "CallsAnswered":18.0
+  },
+  "@timestamp":1620550432649
+}
+
+
+
+
+

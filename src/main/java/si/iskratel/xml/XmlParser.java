@@ -1,9 +1,6 @@
 package si.iskratel.xml;
 
-import si.iskratel.metricslib.EsClient;
-import si.iskratel.metricslib.MetricsLib;
-import si.iskratel.metricslib.PMetric;
-import si.iskratel.metricslib.PMetricRegistry;
+import si.iskratel.metricslib.*;
 import si.iskratel.xml.model.MeasCollecFile;
 
 import javax.xml.bind.JAXBContext;
@@ -22,6 +19,11 @@ public class XmlParser {
             .setHelp("Xml based metric")
             .setLabelNames("nodeId", "elementType", "measurementType", "statisticGroup", "measName")
             .register("xml_metrics");
+
+    public static PMultiValueMetric xmlMultiValueMetric = PMultiValueMetric.build()
+            .setName("pm_xml_multivalue_metric")
+            .setHelp("Xml based metric")
+            .register("xml_multivalue_metrics");
 
     public static void main(String[] args) throws Exception {
 
@@ -49,6 +51,7 @@ public class XmlParser {
             for (File f : files) {
 
                 PMetricRegistry.getRegistry("xml_metrics").resetMetrics();
+                PMetricRegistry.getRegistry("xml_multivalue_metrics").resetMetrics();
 
                 System.out.println(f.getAbsolutePath());
                 MeasCollecFile mcf;
@@ -58,11 +61,10 @@ public class XmlParser {
                     Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
                     mcf = (MeasCollecFile) jaxbUnmarshaller.unmarshal(f);
 
-                    System.out.println("parse(): " + mcf.toString());
-                    System.out.println("parse(): localDn=" + mcf.getFileHeader().getFileSender().getLocalDn()
-                            + " measInfo=" + mcf.getMeasData().get(0).getMeasInfo().get(0).getMeasInfoId()
-                            + " measTypes=" + mcf.getMeasData().get(0).getMeasInfo().get(0).getMeasTypes()
-                            + " measResults=" + mcf.getMeasData().get(0).getMeasInfo().get(0).getMeasValue().get(0).getMeasResults());
+//                    System.out.println("parse(): localDn=" + mcf.getFileHeader().getFileSender().getLocalDn()
+//                            + " measInfo=" + mcf.getMeasData().get(0).getMeasInfo().get(0).getMeasInfoId()
+//                            + " measTypes=" + mcf.getMeasData().get(0).getMeasInfo().get(0).getMeasTypes()
+//                            + " measResults=" + mcf.getMeasData().get(0).getMeasInfo().get(0).getMeasValue().get(0).getMeasResults());
 
                     String elementType = mcf.getFileHeader().getFileSender().getElementType();
                     String nodeId = mcf.getFileHeader().getFileSender().getLocalDn();
@@ -73,28 +75,27 @@ public class XmlParser {
 
                             String measurementType = mi.getMeasInfoId();
 
-                            List<String> measTypes = mi.getMeasTypes();
+                            List<String> measTypes = mi.getMeasTypes(); // measurement names
                             String[] mArray = new String[measTypes.size()];
                             mArray = measTypes.toArray(mArray);
-//                            for (String measurementName : measTypes) {
-//                                System.out.print(measurementName + " ");
-//                            }
+
                             String statisticGroup = mi.getMeasValue().get(0).getMeasObjLdn();
-                            List<String> values = mi.getMeasValue().get(0).getMeasResults();
+                            List<String> values = mi.getMeasValue().get(0).getMeasResults(); // measurement values
                             String[] vArray = new String[values.size()];
                             vArray = values.toArray(vArray);
-//                            for (String v : values) {
-//                                System.out.print(v + " ");
-//                            }
                             for (int i = 0; i < mArray.length; i++) {
-//                                System.out.println("MEAS=" + mArray[i] + " VAL=" + vArray[i]);
                                 xmlMetric.setLabelValues(nodeId, elementType, measurementType, statisticGroup, mArray[i]).set(Double.parseDouble(vArray[i]));
+                                xmlMultiValueMetric.addLabel("nodeId", nodeId)
+                                        .addLabel("measurementType", measurementType)
+                                        .addLabel("statisticGroup", statisticGroup)
+                                        .addValue(mArray[i], Double.parseDouble(vArray[i]));
                             }
                         }
 
                     }
 
                     es.sendBulkPost(xmlMetric);
+                    es.sendBulkPost(xmlMultiValueMetric);
 
                 } catch (JAXBException e) {
                     System.out.println("parse(): JAXBException: " + e.getMessage());

@@ -17,7 +17,7 @@ public class PMetricFormatter {
                 sb.append("\"").append(metric.getLabelNames()[i]).append("\":\"").append(ts.getLabelValues()[i]).append("\",");
             }
             sb.append("\"value\":").append(ts.getValue()).append(",");
-            sb.append("\"timestamp\":").append(metric.getTimestamp());
+            sb.append("\"@timestamp\":").append(metric.getTimestamp());
             sb.append("}\n");
         }
 
@@ -37,7 +37,7 @@ public class PMetricFormatter {
         for (String key : metric.getValuesMap().keySet()) {
             sb.append("\"").append(key).append("\":").append(metric.getValuesMap().get(key)).append(",");
         }
-        sb.append("\"timestamp\":").append(metric.getTimestamp());
+        sb.append("\"@timestamp\":").append(metric.getTimestamp());
         sb.append("}\n");
 
         return sb.toString();
@@ -75,7 +75,7 @@ public class PMetricFormatter {
 //        }
 
         sb.append("      \"value\": {\"type\": \"double\"},\n");
-        sb.append("      \"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n");
+        sb.append("      \"@timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n");
         sb.append("    }\n");
         sb.append("  }\n");
         sb.append("}\n");
@@ -83,7 +83,7 @@ public class PMetricFormatter {
         return sb.toString().replace("${ALIAS_NAME}", metric.getParentRegistry() + "_alias");
     }
 
-    public static String toIndexJson(String alias) {
+    public static String getIndexJson(String alias) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -105,7 +105,7 @@ public class PMetricFormatter {
      * @param templateName
      * @return
      */
-    public static String toTemplateJson(String templateName) {
+    public static String getTemplateJson(String templateName) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -116,7 +116,7 @@ public class PMetricFormatter {
         sb.append("    \"index\": {\n");
         sb.append("      \"number_of_shards\" : ${NUMBER_OF_SHARDS},\n");
         sb.append("      \"number_of_replicas\" : ${NUMBER_OF_REPLICAS},\n");
-        sb.append("      \"lifecycle.name\": \"pmon_ilm_policy\",\n");
+        sb.append("      \"lifecycle.name\": \"${ILM_POLICY_NAME}\",\n");
         sb.append("      \"lifecycle.rollover_alias\": \"${ROLLOVER_ALIAS}\"\n");
         sb.append("    }\n");
         sb.append("  },\n");
@@ -124,7 +124,7 @@ public class PMetricFormatter {
         sb.append("    \"properties\": {\n");
         sb.append("      \"metric_name\": {\"type\": \"keyword\"},\n");
         sb.append("      \"value\": {\"type\": \"double\"},\n");
-        sb.append("      \"timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n");
+        sb.append("      \"@timestamp\": {\"type\": \"date\", \"format\": \"epoch_millis\"}\n");
         sb.append("    }\n");
         sb.append("  }\n");
         sb.append("}\n");
@@ -142,6 +142,7 @@ public class PMetricFormatter {
         s = s.replace("${ROLLOVER_ALIAS}", rolloverAlias);
         s = s.replace("${NUMBER_OF_SHARDS}", Integer.toString(MetricsLib.ES_NUMBER_OF_SHARDS));
         s = s.replace("${NUMBER_OF_REPLICAS}", Integer.toString(MetricsLib.ES_NUMBER_OF_REPLICAS));
+        s = s.replace("${ILM_POLICY_NAME}", MetricsLib.ES_ILM_POLICY_NAME);
         System.out.println(s);
         return s;
 
