@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # Usage:
 # sh configure_elastic.sh <hostname>
