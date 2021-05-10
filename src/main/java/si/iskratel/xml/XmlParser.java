@@ -31,7 +31,9 @@ public class XmlParser {
         properties.load(new FileInputStream("xml_parser.properties"));
         MetricsLib.init(properties);
 
-        EsClient es = new EsClient("http", "centosvm", 9200);
+        EsClient es = new EsClient(properties.getProperty("metricslib.elasticsearch.default.schema"),
+                properties.getProperty("metricslib.elasticsearch.default.host"),
+                Integer.parseInt(properties.getProperty("metricslib.elasticsearch.default.port")));
 
 //        FileLoader fl = new FileLoader();
 //        Thread t = new Thread(fl);
