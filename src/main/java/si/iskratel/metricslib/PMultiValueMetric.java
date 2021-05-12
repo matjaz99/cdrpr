@@ -1,5 +1,6 @@
 package si.iskratel.metricslib;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,13 +91,10 @@ public class PMultiValueMetric {
 
     @Override
     public String toString() {
-        return "PMultiValueMetric{" +
-                "timestamp=" + timestamp +
-                ", name='" + name + '\'' +
-                ", help='" + help + '\'' +
-                ", labelsMap=" + labelsMap +
-                ", valuesMap=" + valuesMap +
-                ", parentRegistry='" + parentRegistry + '\'' +
-                '}';
+        String lbls = "";
+        for (String s : labelsMap.keySet()) {
+            lbls += s + ", ";
+        }
+        return "metric_name=" + name + ", help=" + help + ", labels=[" + lbls.substring(0, lbls.length() - 2) + "]";
     }
 }

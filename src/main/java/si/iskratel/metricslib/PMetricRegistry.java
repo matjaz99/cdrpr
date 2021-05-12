@@ -106,6 +106,10 @@ public class PMetricRegistry {
             for (PMetric m : r.metricsMap.values()) {
                 sb.append("[").append(r.name).append("] ").append(m.toString()).append("\n");
             }
+            for (PMultiValueMetric mvm :
+                    r.multiValueMetricsMap.values()) {
+                sb.append("[").append(r.name).append("] ").append(mvm.toString()).append("\n");
+            }
         }
         return sb.toString();
     }

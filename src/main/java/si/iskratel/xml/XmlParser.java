@@ -88,6 +88,7 @@ public class XmlParser {
                             for (int i = 0; i < mArray.length; i++) {
                                 xmlMetric.setLabelValues(nodeId, elementType, measurementType, statisticGroup, mArray[i]).set(Double.parseDouble(vArray[i]));
                                 xmlMultiValueMetric.addLabel("nodeId", nodeId)
+                                        .addLabel("elementType", elementType)
                                         .addLabel("measurementType", measurementType)
                                         .addLabel("statisticGroup", statisticGroup)
                                         .addValue(mArray[i], Double.parseDouble(vArray[i]));
