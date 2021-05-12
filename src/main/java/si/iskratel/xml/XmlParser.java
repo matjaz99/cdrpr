@@ -9,6 +9,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -76,6 +77,7 @@ public class XmlParser {
                         for (MeasCollecFile.MeasData.MeasInfo mi : md.getMeasInfo()) {
 
                             String measurementType = mi.getMeasInfoId();
+                            Date date = mi.getGranPeriod().getEndTime().toGregorianCalendar().getTime();
 
                             List<String> measTypes = mi.getMeasTypes(); // measurement names
                             String[] mArray = new String[measTypes.size()];
