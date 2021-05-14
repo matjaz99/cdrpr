@@ -76,7 +76,111 @@ This metric contains all measurements and its values (as key-value pairs)
   "@timestamp":1620550432649
 }
 
+# Type 11
+
+According to: https://www.elastic.co/blog/elasticsearch-as-a-time-series-data-store
+
+{
+    "@timestamp": 1442165810,
+    "name": "timer_1",
+    "application": "Metrics Store Benchmark",
+    "host": "my_hostname",
+    "instance": "Local",
+    "count": 21,
+    "mean": 714.86,
+    "min": 248.00,
+    "max": 979.00,
+    "stddev": 216.63,
+    "p50": 741.00,
+    "p75": 925.00,
+    "p95": 977.00,
+    "p98": 979.00,
+    "p99": 979.00,
+    "p999": 979.00,
+    "mean_rate": 2.03,
+    "m1_rate": 2.18,
+    "m5_rate": 2.20,
+    "m15_rate": 2.20
+}
+
+# Type 12
+
+In metricbeat format
+
+https://www.elastic.co/blog/querying-and-aggregating-time-series-data-in-elasticsearch
 
 
+{
+    "@timestamp" : "2019-08-12T12:06:34.572Z",
+    "ecs" : { # ECS metadata
+      "version" : "1.0.1"
+    },
+    "host" : { # ECS metadata
+      "name" : "noether",
+      "hostname" : "noether",
+      "architecture" : "x86_64",
+      "os" : {
+        "kernel" : "4.15.0-55-generic",
+        "codename" : "bionic",
+        "platform" : "ubuntu",
+        "version" : "18.04.3 LTS (Bionic Beaver)",
+        "family" : "debian",
+        "name" : "Ubuntu"
+      },
+      "id" : "4e3eb308e7f24789b4ee0b6b873e5414",
+      "containerized" : false
+    },
+    "agent" : { # ECS metadata
+      "ephemeral_id" : "7c725f8a-ac03-4f2d-a40c-3695a3591699",
+      "hostname" : "noether",
+      "id" : "e8839acc-7f5e-40be-a3ab-1cc891bcb3ce",
+      "version" : "8.0.0",
+      "type" : "metricbeat"
+    },
+    "event" : { # ECS metadata
+      "dataset" : "system.cpu",
+      "module" : "system",
+      "duration" : 725494
+    },
+    "metricset" : { # metricbeat metadata
+      "name" : "cpu"
+    },
+    "service" : { # metricbeat metadata
+      "type" : "system"
+    },
+    "system" : { # metricbeat time series data
+      "cpu" : {
+        "softirq" : {
+          "pct" : 0.0112
+        },
+        "steal" : {
+          "pct" : 0
+        },
+        "cores" : 8,
+        "irq" : {
+          "pct" : 0
+        },
+        "idle" : {
+          "pct" : 6.9141
+        },
+        "nice" : {
+          "pct" : 0
+        },
+        "user" : {
+          "pct" : 0.7672
+        },
+        "system" : {
+          "pct" : 0.3024
+        },
+        "iowait" : {
+          "pct" : 0.0051
+        },
+        "total" : {
+          "pct" : 1.0808
+        }
+      }
+    }
+  }
+}
 
 
