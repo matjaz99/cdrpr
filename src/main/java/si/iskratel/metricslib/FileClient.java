@@ -30,16 +30,7 @@ public class FileClient extends Thread {
             PromExporter.metricslib_dropped_metrics_total.inc();
             return;
         }
-        try {
-            String fileName = metric.getName() + "_" + System.currentTimeMillis() + "_" + (dump_count++) + ".ndjson";
-            logger.info("dumpToFile(): Dumping to file: " + fileName);
-            FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + fileName);
-            myWriter.write(PMetricFormatter.toEsNdJsonString(metric));
-            myWriter.close();
-            PromExporter.metricslib_dump_to_file_total.inc();
-        } catch (IOException e) {
-            logger.error("dumpToFile(): IOException: " + e.getMessage());
-        }
+        writeToFile(metric.getName(), PMetricFormatter.toEsNdJsonString(metric));
     }
 
     public static void dumpToFile(PMultiValueMetric metric) {
@@ -48,11 +39,15 @@ public class FileClient extends Thread {
             PromExporter.metricslib_dropped_metrics_total.inc();
             return;
         }
+        writeToFile(metric.getName(), PMetricFormatter.toEsNdJsonString(metric));
+    }
+
+    private static void writeToFile(String metricName, String data) {
         try {
-            String fileName = metric.getName() + "_" + System.currentTimeMillis() + "_" + (dump_count++) + ".ndjson";
+            String fileName = metricName + "_" + System.currentTimeMillis() + "_" + (dump_count++) + ".ndjson";
             logger.info("dumpToFile(): Dumping to file: " + fileName);
             FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + fileName);
-            myWriter.write(PMetricFormatter.toEsNdJsonString(metric));
+            myWriter.write(data);
             myWriter.close();
             PromExporter.metricslib_dump_to_file_total.inc();
         } catch (IOException e) {

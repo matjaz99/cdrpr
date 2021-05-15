@@ -6,14 +6,40 @@ import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class AlarmManager {
 
     private static Logger logger = LoggerFactory.getLogger(AlarmManager.class);
 
     private static Map<String, Alarm> activeAlarmsList = new HashMap<>();
+
+    public static Map<Integer, String> alarmSeveritiesMap = new HashMap<>();
+
+    public static Properties alarmSeveritiesProperties = new Properties();
+
+    static {
+        try {
+            alarmSeveritiesProperties.load(new FileInputStream("severities.properties"));
+            for (Object o : alarmSeveritiesProperties.keySet()) {
+                alarmSeveritiesMap.put(Integer.parseInt(String.valueOf(o)), alarmSeveritiesProperties.getProperty(String.valueOf(o)));
+            }
+            // TODO read from props
+//            alarmSeveritiesMap.put(0, "Indeterminate");
+//            alarmSeveritiesMap.put(1, "Critical");
+//            alarmSeveritiesMap.put(2, "Major");
+//            alarmSeveritiesMap.put(3, "Minor");
+//            alarmSeveritiesMap.put(4, "Warning");
+//            alarmSeveritiesMap.put(5, "Clear");
+//            alarmSeveritiesMap.put(6, "Informational");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private AlarmManager() {
 
@@ -26,8 +52,7 @@ public class AlarmManager {
             activeAlarmsList.put(alarm.getAlarmId(), alarm);
         }
         String body = toJsonString(alarm);
-        logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
-        push(body);
+        push(body, (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM"));
         alarm.setTimestamp(0);
     }
 
@@ -39,14 +64,17 @@ public class AlarmManager {
             a.setSeverity(5);
             if (alarm.getTimestamp() == 0) alarm.setTimestamp(System.currentTimeMillis());
             String body = toJsonString(alarm);
-            logger.info("push(): sending " + (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM") + ": " + body);
-            push(body);
+            push(body, (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM"));
             a.setSeverity(sev);
-            alarm.setTimestamp(0);
+            a.setTimestamp(0);
         }
     }
 
-    private static void push(String body) {
+    private static void push(String body, String severity) {
+
+        if (MetricsLib.ALARM_DESTINATION == null) return;
+
+        logger.info("push(): sending " + severity + ": " + body);
 
         OkHttpClient httpClient = new OkHttpClient();
         MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");

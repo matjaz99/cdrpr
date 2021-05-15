@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EsClient {
 
@@ -31,6 +33,15 @@ public class EsClient {
     /** Set this flag if Metricslib-about document is successfully inserted immediately after start */
     public static boolean ES_IS_READY = false;
     private int retryCount = 0;
+
+    /** This map holds index names for which mapping was already created. This map is used when uploading
+     * data from a dumped file, because I have to create index (and template and alias). If data is uploaded from
+     * dumped file, there is no PMetric object behind and I cannot tell if index was already created or not. So to avoid
+     * (re)creating index on each insert, I will keep track of registered indices in this map.
+     * Key is obviously index name, and value has no meaning at all.
+     * This implementation should be done differently anyway. This is just a temporary solution.
+     */
+    private static Map<String, Boolean> mappingCreated = new HashMap<>();
 
     /**
      * Use this constructor to create ES clients that are bound to this host:port instance, but independent of indices.
@@ -191,13 +202,13 @@ public class EsClient {
 
     /**
      * Send any custom JSON body to ElasticSearch. The body must have a properly formed NDJSON structure for
-     * bulk inserts and the metadata object must include a valid index.
-     * @param body custom body in ndjson format
+     * bulk inserts and the metadata object must include a valid index. The request is sent to _BULK endpoint!
+     * @param ndJson custom body in ndjson format
      * @return success
      */
-    public boolean sendBulkPost(String body) {
+    public boolean sendBulkPost(String ndJson) {
 
-        if (body == null) {
+        if (ndJson == null) {
             logger.warn("Body is null. Request will be ignored.");
             return false;
         }
@@ -205,19 +216,23 @@ public class EsClient {
         if (!ES_IS_READY) return false;
 
         // parse first line to get an index. Example: {"index":{"_index":"pmon_cdr_business_group_idx"}}
-        String idx = body.split("\n")[0];
+        String idx = ndJson.split("\n")[0];
         idx = idx.substring(20, idx.length() - 3);
 
-        boolean b = createIndex(idx);
-        if (b != true) {
-            // FIXME where to put setMapping=true on registry?
-            return false;
+        if (!mappingCreated.containsKey(idx)) {
+            boolean b = createIndex(idx);
+            if (b != true) {
+                // FIXME where to put setMapping=true on registry?
+                return false;
+            }
+            mappingCreated.put(idx, true);
         }
+
 
         Request request = new Request.Builder()
                 .url(esHost + ES_API_BULK_ENDPOINT)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_API_VERSION)
-                .post(RequestBody.create(body, MEDIA_TYPE_JSON))
+                .post(RequestBody.create(ndJson, MEDIA_TYPE_JSON))
                 .build();
 
         return executeHttpRequest(request).success;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <measCollecFile xmlns="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec">
 	<fileHeader fileFormatVersion="1.0" vendorName="Iskratel" dnPrefix="">
-		<fileSender elementType="AGCF" localDn="560062"/>
+		<fileSender elementType="AGCF" localDn="1048791"/>
 		<measCollec beginTime="2021-03-03T23:00:00+07:00"/>
 	</fileHeader>
 	<measData>
@@ -12,7 +12,7 @@
 			<repPeriod duration="PT30S"/>
 			<measTypes>IT.TG.IncCallAtt IT.TG.IncIncmpl IT.TG.IncWrongDN IT.TG.IncUnsuccOther IT.TG.IncTermBusy IT.TG.IncTermNoAnswer IT.TG.IncAnswer IT.TG.IncNoTrunk IT.TG.IncTraffic IT.TG.OutCallAtt IT.TG.OutTermBusy IT.TG.OutTermNoAnswer IT.TG.OutAnswer IT.TG.OutUnsuccOther IT.TG.OutNoTrunk IT.TG.OutTraffic</measTypes>
 			<measValue measObjLdn="2">
-				<measResults>0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 </measResults>
+				<measResults>20 1 2 3 4 5 6 7 8 10 1 2 3 4 5 6 </measResults>
 			</measValue>
 			</measInfo>
 			<measInfo measInfoId="AGCF Statistics">
@@ -21,7 +21,7 @@
 			<repPeriod duration="PT30S"/>
 			<measTypes>IT.AGCFOrgCallAtt IT.AGCFOrgEstablCall IT.AGCFOrgAnswer IT.AGCFTermCallAtt IT.AGCFTermEstablCall IT.AGCFTermAnswer IT.AGCFCummDurOrgCalls  IT.AGCFCummDurTermCalls </measTypes>
 			<measValue measObjLdn="3">
-				<measResults>0 0 0 0 0 0 0 0 </measResults>
+				<measResults>100 833 830 130 899 859 2000 1800 </measResults>
 			</measValue>
 			</measInfo>
 	</measData>

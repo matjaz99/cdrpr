@@ -1,15 +1,21 @@
 package si.iskratel.metricslib;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Alarm {
 
     private String alarmId;
+    private String alarmSource;
     private long timestamp;
+    private String dateTime;
     private int alarmCode = 7774777;
     private String alarmName = "Alarm incident";
-    private int severity = 4;
-    private String severityString = "warning";
+    private int severity = 0;
+    private String severityString = "Indeterminate";
     private String notificationType = "alarm";
-    private String sourceInfo;
+    private String sourceInfo = "";
     private String additionalInfo = "";
     private int probableCause = 1024;
     private int eventType = 5;
@@ -45,7 +51,13 @@ public class Alarm {
     }
 
     public String getAlarmId() {
-        return MD5Checksum.getMd5Checksum(alarmCode + alarmName + sourceInfo);
+        alarmId = MD5Checksum.getMd5Checksum(alarmCode + alarmName + sourceInfo);
+        return alarmId;
+    }
+
+    public String getAlarmSource() {
+        alarmSource = MetricsLib.METRICSLIB_HOSTNAME;
+        return alarmSource;
     }
 
     public long getTimestamp() {
@@ -54,6 +66,13 @@ public class Alarm {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getDateTime() {
+        Date date = new Date(timestamp);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        dateTime = dateFormat.format(date);
+        return dateTime;
     }
 
     public int getAlarmCode() {
@@ -81,11 +100,8 @@ public class Alarm {
     }
 
     public String getSeverityString() {
+        severityString = AlarmManager.alarmSeveritiesMap.getOrDefault(severity, "Indeterminate");
         return severityString;
-    }
-
-    public void setSeverityString(String severityString) {
-        this.severityString = severityString;
     }
 
     public String getSourceInfo() {

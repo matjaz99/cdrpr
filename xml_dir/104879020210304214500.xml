@@ -12,7 +12,7 @@
 			<repPeriod duration="PT30S"/>
 			<measTypes>IT.TG.IncCallAtt IT.TG.IncIncmpl IT.TG.IncWrongDN IT.TG.IncUnsuccOther IT.TG.IncTermBusy IT.TG.IncTermNoAnswer IT.TG.IncAnswer IT.TG.IncNoTrunk IT.TG.IncTraffic IT.TG.OutCallAtt IT.TG.OutTermBusy IT.TG.OutTermNoAnswer IT.TG.OutAnswer IT.TG.OutUnsuccOther IT.TG.OutNoTrunk IT.TG.OutTraffic</measTypes>
 			<measValue measObjLdn="2">
-				<measResults>7 4 6 2 9 4 0 5 2 6 8 4 6 3 2 1 </measResults>
+				<measResults>11 4 6 2 9 4 1 5 2 6 8 4 6 3 2 1 </measResults>
 			</measValue>
 			</measInfo>
 			<measInfo measInfoId="AGCF Statistics">

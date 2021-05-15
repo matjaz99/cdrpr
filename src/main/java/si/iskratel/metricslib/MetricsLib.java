@@ -79,7 +79,7 @@ public class MetricsLib {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
             PromExporter.metricslib_servlet_requests_total.labels("/hello").inc();
 
-            resp.getWriter().println("<h1>Iskratel MetricsLib " + METRICSLIB_API_VERSION + "</h1>");
+            resp.getWriter().println("<h1>MetricsLib " + METRICSLIB_API_VERSION + "</h1>");
 
             resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/metrics\">/metrics</a>");
             resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/indices\">/indices</a>");
@@ -234,7 +234,7 @@ public class MetricsLib {
         ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
         ES_ILM_POLICY_NAME = (String) props.getOrDefault("metricslib.elasticsearch.ilm.policy.name", "pmon_ilm_policy");
 
-        ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", "http://localhost:9097/webhook");
+        ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", null);
 
         startJetty(METRICSLIB_PORT);
     }
