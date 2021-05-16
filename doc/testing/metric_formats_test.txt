@@ -184,3 +184,263 @@ https://www.elastic.co/blog/querying-and-aggregating-time-series-data-in-elastic
 }
 
 
+
+# Metricbeat example of Prometheus metric:
+
+{
+  "_index": "metricbeat-7.12.1-2021.05.15-000001",
+  "_type": "_doc",
+  "_id": "etBWcnkBgSuDROGJHT_g",
+  "_version": 1,
+  "_score": null,
+  "fields": {
+    "host.os.name.text": [
+      "CentOS Linux"
+    ],
+    "host.hostname": [
+      "centosvm.home.net"
+    ],
+    "host.mac": [
+      "08:00:27:9f:f6:d6",
+      "02:42:7d:d7:87:93",
+      "02:42:5d:60:20:a3",
+      "fa:3c:d7:1e:8d:95",
+      "b6:12:83:e7:6d:50",
+      "46:29:d5:b8:f5:6f"
+    ],
+    "service.type": [
+      "prometheus"
+    ],
+    "host.ip": [
+      "192.168.0.120",
+      "fe80::bad4:3ebd:2fa3:e12f",
+      "172.17.0.1",
+      "172.18.0.1",
+      "fe80::42:5dff:fe60:20a3",
+      "fe80::f83c:d7ff:fe1e:8d95",
+      "fe80::b412:83ff:fee7:6d50",
+      "fe80::4429:d5ff:feb8:f56f"
+    ],
+    "agent.type": [
+      "metricbeat"
+    ],
+    "event.module": [
+      "prometheus"
+    ],
+    "host.os.version": [
+      "7 (Core)"
+    ],
+    "host.os.kernel": [
+      "3.10.0-1062.18.1.el7.x86_64"
+    ],
+    "prometheus.metrics.node_scrape_collector_duration_seconds": [
+      0.000064322
+    ],
+    "host.os.name": [
+      "CentOS Linux"
+    ],
+    "agent.name": [
+      "centosvm.home.net"
+    ],
+    "host.name": [
+      "centosvm.home.net"
+    ],
+    "host.id": [
+      "46ed0864e5b6dc47ad9b34a1b771f596"
+    ],
+    "host.os.type": [
+      "linux"
+    ],
+    "metricset.period": [
+      10000
+    ],
+    "host.os.codename": [
+      "Core"
+    ],
+    "agent.hostname": [
+      "centosvm.home.net"
+    ],
+    "metricset.name": [
+      "collector"
+    ],
+    "event.duration": [
+      22627207
+    ],
+    "host.architecture": [
+      "x86_64"
+    ],
+    "prometheus.labels.instance": [
+      "localhost:9100"
+    ],
+    "@timestamp": [
+      "2021-05-15T23:21:55.958Z"
+    ],
+    "agent.id": [
+      "3e4ca8a2-e619-49ab-b147-2272ae8ec26f"
+    ],
+    "host.containerized": [
+      false
+    ],
+    "host.os.platform": [
+      "centos"
+    ],
+    "prometheus.labels.collector": [
+      "sockstat"
+    ],
+    "ecs.version": [
+      "1.8.0"
+    ],
+    "service.address": [
+      "http://localhost:9100/metrics"
+    ],
+    "agent.ephemeral_id": [
+      "1da9cb41-20dd-4ea4-a176-45867c51a1a6"
+    ],
+    "prometheus.labels.job": [
+      "prometheus"
+    ],
+    "agent.version": [
+      "7.12.1"
+    ],
+    "host.os.family": [
+      "redhat"
+    ],
+    "event.dataset": [
+      "prometheus.collector"
+    ],
+    "prometheus.metrics.node_scrape_collector_success": [
+      1
+    ]
+  },
+  "sort": [
+    1621120915958
+  ]
+}
+
+
+
+
+# Example of kibana_sample_data_flights
+
+{
+  "_index": "kibana_sample_data_flights",
+  "_type": "_doc",
+  "_id": "NdBxcnkBgSuDROGJM5wl",
+  "_version": 1,
+  "_score": null,
+  "fields": {
+    "Origin": [
+      "Jorge Chavez International Airport"
+    ],
+    "OriginLocation": [
+      {
+        "coordinates": [
+          -77.114304,
+          -12.0219
+        ],
+        "type": "Point"
+      }
+    ],
+    "FlightNum": [
+      "JDK1IXU"
+    ],
+    "DestLocation": [
+      {
+        "coordinates": [
+          121.8050003,
+          31.14340019
+        ],
+        "type": "Point"
+      }
+    ],
+    "FlightDelay": [
+      false
+    ],
+    "DistanceMiles": [
+      10651.544
+    ],
+    "FlightTimeMin": [
+      1558.3635
+    ],
+    "OriginWeather": [
+      "Cloudy"
+    ],
+    "dayOfWeek": [
+      6
+    ],
+    "AvgTicketPrice": [
+      908.9222
+    ],
+    "Carrier": [
+      "Kibana Airlines"
+    ],
+    "FlightDelayMin": [
+      0
+    ],
+    "OriginRegion": [
+      "SE-BD"
+    ],
+    "hour_of_day": [
+      0
+    ],
+    "DestAirportID": [
+      "PVG"
+    ],
+    "FlightDelayType": [
+      "No Delay"
+    ],
+    "timestamp": [
+      "2021-05-16T00:16:13.000Z"
+    ],
+    "Dest": [
+      "Shanghai Pudong International Airport"
+    ],
+    "FlightTimeHour": [
+      "25.972724571879677"
+    ],
+    "Cancelled": [
+      false
+    ],
+    "DistanceKilometers": [
+      17141.998
+    ],
+    "OriginCityName": [
+      "Lima"
+    ],
+    "DestWeather": [
+      "Rain"
+    ],
+    "OriginCountry": [
+      "PE"
+    ],
+    "DestCountry": [
+      "CN"
+    ],
+    "DestRegion": [
+      "SE-BD"
+    ],
+    "OriginAirportID": [
+      "LIM"
+    ],
+    "DestCityName": [
+      "Shanghai"
+    ]
+  },
+  "sort": [
+    1621124173000
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

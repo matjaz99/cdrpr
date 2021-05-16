@@ -28,14 +28,6 @@ public class AlarmManager {
             for (Object o : alarmSeveritiesProperties.keySet()) {
                 alarmSeveritiesMap.put(Integer.parseInt(String.valueOf(o)), alarmSeveritiesProperties.getProperty(String.valueOf(o)));
             }
-            // TODO read from props
-//            alarmSeveritiesMap.put(0, "Indeterminate");
-//            alarmSeveritiesMap.put(1, "Critical");
-//            alarmSeveritiesMap.put(2, "Major");
-//            alarmSeveritiesMap.put(3, "Minor");
-//            alarmSeveritiesMap.put(4, "Warning");
-//            alarmSeveritiesMap.put(5, "Clear");
-//            alarmSeveritiesMap.put(6, "Informational");
         } catch (IOException e) {
             e.printStackTrace();
         }
