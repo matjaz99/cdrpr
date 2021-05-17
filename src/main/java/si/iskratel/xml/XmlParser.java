@@ -42,7 +42,7 @@ public class XmlParser {
 
         while (true) {
 
-            File dir = new File("xml_dir");
+            File dir = new File("xml_input_dir");
 
             File[] files = dir.listFiles(new FileFilter() {
                 @Override
@@ -105,6 +105,9 @@ public class XmlParser {
                 } catch (JAXBException e) {
                     System.out.println("parse(): JAXBException: " + e.getMessage());
                 }
+
+                // move processed file
+
             }
 
 
