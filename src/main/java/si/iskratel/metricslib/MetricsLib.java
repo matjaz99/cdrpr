@@ -8,6 +8,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import si.iskratel.metricslib.servlets.RegistryDetailsServlet;
 
 import javax.net.ssl.*;
 import javax.servlet.ServletException;
@@ -113,7 +114,9 @@ public class MetricsLib {
             resp.getWriter().println("<h3>Registries</h3>");
             resp.getWriter().println("<pre>");
             for (PMetricRegistry r : PMetricRegistry.getRegistries()) {
-                resp.getWriter().println(r.getName());
+                resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":"
+                        + METRICSLIB_PORT + "/registry?name=" + r.getName() + "\">"
+                        + r.getName() + "</a>");
             }
             resp.getWriter().println("</pre>");
 
@@ -267,6 +270,7 @@ public class MetricsLib {
             context.addServlet(new ServletHolder(new IndicesServlet()), PATH_PREFIX + "indices");
             context.addServlet(new ServletHolder(new MetricsServletExtended()), PATH_PREFIX + "metrics");
             context.addServlet(new ServletHolder(new AlarmsServlet()), PATH_PREFIX + "alarms");
+            context.addServlet(new ServletHolder(new RegistryDetailsServlet()), PATH_PREFIX + "registry");
             // Add metrics about CPU, JVM memory etc.
             DefaultExports.initialize();
 
@@ -278,6 +282,7 @@ public class MetricsLib {
 
         if (MetricsLib.DUMP_TO_FILE_ENABLED && ES_DEFAULT_HOST != null) {
             MetricsLib.fut = new FileClient(new EsClient(ES_DEFAULT_SCHEMA, ES_DEFAULT_HOST, ES_DEFAULT_PORT));
+            MetricsLib.fut.setName("FileClientUploadThread");
             MetricsLib.fut.start();
         }
 

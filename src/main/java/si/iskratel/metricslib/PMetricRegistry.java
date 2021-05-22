@@ -61,6 +61,10 @@ public class PMetricRegistry {
 
     public PMetric getMetric(String metricName) { return metricsMap.get(metricName); }
 
+    public List<PMultiValueMetric> getMultiValueMetricsList() {
+        return new ArrayList<>(multiValueMetricsMap.values());
+    }
+
     public boolean isMappingCreated() {
         return mappingCreated;
     }
@@ -127,6 +131,7 @@ public class PMetricRegistry {
         }
         for (PMultiValueMetric m : multiValueMetricsMap.values()) {
             m.clear();
+            m.setTimestamp(0);
         }
     }
 

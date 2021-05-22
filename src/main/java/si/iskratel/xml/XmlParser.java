@@ -53,9 +53,6 @@ public class XmlParser {
 
             for (File f : files) {
 
-                PMetricRegistry.getRegistry("xml_metrics").resetMetrics();
-                PMetricRegistry.getRegistry("xml_multivalue_metrics").resetMetrics();
-
                 System.out.println(f.getAbsolutePath());
                 MeasCollecFile mcf;
                 try {
@@ -76,6 +73,9 @@ public class XmlParser {
 
                         for (MeasCollecFile.MeasData.MeasInfo mi : md.getMeasInfo()) {
 
+                            PMetricRegistry.getRegistry("xml_metrics").resetMetrics();
+                            PMetricRegistry.getRegistry("xml_multivalue_metrics").resetMetrics();
+
                             String measurementType = mi.getMeasInfoId();
                             Date date = mi.getGranPeriod().getEndTime().toGregorianCalendar().getTime();
 
@@ -95,12 +95,15 @@ public class XmlParser {
                                         .addLabel("statisticGroup", statisticGroup)
                                         .addValue(mArray[i], Double.parseDouble(vArray[i]));
                             }
+
+                            es.sendBulkPost(xmlMetric);
+                            es.sendBulkPost(xmlMultiValueMetric);
+
                         }
 
                     }
 
-                    es.sendBulkPost(xmlMetric);
-                    es.sendBulkPost(xmlMultiValueMetric);
+
 
                 } catch (JAXBException e) {
                     System.out.println("parse(): JAXBException: " + e.getMessage());

@@ -97,4 +97,12 @@ public class PMultiValueMetric {
         }
         return "metric_name=" + name + ", help=" + help + ", labels=[" + lbls.substring(0, lbls.length() - 2) + "]";
     }
+
+    public String toStringDetail() {
+        String s = "PMultiValueMetric[" + "timestamp=" + timestamp + ", metric_name=" + name + ", data=\n";
+        s += "\tlabels=" + labelsMap + "\n";
+        s += "\tvalues=" + valuesMap + "\n";
+        return s + "], size=" + (labelsMap.size() + valuesMap.size());
+    }
+
 }

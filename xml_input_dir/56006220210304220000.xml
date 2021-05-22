@@ -12,7 +12,7 @@
 			<repPeriod duration="PT30S"/>
 			<measTypes>IT.TG.IncCallAtt IT.TG.IncIncmpl IT.TG.IncWrongDN IT.TG.IncUnsuccOther IT.TG.IncTermBusy IT.TG.IncTermNoAnswer IT.TG.IncAnswer IT.TG.IncNoTrunk IT.TG.IncTraffic IT.TG.OutCallAtt IT.TG.OutTermBusy IT.TG.OutTermNoAnswer IT.TG.OutAnswer IT.TG.OutUnsuccOther IT.TG.OutNoTrunk IT.TG.OutTraffic</measTypes>
 			<measValue measObjLdn="2">
-				<measResults>10 20 40 20 10 60 40 10 30 50 40 20 30 10 10 20 </measResults>
+				<measResults>70 5 10 3 1 60 40 10 30 50 40 20 30 10 10 20 </measResults>
 			</measValue>
 			</measInfo>
 	</measData>

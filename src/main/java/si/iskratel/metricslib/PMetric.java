@@ -228,11 +228,11 @@ public class PMetric {
     }
 
     public String toStringDetail() {
-        String s = "PMetric[" + "timestamp=" + timestamp + ", metric_name=" + name+ ", labels=" + Arrays.toString(labelNames) + ", timeseries=\n";
+        String s = "PMetric[" + "timestamp=" + timestamp + ", metric_name=" + name + ", labels=" + Arrays.toString(labelNames) + ", timeseries=\n";
         for (Map.Entry<String, PTimeSeries> entry : timeSeries.entrySet()) {
             s += "\t" + entry.getValue().toString() + "\n";
         }
-        return s + "]";
+        return s + "], size=" + timeSeries.size();
     }
 
 }

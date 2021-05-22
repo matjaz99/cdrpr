@@ -99,6 +99,15 @@ $ chown -R elasticsearch:elasticsearch kibana-7.12.1-linux-x86_64
 
 Before running ElasticSearch and Kibana, login as new user!
 
+```
+$ sh start_elastic.sh
+```
+
+This script will run ElasticSearch and Kibana, and create cluster config and ilm policy.
+
+If necessary configure `ES_JAVA_HOME` and `ES_JAVA_OPTS`.
+
+> Remark: For optimal performance Java heap memory should be maximum half of the total VM memory.
 
 
 ## Run xmlViewer

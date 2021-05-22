@@ -15,15 +15,6 @@
 				<measResults>20 1 2 3 4 5 6 7 8 10 1 2 3 4 5 6 </measResults>
 			</measValue>
 			</measInfo>
-			<measInfo measInfoId="AGCF Statistics">
-			<job jobId="AGCF Statistics"/>
-			<granPeriod endTime="2021-03-03T23:15:00+07:00" duration="PT15S"/>
-			<repPeriod duration="PT30S"/>
-			<measTypes>IT.AGCFOrgCallAtt IT.AGCFOrgEstablCall IT.AGCFOrgAnswer IT.AGCFTermCallAtt IT.AGCFTermEstablCall IT.AGCFTermAnswer IT.AGCFCummDurOrgCalls  IT.AGCFCummDurTermCalls </measTypes>
-			<measValue measObjLdn="3">
-				<measResults>100 833 830 130 899 859 2000 1800 </measResults>
-			</measValue>
-			</measInfo>
 	</measData>
 	<fileFooter>
 	<measCollec endTime="2021-03-03T23:15:00+07:00"/>
