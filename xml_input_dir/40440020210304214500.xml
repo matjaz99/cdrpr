@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <measCollecFile xmlns="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec">
 	<fileHeader fileFormatVersion="1.0" vendorName="Iskratel" dnPrefix="">
-		<fileSender elementType="AGCF" localDn="560062"/>
+		<fileSender elementType="MGCF" localDn="404400"/>
 		<measCollec beginTime="2021-03-04T08:30:00+07:00"/>
 	</fileHeader>
 	<measData>
@@ -15,7 +15,7 @@
 				<measResults>19 4 3 7 1 7 4 9 1 0 4 5 2 8 2 7 </measResults>
 			</measValue>
 			</measInfo>
-			<measInfo measInfoId="AGCF Statistics">
+			<measInfo measInfoId="MGCF Statistics">
 			<job jobId="AGCF Statistics"/>
 			<granPeriod endTime="2021-03-04T08:45:00+07:00" duration="PT15S"/>
 			<repPeriod duration="PT30S"/>

@@ -4,8 +4,8 @@ ES_HOST=localhost
 ES_URL=http://$ES_HOST:9200
 echo URL: $ES_URL
 
-ES_JAVA_HOME=$JAVA_HOME
-ES_JAVA_OPTS="-Xms4g -Xmx4g"
+export ES_JAVA_HOME=$JAVA_HOME
+export ES_JAVA_OPTS="-Xms4g -Xmx4g"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'

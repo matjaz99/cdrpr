@@ -42,8 +42,9 @@ public class MetricsLib {
     public static String[] PROM_INCLUDE_REGISTRY = { "_all" };
     /** Coma-separated list of registries to exclude from export. Exclusion is checked before the inclusion! */
     public static String[] PROM_EXCLUDE_REGISTRY = { "" };
-    /** Number of retries if sending fails */
+    /** Number of retries to send data to storage before dumping to file */
     public static int RETRIES = 3;
+    /** Delay between consecutive retries */
     public static int RETRY_INTERVAL_MILLISECONDS = 1500;
     public static int BULK_SIZE = 50000;
     /** If still failing, then dump metrics to this directory */
@@ -51,7 +52,9 @@ public class MetricsLib {
     /** Dump only if dumping is enabled */
     public static boolean DUMP_TO_FILE_ENABLED = false;
     /** Interval for uploading dumped files */
-    public static int UPLOAD_INTERVAL_SECONDS = 16;
+    public static int UPLOAD_INTERVAL_SECONDS = 25;
+    /* ElasticSearch configuration */
+    /** Schema: http or https */
     public static String ES_DEFAULT_SCHEMA = "http";
     public static String ES_BASIC_USER = "admin";
     public static String ES_BASIC_PASS = "admin";
@@ -282,7 +285,7 @@ public class MetricsLib {
 
         if (MetricsLib.DUMP_TO_FILE_ENABLED && ES_DEFAULT_HOST != null) {
             MetricsLib.fut = new FileClient(new EsClient(ES_DEFAULT_SCHEMA, ES_DEFAULT_HOST, ES_DEFAULT_PORT));
-            MetricsLib.fut.setName("FileClientUploadThread");
+            MetricsLib.fut.setName("FileUploadThread");
             MetricsLib.fut.start();
         }
 

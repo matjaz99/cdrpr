@@ -103,15 +103,13 @@ public class XmlParser {
 
                     }
 
-
-
                 } catch (JAXBException e) {
                     System.out.println("parse(): JAXBException: " + e.getMessage());
                 }
 
                 // move processed file
 
-            }
+            } // END foreach file
 
 
             try {

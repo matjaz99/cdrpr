@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <measCollecFile xmlns="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec">
 	<fileHeader fileFormatVersion="1.0" vendorName="Iskratel" dnPrefix="">
-		<fileSender elementType="AGCF" localDn="560062"/>
+		<fileSender elementType="AGCF" localDn="1048792"/>
 		<measCollec beginTime="2021-02-01T17:45:00+07:00"/>
 	</fileHeader>
 	<measData>
