@@ -32,6 +32,7 @@ public class MetricsLib {
     public static String METRICSLIB_HOSTNAME;
     /** Port for Jetty http server */
     public static int METRICSLIB_PORT = 9099;
+    public static long METRICSLIB_START_TIME_MILLIS = System.currentTimeMillis();
     /** Path prefix in case if running behind proxy */
     public static String PATH_PREFIX = "/";
     /** True if MetricsLib is running in container */
@@ -85,9 +86,17 @@ public class MetricsLib {
 
             resp.getWriter().println("<h1>MetricsLib " + METRICSLIB_API_VERSION + "</h1>");
 
+            resp.getWriter().println("<pre>");
+            resp.getWriter().println("Start Time: " + Utils.getFormatedTimestamp(METRICSLIB_START_TIME_MILLIS));
+            resp.getWriter().println("Up Time: " + Utils.convertToDHMSFormat((int) ((System.currentTimeMillis() - METRICSLIB_START_TIME_MILLIS) / 1000)));
+            resp.getWriter().println("</pre>");
+
+            resp.getWriter().println("<pre>");
             resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/metrics\">/metrics</a>");
             resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/indices\">/indices</a>");
             resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/alarms\">/alarms</a>");
+            resp.getWriter().println("</pre>");
+            resp.getWriter().println("<br/>");
 
             resp.getWriter().println("<h3>Configuration</h3>");
             resp.getWriter().println("<pre>"
@@ -281,7 +290,7 @@ public class MetricsLib {
             //server.join();
         }
 
-        PromExporter.metricslib_up_time.set(System.currentTimeMillis());
+        PromExporter.metricslib_up_time.set(METRICSLIB_START_TIME_MILLIS);
 
         if (MetricsLib.DUMP_TO_FILE_ENABLED && ES_DEFAULT_HOST != null) {
             MetricsLib.fut = new FileClient(new EsClient(ES_DEFAULT_SCHEMA, ES_DEFAULT_HOST, ES_DEFAULT_PORT));
@@ -291,7 +300,7 @@ public class MetricsLib {
 
 
         Thread eht = new Thread(new EsHealthcheckThread());
-        eht.setName("EsHealthcheckThread");
+        eht.setName("EsHealthCheckThread");
         eht.start();
 
     }

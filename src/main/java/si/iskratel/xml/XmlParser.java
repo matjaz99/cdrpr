@@ -1,5 +1,7 @@
 package si.iskratel.xml;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import si.iskratel.metricslib.*;
 import si.iskratel.xml.model.MeasCollecFile;
 
@@ -15,6 +17,12 @@ import java.util.Properties;
 
 public class XmlParser {
 
+    private static Logger logger = LoggerFactory.getLogger(XmlParser.class);
+
+    public static int XML_PARSER_INTERVAL_SECONDS = 60;
+    public static String XML_PARSER_INPUT_DIR = "xml_input_dir";
+    public static String XML_PARSER_OUTPUT_DIR = "xml_processed_dir";
+
     public static PMetric xmlMetric = PMetric.build()
             .setName("pm_xml_metric")
             .setHelp("Xml based metric")
@@ -29,8 +37,12 @@ public class XmlParser {
     public static void main(String[] args) throws Exception {
 
         Properties properties = new Properties();
-        properties.load(new FileInputStream("xml_parser.properties"));
+        properties.load(new FileInputStream("xml_viewer.properties"));
         MetricsLib.init(properties);
+
+        XML_PARSER_INTERVAL_SECONDS = Integer.parseInt((String) properties.getOrDefault("xmlviewer.parser.interval.seconds", "300"));
+        XML_PARSER_INPUT_DIR = (String) properties.getOrDefault("xmlviewer.parser.input.dir", "xml_input_dir");
+        XML_PARSER_OUTPUT_DIR = (String) properties.getOrDefault("xmlviewer.parser.output.dir", "xml_processed_dir");
 
         EsClient es = new EsClient(properties.getProperty("metricslib.elasticsearch.default.schema"),
                 properties.getProperty("metricslib.elasticsearch.default.host"),
@@ -42,7 +54,7 @@ public class XmlParser {
 
         while (true) {
 
-            File dir = new File("xml_input_dir");
+            File dir = new File(XML_PARSER_INPUT_DIR);
 
             File[] files = dir.listFiles(new FileFilter() {
                 @Override
@@ -51,9 +63,13 @@ public class XmlParser {
                 }
             });
 
+            if (files.length == 0) logger.info("No XML files found");
+
             for (File f : files) {
 
-                System.out.println(f.getAbsolutePath());
+                PMetricRegistry.getRegistry("xml_metrics").resetMetrics();
+
+                logger.info("Reading file: " + f.getAbsolutePath());
                 MeasCollecFile mcf;
                 try {
 
@@ -73,7 +89,6 @@ public class XmlParser {
 
                         for (MeasCollecFile.MeasData.MeasInfo mi : md.getMeasInfo()) {
 
-                            PMetricRegistry.getRegistry("xml_metrics").resetMetrics();
                             PMetricRegistry.getRegistry("xml_multivalue_metrics").resetMetrics();
 
                             String measurementType = mi.getMeasInfoId();
@@ -89,14 +104,15 @@ public class XmlParser {
                             vArray = values.toArray(vArray);
                             for (int i = 0; i < mArray.length; i++) {
                                 xmlMetric.setLabelValues(nodeId, elementType, measurementType, statisticGroup, mArray[i]).set(Double.parseDouble(vArray[i]));
+//                                xmlMetric.setTimestamp(date.getTime());
                                 xmlMultiValueMetric.addLabel("nodeId", nodeId)
                                         .addLabel("elementType", elementType)
                                         .addLabel("measurementType", measurementType)
                                         .addLabel("statisticGroup", statisticGroup)
                                         .addValue(mArray[i], Double.parseDouble(vArray[i]));
+//                                xmlMultiValueMetric.setTimestamp(date.getTime());
                             }
 
-                            es.sendBulkPost(xmlMetric);
                             es.sendBulkPost(xmlMultiValueMetric);
 
                         }
@@ -104,16 +120,23 @@ public class XmlParser {
                     }
 
                 } catch (JAXBException e) {
-                    System.out.println("parse(): JAXBException: " + e.getMessage());
+                    logger.error("parse(): JAXBException: " + e.getMessage());
                 }
 
+                es.sendBulkPost(xmlMetric);
+
                 // move processed file
+                String absPath = f.getAbsolutePath();
+                System.out.println("Current location: " + absPath);
+                absPath = absPath.replace(XML_PARSER_INPUT_DIR, XML_PARSER_OUTPUT_DIR);
+                System.out.println("New location: " + absPath);
+                f.renameTo(new File(absPath));
 
             } // END foreach file
 
 
             try {
-                Thread.sleep(60 * 1000);
+                Thread.sleep(XML_PARSER_INTERVAL_SECONDS * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
