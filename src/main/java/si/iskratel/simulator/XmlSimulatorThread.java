@@ -51,9 +51,11 @@ public class XmlSimulatorThread extends Thread {
                         "" + getRandomInRange(0, 5),
                         "" + getRandomInRange(1, 3)
                 ).set(getRandomInRange(0, 5000));
-                test_mv_metric.addLabel("nodeName", Start.getRandomNodeId())
+                PMultivalueTimeSeries mvts = new PMultivalueTimeSeries();
+                mvts.addLabel("nodeName", Start.getRandomNodeId())
                         .addLabel("elementType", elementTypes[getRandomInRange(0, elementTypes.length - 1)])
                         .addValue(measurements[i], 1.0 * getRandomInRange(0, 5000));
+                test_mv_metric.addMultiValueTimeSeries(mvts);
                 esClient.sendBulkPost(test_mv_metric);
             }
             esClient.sendBulkPost(xml_metric);

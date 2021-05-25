@@ -265,6 +265,9 @@ public class EsClient {
             return false;
         }
 
+        // set timestamp if it is not set already
+        if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
+
         if (MetricsLib.EXPORT_ENABLED) FileClient.exportToCsv(metric);
 
         // cannot proceed if ES is not ready; dump to file if enabled
@@ -284,9 +287,6 @@ public class EsClient {
                 return false;
             }
         }
-
-        // set timestamp if it is not set already
-        if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
         Request request = new Request.Builder()
                 .url(esHost + ES_API_BULK_ENDPOINT)
@@ -316,7 +316,7 @@ public class EsClient {
             logger.error("Exception: ", e);
         }
 
-        // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be usd when metric will be sent
+        // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be used when metric will be sent
         metric.setTimestamp(0);
 
         return success;
@@ -327,6 +327,9 @@ public class EsClient {
 
         boolean success = false;
         retryCount = 0;
+
+        // set timestamp if it is not set already
+        if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
 
         // cannot proceed if ES is not ready; dump to file if enabled
         if (!ES_IS_READY) {
@@ -346,9 +349,6 @@ public class EsClient {
             }
         }
 
-        // set timestamp if it is not set already
-        if (metric.getTimestamp() == 0) metric.setTimestamp(System.currentTimeMillis());
-
         Request request = new Request.Builder()
                 .url(esHost + ES_API_BULK_ENDPOINT)
                 .addHeader("User-Agent", "MetricsLib/" + MetricsLib.METRICSLIB_API_VERSION)
@@ -358,7 +358,7 @@ public class EsClient {
 
         try {
 
-            logger.info("EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + "1]");
+            logger.info("EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + metric.getMultivalueMetrics().size());
 
             while (retryCount <= MetricsLib.RETRIES) {
                 success = executeHttpRequest(request).success;
@@ -377,7 +377,7 @@ public class EsClient {
             logger.error("Exception: ", e);
         }
 
-        // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be usd when metric will be sent
+        // reset timestamp to 0. If needed set it again with setTimestamp method, or current timestamp will be used when metric will be sent
         metric.setTimestamp(0);
 
         return success;

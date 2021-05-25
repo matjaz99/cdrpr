@@ -28,17 +28,21 @@ public class PMetricFormatter {
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append("{\"index\":{\"_index\":\"").append(metric.getParentRegistry()).append("\"}}\n");
-        sb.append("{");
-        sb.append("\"metric_name\":\"").append(metric.getName()).append("\",");
-        for (String key : metric.getLabelsMap().keySet()) {
-            sb.append("\"").append(key).append("\":\"").append(metric.getLabelsMap().get(key)).append("\",");
+        for (PMultivalueTimeSeries mvts : metric.getMultivalueMetrics()) {
+
+            sb.append("{\"index\":{\"_index\":\"").append(metric.getParentRegistry()).append("\"}}\n");
+            sb.append("{");
+            sb.append("\"metric_name\":\"").append(metric.getName()).append("\",");
+            for (String key : mvts.getLabelsMap().keySet()) {
+                sb.append("\"").append(key).append("\":\"").append(mvts.getLabelsMap().get(key)).append("\",");
+            }
+            for (String key : mvts.getValuesMap().keySet()) {
+                sb.append("\"").append(key).append("\":").append(mvts.getValuesMap().get(key)).append(",");
+            }
+            sb.append("\"@timestamp\":").append(metric.getTimestamp());
+            sb.append("}\n");
+
         }
-        for (String key : metric.getValuesMap().keySet()) {
-            sb.append("\"").append(key).append("\":").append(metric.getValuesMap().get(key)).append(",");
-        }
-        sb.append("\"@timestamp\":").append(metric.getTimestamp());
-        sb.append("}\n");
 
         return sb.toString();
     }

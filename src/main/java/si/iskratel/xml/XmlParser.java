@@ -31,7 +31,7 @@ public class XmlParser {
 
     public static PMultiValueMetric xmlMultiValueMetric = PMultiValueMetric.build()
             .setName("pm_xml_multivalue_metric")
-            .setHelp("Xml based metric")
+            .setHelp("Xml based multivalue metric")
             .register("xml_multivalue_metrics");
 
     public static void main(String[] args) throws Exception {
@@ -63,11 +63,12 @@ public class XmlParser {
                 }
             });
 
-            if (files.length == 0) logger.info("No XML files found");
+            if (files.length == 0) logger.info("No XML files found in " + XML_PARSER_INPUT_DIR);
 
             for (File f : files) {
 
                 PMetricRegistry.getRegistry("xml_metrics").resetMetrics();
+                PMetricRegistry.getRegistry("xml_multivalue_metrics").resetMetrics();
 
                 logger.info("Reading file: " + f.getAbsolutePath());
                 MeasCollecFile mcf;
@@ -89,8 +90,6 @@ public class XmlParser {
 
                         for (MeasCollecFile.MeasData.MeasInfo mi : md.getMeasInfo()) {
 
-                            PMetricRegistry.getRegistry("xml_multivalue_metrics").resetMetrics();
-
                             String measurementType = mi.getMeasInfoId();
                             Date date = mi.getGranPeriod().getEndTime().toGregorianCalendar().getTime();
 
@@ -102,18 +101,21 @@ public class XmlParser {
                             List<String> values = mi.getMeasValue().get(0).getMeasResults(); // measurement values
                             String[] vArray = new String[values.size()];
                             vArray = values.toArray(vArray);
+
+                            PMultivalueTimeSeries mvts = new PMultivalueTimeSeries();
+
                             for (int i = 0; i < mArray.length; i++) {
                                 xmlMetric.setLabelValues(nodeId, elementType, measurementType, statisticGroup, mArray[i]).set(Double.parseDouble(vArray[i]));
-//                                xmlMetric.setTimestamp(date.getTime());
-                                xmlMultiValueMetric.addLabel("nodeId", nodeId)
+                                xmlMetric.setTimestamp(date.getTime());
+                                mvts.addLabel("nodeId", nodeId)
                                         .addLabel("elementType", elementType)
                                         .addLabel("measurementType", measurementType)
                                         .addLabel("statisticGroup", statisticGroup)
                                         .addValue(mArray[i], Double.parseDouble(vArray[i]));
-//                                xmlMultiValueMetric.setTimestamp(date.getTime());
                             }
 
-                            es.sendBulkPost(xmlMultiValueMetric);
+                            xmlMultiValueMetric.addMultiValueTimeSeries(mvts);
+                            xmlMultiValueMetric.setTimestamp(date.getTime());
 
                         }
 
@@ -123,13 +125,15 @@ public class XmlParser {
                     logger.error("parse(): JAXBException: " + e.getMessage());
                 }
 
+//                System.out.println(xmlMultiValueMetric.toString());
+//                System.out.println(xmlMultiValueMetric.toStringDetail());
                 es.sendBulkPost(xmlMetric);
+                es.sendBulkPost(xmlMultiValueMetric);
 
                 // move processed file
                 String absPath = f.getAbsolutePath();
-                System.out.println("Current location: " + absPath);
                 absPath = absPath.replace(XML_PARSER_INPUT_DIR, XML_PARSER_OUTPUT_DIR);
-                System.out.println("New location: " + absPath);
+                logger.info("Moving file to new location: " + absPath);
                 f.renameTo(new File(absPath));
 
             } // END foreach file

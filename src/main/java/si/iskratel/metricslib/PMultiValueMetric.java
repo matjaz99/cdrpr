@@ -1,8 +1,6 @@
 package si.iskratel.metricslib;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PMultiValueMetric {
 
@@ -10,16 +8,16 @@ public class PMultiValueMetric {
     The idea is to have two types of metrics:
     1. single value metric - multiple labels (string) and only one value (double)
        eg. total_calls{node=node1,cause=answered} 1234
-    2. multi value metric - only one label (string) and multiple values (double)
+    2. multi value metric - multiple labels (string) and multiple values (double)
        In PG each row represents value for column name
-       eg. total_calls{node=node1} answered=523, busy=134, noreply=32
+       eg. total_calls{node=node1,trunkGroup=tg1} answered=523, busy=134, noreply=32
      */
 
     private long timestamp = 0;
     private String name;
     private String help;
-    private Map<String, String> labelsMap = new HashMap<>();
-    private Map<String, Double> valuesMap = new HashMap<>();
+    // list of all multivalue series (labls+values)
+    private List<PMultivalueTimeSeries> multivalueMetrics = new ArrayList<>();
     private String parentRegistry;
 
     public static PMultiValueMetric build() {
@@ -58,24 +56,12 @@ public class PMultiValueMetric {
         return parentRegistry;
     }
 
-    public PMultiValueMetric addLabel(String key, String value) {
-        if (labelsMap == null) labelsMap = new HashMap<>();
-        labelsMap.put(key, value);
-        return this;
+    public void addMultiValueTimeSeries(PMultivalueTimeSeries m) {
+        multivalueMetrics.add(m);
     }
 
-    public PMultiValueMetric addValue(String key, double value) {
-        if (valuesMap == null) valuesMap = new HashMap<>();
-        valuesMap.put(key, value);
-        return this;
-    }
-
-    public Map<String, String> getLabelsMap() {
-        return labelsMap;
-    }
-
-    public Map<String, Double> getValuesMap() {
-        return valuesMap;
+    public List<PMultivalueTimeSeries> getMultivalueMetrics() {
+        return multivalueMetrics;
     }
 
     public PMultiValueMetric register(String registryName) {
@@ -85,24 +71,27 @@ public class PMultiValueMetric {
     }
 
     public void clear() {
-        labelsMap.clear();
-        valuesMap.clear();
+//        labelsMap.clear();
+//        valuesMap.clear();
+        multivalueMetrics.clear();
     }
 
     @Override
     public String toString() {
-        String lbls = "";
-        for (String s : labelsMap.keySet()) {
-            lbls += s + ", ";
+        String s = "";
+        for (PMultivalueTimeSeries mvts : multivalueMetrics) {
+            s += "metric_name=" + name + ", help=" + help + ", " + mvts.toString() + "\n";
         }
-        return "metric_name=" + name + ", help=" + help + ", labels=[" + lbls.substring(0, lbls.length() - 2) + "]";
+        return s;
     }
 
     public String toStringDetail() {
-        String s = "PMultiValueMetric[" + "timestamp=" + timestamp + ", metric_name=" + name + ", data=\n";
-        s += "\tlabels=" + labelsMap + "\n";
-        s += "\tvalues=" + valuesMap + "\n";
-        return s + "], size=" + (labelsMap.size() + valuesMap.size());
+        String s = "PMultiValueMetric[" + "timestamp=" + timestamp + ", metric_name=" + name + ", ";
+        String s1 = "";
+        for (PMultivalueTimeSeries mvts : multivalueMetrics) {
+            s1 += mvts.toStringDetail() + "\n";
+        }
+        return s + s1 + "], size=" + multivalueMetrics.size();
     }
 
 }

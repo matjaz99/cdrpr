@@ -184,6 +184,9 @@ public class MetricsLib {
                 for (PMetric m : reg.getMetricsList()) {
                     PromExporter.metricslib_metrics_total.labels(reg.getName(), m.getName()).set(m.getTimeSeriesSize());
                 }
+                for (PMultiValueMetric m : reg.getMultiValueMetricsList()) {
+                    PromExporter.metricslib_metrics_total.labels(reg.getName(), m.getName()).set(1);
+                }
                 if (PROM_METRICS_EXPORT_ENABLE) {
                     if (isPrometheusExportRegistryAllowed(reg.getName())) reg.collectPrometheusMetrics(reg.getName());
                 }
