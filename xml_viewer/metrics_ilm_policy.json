@@ -6,7 +6,7 @@
           "rollover" : {
             "max_size" : "20gb",
             "max_docs" : 100000000,
-            "max_age":"24h"
+            "max_age" : "7d"
           },
           "set_priority": {
             "priority": 50
@@ -14,7 +14,7 @@
         }
       },
       "warm" : {
-        "min_age" : "48h",
+        "min_age" : "30d",
         "actions" : {
           "readonly" : { },
           "allocate" : {
@@ -32,7 +32,7 @@
         }
       },
       "cold" : {
-        "min_age" : "7d",
+        "min_age" : "150d",
         "actions" : {
           "allocate" : {
             "number_of_replicas" : 0
@@ -44,7 +44,7 @@
         }
       },
       "delete" : {
-        "min_age" : "30d",
+        "min_age" : "365d",
         "actions" : {
           "delete" : { }
         }

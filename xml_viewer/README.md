@@ -113,6 +113,12 @@ If necessary configure `ES_JAVA_HOME` and `ES_JAVA_OPTS`.
 ## Run xmlViewer
 
 
+## TODO
+
+Run as service
+Installation package
+
+
 ## Read
 
 https://www.elastic.co/blog/elasticsearch-as-a-time-series-data-store

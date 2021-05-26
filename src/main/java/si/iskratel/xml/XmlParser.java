@@ -22,6 +22,7 @@ public class XmlParser {
     public static int XML_PARSER_INTERVAL_SECONDS = 60;
     public static String XML_PARSER_INPUT_DIR = "xml_input_dir";
     public static String XML_PARSER_OUTPUT_DIR = "xml_processed_dir";
+    public static int XML_FILES_RETENTION_HOURS = 168;
 
     public static PMetric xmlMetric = PMetric.build()
             .setName("pm_xml_metric")
@@ -46,14 +47,15 @@ public class XmlParser {
         XML_PARSER_INTERVAL_SECONDS = Integer.parseInt((String) properties.getOrDefault("xmlviewer.parser.interval.seconds", "300"));
         XML_PARSER_INPUT_DIR = (String) properties.getOrDefault("xmlviewer.parser.input.dir", "xml_input_dir");
         XML_PARSER_OUTPUT_DIR = (String) properties.getOrDefault("xmlviewer.parser.output.dir", "xml_processed_dir");
+        XML_FILES_RETENTION_HOURS = Integer.parseInt((String) properties.getOrDefault("xmlviewer.file.retention.hours", "168"));
 
         EsClient es = new EsClient(properties.getProperty("metricslib.elasticsearch.default.schema"),
                 properties.getProperty("metricslib.elasticsearch.default.host"),
                 Integer.parseInt(properties.getProperty("metricslib.elasticsearch.default.port")));
 
-//        FileCleaner fl = new FileCleaner();
-//        Thread t = new Thread(fl);
-//        t.start();
+        FileCleaner fc = new FileCleaner();
+        Thread t = new Thread(fc);
+        t.start();
 
         while (true) {
 
