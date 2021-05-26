@@ -1,6 +1,8 @@
 package si.iskratel.metricslib;
 
 import io.prometheus.client.Gauge;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -10,6 +12,8 @@ import java.util.*;
  * Special case is "default" registry, which is always automatically created at startup.
  */
 public class PMetricRegistry {
+
+    private static Logger logger = LoggerFactory.getLogger(PMetricRegistry.class);
 
     private static Map<String, PMetricRegistry> registriesMap = new HashMap<>();
 
@@ -40,7 +44,7 @@ public class PMetricRegistry {
         PMetricRegistry r = registriesMap.getOrDefault(registryName, new PMetricRegistry(registryName));
         r.metricsMap.put(metric.getName(), metric);
         registriesMap.put(registryName, r);
-        System.out.println("INFO:  PMetricRegistry: new metric " + metric.getName() + " registered in: " + registryName);
+        logger.info("PMetricRegistry: new metric " + metric.getName() + " registered in: " + registryName);
     }
 
     public static List<PMetricRegistry> getRegistries() {
@@ -82,7 +86,7 @@ public class PMetricRegistry {
         PMetricRegistry r = registriesMap.get(registryName);
         for (PMetric m : r.metricsMap.values()) {
             if (m.getTimeSeriesSize() == 0) {
-                System.out.println("WARN:  PMetricRegistry: Metric " + m.getName() + " cannot be scraped, it contains no time-series points.");
+                logger.warn("PMetricRegistry: Metric " + m.getName() + " cannot be scraped, it contains no time-series points.");
                 continue;
             }
             Gauge g = promMetricsMap.get(m.getName());
@@ -98,8 +102,8 @@ public class PMetricRegistry {
 
         System.out.println("Metrics map size: " + registriesMap.get("default").metricsMap.size());
         for (Map.Entry<String, PMetric> entry : registriesMap.get("default").metricsMap.entrySet()) {
-            System.out.println("TimeSeries size: " + entry.getValue().getTimeSeriesSize());
-            System.out.println(entry.getValue().toString());
+            logger.info("TimeSeries size: " + entry.getValue().getTimeSeriesSize());
+            logger.info(entry.getValue().toString());
         }
 
     }
@@ -140,7 +144,7 @@ public class PMetricRegistry {
         PMetricRegistry r = registriesMap.getOrDefault(registryName, new PMetricRegistry(registryName));
         r.multiValueMetricsMap.put(metric.getName(), metric);
         registriesMap.put(registryName, r);
-        System.out.println("INFO:  PMetricRegistry: new multi_value_metric " + metric.getName() + " registered in: " + registryName);
+        logger.info("PMetricRegistry: new multi_value_metric " + metric.getName() + " registered in: " + registryName);
     }
 
 

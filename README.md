@@ -70,3 +70,70 @@ Total size: 67.47001953124995 GB
 Total documents: 2257371568  
 Total size: 105.73261718749987 GB
 
+
+
+
+26-05-2021 10:05:33.699 [main] INFO  si.iskratel.metricslib.EsClient.sendBulkPost - EsClient[2]: sending metric: pm_xml_metric [size=1062]
+26-05-2021 10:05:33.699 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: >>> POST /_bulk
+26-05-2021 10:05:34.481 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: <<< 200 - [took 781ms]
+26-05-2021 10:05:34.484 [main] INFO  si.iskratel.metricslib.EsClient.sendBulkPost - EsClient[2]: sending metric: pm_xml_multivalue_metric [size=162
+26-05-2021 10:05:34.484 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: >>> POST /_bulk
+26-05-2021 10:05:34.682 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: <<< 200 - [took 198ms]
+26-05-2021 10:05:34.683 [main] INFO  si.iskratel.xml.XmlParser.main - Moving file to new location: /var/lib/Elastic/xml_processed_dir/56010020210322040000.xml
+26-05-2021 10:05:34.683 [main] INFO  si.iskratel.xml.XmlParser.main - Reading file: /var/lib/Elastic/xml_input_dir/56010020210309110000.xml
+26-05-2021 10:05:34.706 [main] INFO  si.iskratel.metricslib.EsClient.sendBulkPost - EsClient[2]: sending metric: pm_xml_metric [size=1062]
+26-05-2021 10:05:34.706 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: >>> POST /_bulk
+26-05-2021 10:05:34.712 [qtp1381713434-13] WARN  org.eclipse.jetty.server.HttpChannel.handleException - /metrics
+java.util.ConcurrentModificationException: null
+        at java.util.HashMap$HashIterator.nextNode(HashMap.java:1437) ~[na:1.8.0_131]
+        at java.util.HashMap$ValueIterator.next(HashMap.java:1466) ~[na:1.8.0_131]
+        at java.util.AbstractCollection.toArray(AbstractCollection.java:141) ~[na:1.8.0_131]
+        at java.util.ArrayList.<init>(ArrayList.java:177) ~[na:1.8.0_131]
+        at si.iskratel.metricslib.PMetric.getTimeSeries(PMetric.java:117) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at si.iskratel.metricslib.PMetricRegistry.collectPrometheusMetrics(PMetricRegistry.java:90) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at si.iskratel.metricslib.MetricsLib$MetricsServletExtended.doGet(MetricsLib.java:191) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:687) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:790) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:841) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:543) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:188) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1253) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:168) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:481) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:166) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1155) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.Server.handle(Server.java:564) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:317) ~[cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:251) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:279) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:110) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:124) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.util.thread.Invocable.invokePreferred(Invocable.java:128) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.util.thread.Invocable$InvocableExecutor.invoke(Invocable.java:222) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:294) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:199) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:672) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:590) [cdrpr-2.0-jar-with-dependencies.jar:na]
+        at java.lang.Thread.run(Thread.java:748) [na:1.8.0_131]
+26-05-2021 10:05:35.105 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: <<< 200 - [took 398ms]
+26-05-2021 10:05:35.109 [main] INFO  si.iskratel.metricslib.EsClient.sendBulkPost - EsClient[2]: sending metric: pm_xml_multivalue_metric [size=162
+26-05-2021 10:05:35.109 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: >>> POST /_bulk
+26-05-2021 10:05:35.161 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: <<< 200 - [took 52ms]
+26-05-2021 10:05:35.162 [main] INFO  si.iskratel.xml.XmlParser.main - Moving file to new location: /var/lib/Elastic/xml_processed_dir/56010020210309110000.xml
+26-05-2021 10:05:35.162 [main] INFO  si.iskratel.xml.XmlParser.main - Reading file: /var/lib/Elastic/xml_input_dir/56010020210314060000.xml
+26-05-2021 10:05:35.174 [main] INFO  si.iskratel.metricslib.EsClient.sendBulkPost - EsClient[2]: sending metric: pm_xml_metric [size=1062]
+26-05-2021 10:05:35.174 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: >>> POST /_bulk
+26-05-2021 10:05:35.282 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: <<< 200 - [took 107ms]
+26-05-2021 10:05:35.285 [main] INFO  si.iskratel.metricslib.EsClient.sendBulkPost - EsClient[2]: sending metric: pm_xml_multivalue_metric [size=162
+26-05-2021 10:05:35.285 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: >>> POST /_bulk
+26-05-2021 10:05:35.323 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: <<< 200 - [took 37ms]
+26-05-2021 10:05:35.324 [main] INFO  si.iskratel.xml.XmlParser.main - Moving file to new location: /var/lib/Elastic/xml_processed_dir/56010020210314060000.xml
+26-05-2021 10:05:35.324 [main] INFO  si.iskratel.xml.XmlParser.main - Reading file: /var/lib/Elastic/xml_input_dir/56010020210313190000.xml
+26-05-2021 10:05:35.335 [main] INFO  si.iskratel.metricslib.EsClient.sendBulkPost - EsClient[2]: sending metric: pm_xml_metric [size=1062]
+26-05-2021 10:05:35.335 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: >>> POST /_bulk
+26-05-2021 10:05:35.852 [main] INFO  si.iskratel.metricslib.EsClient.executeHttpRequest - EsClient[2]: <<< 200 - [took 516ms]
+26-05-2021 10:05:35.855 [main] INFO  si.iskratel.metricslib.EsClient.sendBulkPost - EsClient[2]: sending metric: pm_xml_multivalue_metric [size=162
+
+

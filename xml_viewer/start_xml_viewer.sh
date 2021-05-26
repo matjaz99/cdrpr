@@ -5,5 +5,5 @@ mkdir -p xml_processed_dir
 mkdir -p dump
 mkdir -p log
 
-java -jar -Dlogback.configurationFile=logback.xml cdrpr-2.0-jar-with-dependencies.jar
+java -jar -Dlogback.configurationFile=logback.xml -DxmlViewer.configurationFile=xml_viewer.properties cdrpr-2.0-jar-with-dependencies.jar
 

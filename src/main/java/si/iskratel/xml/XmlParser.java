@@ -36,8 +36,11 @@ public class XmlParser {
 
     public static void main(String[] args) throws Exception {
 
+        String xProps = System.getProperty("xmlViewer.configurationFile", "xml_viewer.properties");
+        System.out.println(xProps);
+
         Properties properties = new Properties();
-        properties.load(new FileInputStream("xml_viewer.properties"));
+        properties.load(new FileInputStream(xProps));
         MetricsLib.init(properties);
 
         XML_PARSER_INTERVAL_SECONDS = Integer.parseInt((String) properties.getOrDefault("xmlviewer.parser.interval.seconds", "300"));
@@ -48,7 +51,7 @@ public class XmlParser {
                 properties.getProperty("metricslib.elasticsearch.default.host"),
                 Integer.parseInt(properties.getProperty("metricslib.elasticsearch.default.port")));
 
-//        FileLoader fl = new FileLoader();
+//        FileCleaner fl = new FileCleaner();
 //        Thread t = new Thread(fl);
 //        t.start();
 
