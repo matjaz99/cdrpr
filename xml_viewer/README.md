@@ -110,13 +110,52 @@ If necessary configure `ES_JAVA_HOME` and `ES_JAVA_OPTS`.
 > Remark: For optimal performance Java heap memory should be maximum half of the total VM memory.
 
 
+## Configure xmlViewer
+
+Before starting XML-viewer, some basic configuration must be done. All configuration is stored in a file 
+`xml_viewer.properties`.
+
+Here are most important parameters to configure:
+
+```properties
+metricslib.jetty.port=9099
+metricslib.jetty.pathPrefix=/
+metricslib.client.retry.count=0
+metricslib.client.retry.interval.millis=1500
+metricslib.client.bulk.size=10000
+metricslib.dump.enabled=true
+metricslib.dump.directory=dump/
+metricslib.upload.interval.seconds=25
+metricslib.prometheus.enable=true
+metricslib.prometheus.include.registry=_all
+metricslib.prometheus.exclude.registry=
+metricslib.elasticsearch.default.schema=http
+metricslib.elasticsearch.default.host=localhost
+metricslib.elasticsearch.default.port=9200
+metricslib.elasticsearch.healthcheck.interval.seconds=150
+metricslib.elasticsearch.createIndexOnStart=true
+metricslib.elasticsearch.numberOfShards=1
+metricslib.elasticsearch.numberOfReplicas=0
+metricslib.elasticsearch.ilm.policy.name=metrics_ilm_policy
+xmlviewer.parser.interval.seconds=60
+xmlviewer.parser.input.dir=xml_input_dir
+xmlviewer.parser.output.dir=xml_processed_dir
+xmlviewer.file.retention.hours=168
+```
+
+
+
+
 ## Run xmlViewer
+
+
 
 
 ## TODO
 
 Run as service
 Installation package
+History of processed XMLs
 
 
 ## Read
