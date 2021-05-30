@@ -8,9 +8,7 @@ import si.iskratel.xml.model.MeasCollecFile;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -47,15 +45,18 @@ public class XmlParser {
         XML_PARSER_INTERVAL_SECONDS = Integer.parseInt((String) properties.getOrDefault("xmlviewer.parser.interval.seconds", "300"));
         XML_PARSER_INPUT_DIR = (String) properties.getOrDefault("xmlviewer.parser.input.dir", "xml_input_dir");
         XML_PARSER_OUTPUT_DIR = (String) properties.getOrDefault("xmlviewer.parser.output.dir", "xml_processed_dir");
-        XML_FILES_RETENTION_HOURS = Integer.parseInt((String) properties.getOrDefault("xmlviewer.file.retention.hours", "168"));
+        XML_FILES_RETENTION_HOURS = Integer.parseInt((String) properties.getOrDefault("xmlviewer.file.retention.hours", "0"));
 
         EsClient es = new EsClient(properties.getProperty("metricslib.elasticsearch.default.schema"),
                 properties.getProperty("metricslib.elasticsearch.default.host"),
                 Integer.parseInt(properties.getProperty("metricslib.elasticsearch.default.port")));
 
-        FileCleaner fc = new FileCleaner();
-        Thread t = new Thread(fc);
-        t.start();
+        if (XML_FILES_RETENTION_HOURS > 0) {
+            FileCleaner fc = new FileCleaner();
+            Thread t = new Thread(fc);
+            t.start();
+        }
+
 
         while (true) {
 
@@ -141,6 +142,8 @@ public class XmlParser {
                 logger.info("Moving file to new location: " + absPath);
                 f.renameTo(new File(absPath));
 
+                appendText(f.getName());
+
             } // END foreach file
 
 
@@ -152,4 +155,17 @@ public class XmlParser {
         }
 
     }
+
+    public static void appendText(String line) {
+        boolean append = true;
+        try {
+            FileWriter fw = new FileWriter("processed_history.txt", append);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(line + "\n");
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
