@@ -54,6 +54,7 @@ public class XmlParser {
         if (XML_FILES_RETENTION_HOURS > 0) {
             FileCleaner fc = new FileCleaner();
             Thread t = new Thread(fc);
+            t.setName("FileCleanerThread");
             t.start();
         }
 
