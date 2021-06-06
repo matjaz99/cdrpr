@@ -12,6 +12,7 @@ import java.io.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 public class XmlParser {
 
@@ -113,7 +114,7 @@ public class XmlParser {
 
                             for (int i = 0; i < mArray.length; i++) {
                                 xmlMetric.setLabelValues(nodeId, elementType, measurementType, statisticGroup, mArray[i]).set(Double.parseDouble(vArray[i]));
-                                xmlMetric.setTimestamp(date.getTime());
+//                                xmlMetric.setTimestamp(date.getTime());
                                 mvts.addLabel("nodeId", nodeId)
                                         .addLabel("elementType", elementType)
                                         .addLabel("measurementType", measurementType)
@@ -122,7 +123,7 @@ public class XmlParser {
                             }
 
                             xmlMultiValueMetric.addMultiValueTimeSeries(mvts);
-                            xmlMultiValueMetric.setTimestamp(date.getTime());
+//                            xmlMultiValueMetric.setTimestamp(date.getTime());
 
                         }
 
@@ -138,10 +139,10 @@ public class XmlParser {
                 es.sendBulkPost(xmlMultiValueMetric);
 
                 // move processed file
-                String absPath = f.getAbsolutePath();
-                absPath = absPath.replace(XML_PARSER_INPUT_DIR, XML_PARSER_OUTPUT_DIR);
-                logger.info("Moving file to new location: " + absPath);
-                f.renameTo(new File(absPath));
+//                String absPath = f.getAbsolutePath();
+//                absPath = absPath.replace(XML_PARSER_INPUT_DIR, XML_PARSER_OUTPUT_DIR);
+//                logger.info("Moving file to new location: " + absPath);
+//                f.renameTo(new File(absPath));
 
                 appendText(f.getName());
 
@@ -149,7 +150,8 @@ public class XmlParser {
 
 
             try {
-                Thread.sleep(XML_PARSER_INTERVAL_SECONDS * 1000);
+//                Thread.sleep(XML_PARSER_INTERVAL_SECONDS * 1000);
+                Thread.sleep(new Random().nextInt(XML_PARSER_INTERVAL_SECONDS * 1000));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

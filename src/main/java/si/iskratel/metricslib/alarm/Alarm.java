@@ -1,4 +1,7 @@
-package si.iskratel.metricslib;
+package si.iskratel.metricslib.alarm;
+
+import si.iskratel.metricslib.MetricsLib;
+import si.iskratel.metricslib.util.MD5Checksum;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -8,7 +11,7 @@ public class Alarm {
 
     private String alarmId;
     private String alarmSource;
-    private long timestamp;
+    private long timestamp = 0;
     private String dateTime;
     private int alarmCode = 7774777;
     private String alarmName = "Alarm incident";

@@ -1,4 +1,4 @@
-package si.iskratel.metricslib;
+package si.iskratel.metricslib.test;
 
 public class TestCall {
     public String node;

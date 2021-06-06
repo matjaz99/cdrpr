@@ -1,10 +1,12 @@
-package si.iskratel.metricslib;
+package si.iskratel.metricslib.alarm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import si.iskratel.metricslib.MetricsLib;
+import si.iskratel.metricslib.PromExporter;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,7 +31,14 @@ public class AlarmManager {
                 alarmSeveritiesMap.put(Integer.parseInt(String.valueOf(o)), alarmSeveritiesProperties.getProperty(String.valueOf(o)));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error loading severities.properties: " + e.getMessage());
+            alarmSeveritiesMap.put(0, "Indeterminate");
+            alarmSeveritiesMap.put(1, "Critical");
+            alarmSeveritiesMap.put(2, "Major");
+            alarmSeveritiesMap.put(3, "Minor");
+            alarmSeveritiesMap.put(4, "Warning");
+            alarmSeveritiesMap.put(5, "Clear");
+            alarmSeveritiesMap.put(6, "Informational");
         }
     }
 
@@ -45,11 +54,9 @@ public class AlarmManager {
         }
         String body = toJsonString(alarm);
         push(body, (alarm.getSeverity() == 5 ? "CLEAR" : "ALARM"));
-        alarm.setTimestamp(0);
     }
 
     public static synchronized void clearAlarm(Alarm alarm) {
-        alarm.setTimestamp(0);
         Alarm a = activeAlarmsList.remove(alarm.getAlarmId());
         if (a != null) {
             int sev = a.getSeverity();
@@ -60,6 +67,7 @@ public class AlarmManager {
             a.setSeverity(sev);
             a.setTimestamp(0);
         }
+        alarm.setTimestamp(0);
     }
 
     private static void push(String body, String severity) {

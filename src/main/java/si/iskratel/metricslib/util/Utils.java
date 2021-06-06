@@ -1,4 +1,4 @@
-package si.iskratel.metricslib;
+package si.iskratel.metricslib.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

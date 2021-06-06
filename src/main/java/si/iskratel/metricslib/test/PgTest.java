@@ -1,4 +1,4 @@
-package si.iskratel.metricslib;
+package si.iskratel.metricslib.test;
 
 import java.sql.*;
 import java.util.Arrays;

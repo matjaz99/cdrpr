@@ -1,4 +1,8 @@
-package si.iskratel.metricslib;
+package si.iskratel.metricslib.test;
+
+import si.iskratel.metricslib.EsClient;
+import si.iskratel.metricslib.MetricsLib;
+import si.iskratel.metricslib.PMetric;
 
 import java.util.Random;
 

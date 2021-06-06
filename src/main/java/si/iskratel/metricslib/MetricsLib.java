@@ -8,7 +8,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import si.iskratel.metricslib.servlets.RegistryDetailsServlet;
+import si.iskratel.metricslib.servlets.*;
 
 import javax.net.ssl.*;
 import javax.servlet.ServletException;
@@ -20,18 +20,18 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.stream.Stream;
 
 public class MetricsLib {
 
-    /** Just a version */
+    /** MetricsLib API version */
     public static String METRICSLIB_API_VERSION = "v1";
     /** Hostname where MetricsLib is running */
     public static String METRICSLIB_HOSTNAME;
     /** Port for Jetty http server */
     public static int METRICSLIB_PORT = 9099;
+    /** Timestamp when MetricsLib was initialized */
     public static long METRICSLIB_START_TIME_MILLIS = System.currentTimeMillis();
     /** Path prefix in case if running behind proxy */
     public static String PATH_PREFIX = "/";
@@ -64,9 +64,13 @@ public class MetricsLib {
     public static int ES_HEALTHCHECK_INTERVAL = 3000;
     /** Choose whether or not you want index to be automatically created and how */
     public static boolean ES_AUTO_CREATE_INDEX = true;
+    /** Number of shards. Used when creating index template. */
     public static int ES_NUMBER_OF_SHARDS = 1;
+    /** Number of replicas. Used when creating index template. */
     public static int ES_NUMBER_OF_REPLICAS = 0;
+    /** The name of ILM policy. Used when creating index template. */
     public static String ES_ILM_POLICY_NAME = "pmon_ilm_policy";
+    /** Alarm endpoint where alarms are pushed */
     public static String ALARM_DESTINATION = "http://localhost:9097/webhook";
     public static boolean EXPORT_ENABLED = false;
     public static String EXPORT_DIRECTORY = "export/";
@@ -78,135 +82,6 @@ public class MetricsLib {
 
     private MetricsLib() { }
 
-    static class HelloServlet extends HttpServlet {
-
-        @Override
-        protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
-            PromExporter.metricslib_servlet_requests_total.labels("/hello").inc();
-
-            resp.getWriter().println("<h1>MetricsLib " + METRICSLIB_API_VERSION + "</h1>");
-
-            resp.getWriter().println("<pre>");
-            resp.getWriter().println("Start Time: " + Utils.getFormatedTimestamp(METRICSLIB_START_TIME_MILLIS));
-            resp.getWriter().println("Up Time: " + Utils.convertToDHMSFormat((int) ((System.currentTimeMillis() - METRICSLIB_START_TIME_MILLIS) / 1000)));
-            resp.getWriter().println("</pre>");
-
-            resp.getWriter().println("<pre>");
-            resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/metrics\">/metrics</a>");
-            resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/indices\">/indices</a>");
-            resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":" + METRICSLIB_PORT + "/alarms\">/alarms</a>");
-            resp.getWriter().println("</pre>");
-            resp.getWriter().println("<br/>");
-
-            resp.getWriter().println("<h3>Configuration</h3>");
-            resp.getWriter().println("<pre>"
-                    + "metricslib.hostname=" + METRICSLIB_HOSTNAME + "\n"
-                    + "metricslib.port=" + METRICSLIB_PORT + "\n"
-                    + "metricslib.isContainerized=" + METRICSLIB_IS_CONTAINERIZED + "\n"
-                    + "metricslib.pathPrefix=" + PATH_PREFIX + "\n"
-                    + "metricslib.prometheus.enable=" + PROM_METRICS_EXPORT_ENABLE + "\n"
-                    + "metricslib.prometheus.include.registry=" + Arrays.toString(PROM_INCLUDE_REGISTRY) + "\n"
-                    + "metricslib.prometheus.exclude.registry=" + Arrays.toString(PROM_EXCLUDE_REGISTRY) + "\n"
-                    + "metricslib.client.retry=" + RETRIES + "\n"
-                    + "metricslib.client.retry.interval.millis=" + RETRY_INTERVAL_MILLISECONDS + "\n"
-                    + "metricslib.client.bulk.size=" + BULK_SIZE + "\n"
-                    + "metricslib.client.dump.enabled=" + DUMP_TO_FILE_ENABLED + "\n"
-                    + "metricslib.client.dump.directory=" + DUMP_DIRECTORY + "\n"
-                    + "metricslib.upload.interval.seconds=" + UPLOAD_INTERVAL_SECONDS + "\n"
-                    + "metricslib.elasticsearch.default.host=" + ES_DEFAULT_HOST + "\n"
-                    + "metricslib.elasticsearch.default.port=" + ES_DEFAULT_PORT + "\n"
-                    + "metricslib.elasticsearch.createIndexOnStart=" + ES_AUTO_CREATE_INDEX + "\n"
-                    + "metricslib.elasticsearch.numberOfShards=" + ES_NUMBER_OF_SHARDS + "\n"
-                    + "metricslib.elasticsearch.numberOfReplicas=" + ES_NUMBER_OF_REPLICAS + "\n"
-                    + "metricslib.elasticsearch.ilm.policy.name=" + ES_ILM_POLICY_NAME + "\n"
-                    + "metricslib.elasticsearch.healthcheck.interval.seconds=" + ES_HEALTHCHECK_INTERVAL + "\n"
-                    + "metricslib.alarm.destination=" + ALARM_DESTINATION + "\n"
-                    + "</pre>");
-
-            resp.getWriter().println("<h3>Registries</h3>");
-            resp.getWriter().println("<pre>");
-            for (PMetricRegistry r : PMetricRegistry.getRegistries()) {
-                resp.getWriter().println("<a href=\"http://" + METRICSLIB_HOSTNAME + ":"
-                        + METRICSLIB_PORT + "/registry?name=" + r.getName() + "\">"
-                        + r.getName() + "</a>");
-            }
-            resp.getWriter().println("</pre>");
-
-            resp.getWriter().println("<h3>Metrics</h3>");
-            resp.getWriter().println("<pre>" + PMetricRegistry.describeMetrics() + "</pre>");
-
-        }
-    }
-
-    static class IndicesServlet extends HttpServlet {
-
-        @Override
-        protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
-
-            PromExporter.metricslib_servlet_requests_total.labels("/indices").inc();
-
-            EsClient e = new EsClient(ES_DEFAULT_SCHEMA, ES_DEFAULT_HOST, ES_DEFAULT_PORT);
-            String s = e.sendGet(EsClient.ES_API_GET_INDICES_VERBOSE).responseText;
-
-            resp.getWriter().println("<h1>Elasticsearch indices</h1>");
-            resp.getWriter().println("<h3>" + ES_DEFAULT_HOST + ":" + ES_DEFAULT_PORT + "</h3>");
-            resp.getWriter().println("<pre>" + s + "</pre>");
-
-            long docCount = 0;
-            double docSize = 0.0;
-            String[] lines = s.split("\n");
-            for (int i = 1; i < lines.length; i++) {
-                String[] cols = lines[i].split("\\s+");
-                docCount += Long.parseLong(cols[6].trim());
-                if (cols[8].trim().endsWith("mb")) {
-                    docSize += Double.parseDouble(cols[8].trim().replace("mb", "")) / 1024;
-                }
-                if (cols[8].trim().endsWith("gb")) {
-                    docSize += Double.parseDouble(cols[8].trim().replace("gb", ""));
-                }
-            }
-
-            resp.getWriter().println("<pre>-----------------------------------------------------------------------------------------------------------------------------------------------------------</pre>");
-            resp.getWriter().println("<pre>Total documents: " + docCount + "</pre>");
-            resp.getWriter().println("<pre>Total size: " + docSize + " GB</pre>");
-
-        }
-    }
-
-    static class MetricsServletExtended extends MetricsServlet {
-
-        @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-            PromExporter.metricslib_servlet_requests_total.labels("/metrics").inc();
-
-            for (PMetricRegistry reg : PMetricRegistry.getRegistries()) {
-                for (PMetric m : reg.getMetricsList()) {
-                    PromExporter.metricslib_metrics_total.labels(reg.getName(), m.getName()).set(m.getTimeSeriesSize());
-                }
-                for (PMultiValueMetric m : reg.getMultiValueMetricsList()) {
-                    PromExporter.metricslib_metrics_total.labels(reg.getName(), m.getName()).set(1);
-                }
-                if (PROM_METRICS_EXPORT_ENABLE) {
-                    if (isPrometheusExportRegistryAllowed(reg.getName())) reg.collectPrometheusMetrics(reg.getName());
-                }
-            }
-            super.doGet(req, resp);
-        }
-    }
-
-    static class AlarmsServlet extends MetricsServlet {
-
-        @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-            PromExporter.metricslib_servlet_requests_total.labels("/alarms").inc();
-
-            String json = AlarmManager.toJsonStringAllAlarms();
-            resp.getWriter().println(json);
-
-        }
-    }
 
     public static void init() throws Exception {
         init(METRICSLIB_PORT);
@@ -308,28 +183,7 @@ public class MetricsLib {
 
     }
 
-    private static boolean isPrometheusExportRegistryAllowed(String registry) {
 
-        for (int i = 0; i < PROM_EXCLUDE_REGISTRY.length; i++) {
-            if (PROM_EXCLUDE_REGISTRY[i].equals("_all")) return false;
-            if (PROM_EXCLUDE_REGISTRY[i].equals(registry)) return false;
-            if (PROM_EXCLUDE_REGISTRY[i].contains("*")) {
-                String[] arr = PROM_EXCLUDE_REGISTRY[i].split("\\*");
-                if (registry.startsWith(arr[0])) return false;
-            }
-        }
-
-        for (int i = 0; i < PROM_INCLUDE_REGISTRY.length; i++) {
-            if (PROM_INCLUDE_REGISTRY[i].equals("_all")) return true;
-            if (PROM_INCLUDE_REGISTRY[i].equals(registry)) return true;
-            if (PROM_INCLUDE_REGISTRY[i].contains("*")) {
-                String[] arr = PROM_INCLUDE_REGISTRY[i].split("\\*");
-                if (registry.startsWith(arr[0])) return true;
-            }
-        }
-        return false;
-
-    }
 
     public static OkHttpClient instantiateHttpClient() {
 

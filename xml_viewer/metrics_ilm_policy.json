@@ -37,7 +37,6 @@
           "allocate" : {
             "number_of_replicas" : 0
           },
-          "freeze" : { },
           "set_priority": {
             "priority": 0
           }

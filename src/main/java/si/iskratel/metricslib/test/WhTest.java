@@ -1,4 +1,4 @@
-package si.iskratel.metricslib;
+package si.iskratel.metricslib.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -9,6 +9,10 @@ import okhttp3.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import si.iskratel.metricslib.alarm.Alarm;
+import si.iskratel.metricslib.MetricsLib;
+import si.iskratel.metricslib.servlets.HelloServlet;
+import si.iskratel.metricslib.servlets.MetricsServletExtended;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -56,9 +60,9 @@ public class WhTest {
         ServletContextHandler context = new ServletContextHandler();
         context.setContextPath("/");
         server.setHandler(context);
-        MetricsLib.HelloServlet hs = new MetricsLib.HelloServlet();
+        HelloServlet hs = new HelloServlet();
 //        context.addServlet(new ServletHolder(hs), "/");
-        context.addServlet(new ServletHolder(new MetricsLib.MetricsServletExtended()), "/metrics");
+        context.addServlet(new ServletHolder(new MetricsServletExtended()), "/metrics");
         context.addServlet(new ServletHolder(new WebhookServlet()), "/webhook");
         // Add metrics about CPU, JVM memory etc.
         DefaultExports.initialize();

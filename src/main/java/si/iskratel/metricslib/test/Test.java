@@ -1,9 +1,12 @@
-package si.iskratel.metricslib;
+package si.iskratel.metricslib.test;
 
 import io.prometheus.client.Gauge;
+import si.iskratel.metricslib.EsClient;
+import si.iskratel.metricslib.MetricsLib;
+import si.iskratel.metricslib.PMetric;
+import si.iskratel.metricslib.PMetricRegistry;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class Test {

@@ -1,5 +1,5 @@
 {
   "persistent": {
-    "indices.lifecycle.poll_interval": "10m"
+    "indices.lifecycle.poll_interval": "1h"
   }
 }
