@@ -70,6 +70,8 @@ public class MetricsLib {
     public static int ES_NUMBER_OF_REPLICAS = 0;
     /** The name of ILM policy. Used when creating index template. */
     public static String ES_ILM_POLICY_NAME = "pmon_ilm_policy";
+    public static String ES_ILM_POLICY_FILE = "pmon_ilm_policy.json";
+    public static String ES_ILM_CLUSTER_FILE = "cluster.json";
     /** Alarm endpoint where alarms are pushed */
     public static String ALARM_DESTINATION = "http://localhost:9097/webhook";
     public static boolean EXPORT_ENABLED = false;
@@ -125,7 +127,9 @@ public class MetricsLib {
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean((String) props.getOrDefault("metricslib.elasticsearch.createIndexOnStart", "true"));
         ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfShards", "1"));
         ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
-        ES_ILM_POLICY_NAME = (String) props.getOrDefault("metricslib.elasticsearch.ilm.policy.name", "pmon_ilm_policy");
+        ES_ILM_POLICY_NAME = (String) props.getOrDefault("metricslib.elasticsearch.ilm.policy.name", "ilm_policy");
+        ES_ILM_POLICY_FILE = (String) props.getOrDefault("metricslib.elasticsearch.ilm.policy.file", "ilm_policy.json");
+        ES_ILM_CLUSTER_FILE = (String) props.getOrDefault("metricslib.elasticsearch.ilm.cluster", "cluster.json");
 
         ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", null);
 

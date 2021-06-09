@@ -22,8 +22,8 @@ public class EsClient {
 
     private String esHost = "http://elasticvm:9200";
 
-    private Alarm no_connection_to_es = new Alarm(3730080, "Database Connection Fault", 1, "No connection to ElasticSearch",
-            "Cannot connect");
+    private Alarm alarm_no_connection_to_es = new Alarm(3730080, "Database Connection Fault", 1, "No connection to ElasticSearch", "Cannot connect");
+    private Alarm alarm_dumping_files = new Alarm(100001, "Dumping files", 2, "No connection to ElasticSearch", "");
 
 //    private OkHttpClient httpClient = new OkHttpClient();
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
@@ -224,7 +224,7 @@ public class EsClient {
         if (!mappingCreated.containsKey(idx)) {
             boolean b = createIndex(idx);
             if (b != true) {
-                // FIXME where to put setMapping=true on registry?
+                // FIXME where to put setMapping=true? on registry?
                 return false;
             }
             mappingCreated.put(idx, true);
@@ -247,6 +247,9 @@ public class EsClient {
      */
     public void sendBulkPost(PMetricRegistry registry) {
         for (PMetric m : registry.getMetricsList()) {
+            sendBulkPost(m);
+        }
+        for (PMultiValueMetric m : registry.getMultiValueMetricsList()) {
             sendBulkPost(m);
         }
     }
@@ -360,7 +363,7 @@ public class EsClient {
 
         try {
 
-            logger.info("EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + metric.getMultivalueMetrics().size());
+            logger.info("EsClient[" + clientId + "]: sending metric: " + metric.getName() + " [size=" + metric.getMultivalueMetrics().size() + "]");
 
             while (retryCount <= MetricsLib.RETRIES) {
                 success = executeHttpRequest(request).success;
@@ -438,7 +441,7 @@ public class EsClient {
 
             if (httpResponse.responseCode < 200 || httpResponse.responseCode > 399) logger.warn("EsClient[" + clientId + "] response: " + httpResponse.responseText);
 
-            AlarmManager.clearAlarm(no_connection_to_es);
+            AlarmManager.clearAlarm(alarm_no_connection_to_es);
 
         } catch (UnknownHostException e) {
             logger.error("EsClient[" + clientId + "]: <<< UnknownHostException: " + e.getMessage());
@@ -446,24 +449,24 @@ public class EsClient {
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "UnknownHostException";
-            no_connection_to_es.setAdditionalInfo("Unknown host");
-            AlarmManager.raiseAlarm(no_connection_to_es);
+            alarm_no_connection_to_es.setAdditionalInfo("Unknown host");
+            AlarmManager.raiseAlarm(alarm_no_connection_to_es);
         } catch (SocketTimeoutException e) {
             logger.error("EsClient[" + clientId + "]: <<< SocketTimeoutException: " + e.getMessage());
             PromExporter.metricslib_http_requests_total.labels("Timeout", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketTimeoutException";
-            no_connection_to_es.setAdditionalInfo("Timeout");
-            AlarmManager.raiseAlarm(no_connection_to_es);
+            alarm_no_connection_to_es.setAdditionalInfo("Timeout");
+            AlarmManager.raiseAlarm(alarm_no_connection_to_es);
         } catch (SocketException e) {
             logger.error("EsClient[" + clientId + "]: <<< SocketException: " + e.getMessage());
             PromExporter.metricslib_http_requests_total.labels("Socket Exception", request.method().toUpperCase(), request.url().toString()).inc();
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "SocketException";
-            no_connection_to_es.setAdditionalInfo("SocketException");
-            AlarmManager.raiseAlarm(no_connection_to_es);
+            alarm_no_connection_to_es.setAdditionalInfo("SocketException");
+            AlarmManager.raiseAlarm(alarm_no_connection_to_es);
         } catch (Exception e) {
             logger.error("EsClient[" + clientId + "]: <<< Exception: ", e);
             e.printStackTrace();
@@ -471,8 +474,8 @@ public class EsClient {
             httpResponse.success = false;
             httpResponse.responseCode = 0;
             httpResponse.responseText = "Exception";
-            no_connection_to_es.setAdditionalInfo("Unknown error");
-            AlarmManager.raiseAlarm(no_connection_to_es);
+            alarm_no_connection_to_es.setAdditionalInfo("Unknown error");
+            AlarmManager.raiseAlarm(alarm_no_connection_to_es);
         }
 
         return httpResponse;

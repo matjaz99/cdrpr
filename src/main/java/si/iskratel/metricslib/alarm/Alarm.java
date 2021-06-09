@@ -2,6 +2,7 @@ package si.iskratel.metricslib.alarm;
 
 import si.iskratel.metricslib.MetricsLib;
 import si.iskratel.metricslib.util.MD5Checksum;
+import si.iskratel.metricslib.util.Utils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -72,10 +73,11 @@ public class Alarm {
     }
 
     public String getDateTime() {
-        Date date = new Date(timestamp);
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        dateTime = dateFormat.format(date);
-        return dateTime;
+//        Date date = new Date(timestamp);
+//        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//        dateTime = dateFormat.format(date);
+        return Utils.getFormatedTimestamp(timestamp);
+//        return dateTime;
     }
 
     public int getAlarmCode() {

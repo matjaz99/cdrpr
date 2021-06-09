@@ -152,6 +152,74 @@ public class PMetricFormatter {
 
     }
 
+    public static String getDefaultClusterSettings() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+        sb.append("  \"persistent\": {\n");
+        sb.append("    \"indices.lifecycle.poll_interval\": \"1h\"\n");
+        sb.append("  }\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public static String getDefaultIlmPolicy() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\n" +
+                "  \"policy\" : {\n" +
+                "    \"phases\" : {\n" +
+                "      \"hot\" : {\n" +
+                "        \"actions\" : {\n" +
+                "          \"rollover\" : {\n" +
+                "            \"max_size\" : \"20gb\",\n" +
+                "            \"max_docs\" : 100000000,\n" +
+                "            \"max_age\" : \"7d\"\n" +
+                "          },\n" +
+                "          \"set_priority\": {\n" +
+                "            \"priority\": 50\n" +
+                "          }\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"warm\" : {\n" +
+                "        \"min_age\" : \"90d\",\n" +
+                "        \"actions\" : {\n" +
+                "          \"readonly\" : { },\n" +
+                "          \"allocate\" : {\n" +
+                "            \"number_of_replicas\" : 0\n" +
+                "          },\n" +
+                "          \"forcemerge\": {\n" +
+                "            \"max_num_segments\": 1\n" +
+                "          },\n" +
+                "          \"shrink\": {\n" +
+                "            \"number_of_shards\": 1\n" +
+                "          },\n" +
+                "          \"set_priority\": {\n" +
+                "            \"priority\": 25\n" +
+                "          }\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"cold\" : {\n" +
+                "        \"min_age\" : \"180d\",\n" +
+                "        \"actions\" : {\n" +
+                "          \"allocate\" : {\n" +
+                "            \"number_of_replicas\" : 0\n" +
+                "          },\n" +
+                "          \"set_priority\": {\n" +
+                "            \"priority\": 0\n" +
+                "          }\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"delete\" : {\n" +
+                "        \"min_age\" : \"365d\",\n" +
+                "        \"actions\" : {\n" +
+                "          \"delete\" : { }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}");
+        return sb.toString();
+    }
+
     public static String toPgCreateTableString(PMetric metric) {
         String createTableSQL = "CREATE TABLE " + metric.getName() + " (";
         createTableSQL += "ID BIGSERIAL PRIMARY KEY, ";
