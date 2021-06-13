@@ -1,0 +1,17 @@
+[Unit]
+Description=Kibana_6
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /opt/xml_parser/start_kibana.sh
+ExecStop=/bin/bash /opt/xml_parser/stop_kibana.sh
+SuccessExitStatus=0
+#Restart=on-failure
+
+User=matjaz
+Group=matjaz
+
+[Install]
+WantedBy=multi-user.target

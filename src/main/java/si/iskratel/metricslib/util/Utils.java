@@ -1,5 +1,10 @@
 package si.iskratel.metricslib.util;
 
+import si.iskratel.metricslib.MetricsLib;
+import si.iskratel.metricslib.PromExporter;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 

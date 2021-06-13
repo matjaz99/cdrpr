@@ -1,0 +1,18 @@
+[Unit]
+Description=XML Viewer
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/xml_parser
+ExecStart=java -jar -Dlogback.configurationFile=logback.xml -DxmlViewer.configurationFile=xml_viewer.properties cdrpr-2.0-jar-with-dependencies.jar
+ExecStop=/bin/bash /opt/xml_parser/stop_xml_viewer.sh
+SuccessExitStatus=0
+#Restart=on-failure
+
+User=matjaz
+Group=matjaz
+
+[Install]
+WantedBy=multi-user.target

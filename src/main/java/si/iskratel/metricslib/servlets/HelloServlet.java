@@ -1,12 +1,13 @@
 package si.iskratel.metricslib.servlets;
 
-import si.iskratel.metricslib.PMetricRegistry;
-import si.iskratel.metricslib.PromExporter;
+import si.iskratel.metricslib.*;
+import si.iskratel.metricslib.util.StateLog;
 import si.iskratel.metricslib.util.Utils;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -21,6 +22,8 @@ public class HelloServlet extends HttpServlet {
         resp.getWriter().println("<h1>MetricsLib " + METRICSLIB_API_VERSION + "</h1>");
 
         resp.getWriter().println("<pre>");
+        resp.getWriter().println("Hostname: " + METRICSLIB_HOSTNAME);
+        resp.getWriter().println("PID: " + FileClient.readFile(new File(METRICSLIB_PID_FILE)).trim());
         resp.getWriter().println("Start Time: " + Utils.getFormatedTimestamp(METRICSLIB_START_TIME_MILLIS));
         resp.getWriter().println("Up Time: " + Utils.convertToDHMSFormat((int) ((System.currentTimeMillis() - METRICSLIB_START_TIME_MILLIS) / 1000)));
         resp.getWriter().println("</pre>");
@@ -34,9 +37,7 @@ public class HelloServlet extends HttpServlet {
 
         resp.getWriter().println("<h3>Configuration</h3>");
         resp.getWriter().println("<pre>"
-                + "metricslib.hostname=" + METRICSLIB_HOSTNAME + "\n"
                 + "metricslib.port=" + METRICSLIB_PORT + "\n"
-                + "metricslib.isContainerized=" + METRICSLIB_IS_CONTAINERIZED + "\n"
                 + "metricslib.pathPrefix=" + PATH_PREFIX + "\n"
                 + "metricslib.prometheus.enable=" + PROM_METRICS_EXPORT_ENABLE + "\n"
                 + "metricslib.prometheus.include.registry=" + Arrays.toString(PROM_INCLUDE_REGISTRY) + "\n"
@@ -54,9 +55,18 @@ public class HelloServlet extends HttpServlet {
                 + "metricslib.elasticsearch.numberOfShards=" + ES_NUMBER_OF_SHARDS + "\n"
                 + "metricslib.elasticsearch.numberOfReplicas=" + ES_NUMBER_OF_REPLICAS + "\n"
                 + "metricslib.elasticsearch.ilm.policy.name=" + ES_ILM_POLICY_NAME + "\n"
+                + "metricslib.elasticsearch.ilm.policy.file=" + ES_ILM_POLICY_FILE + "\n"
+                + "metricslib.elasticsearch.cluster.file=" + ES_CLUSTER_FILE + "\n"
                 + "metricslib.elasticsearch.healthcheck.interval.seconds=" + ES_HEALTHCHECK_INTERVAL + "\n"
                 + "metricslib.alarm.destination=" + ALARM_DESTINATION + "\n"
                 + "</pre>");
+
+        resp.getWriter().println("<h3>State log</h3>");
+        resp.getWriter().println("<pre>");
+        for (String s : StateLog.getStateLog().keySet()) {
+            resp.getWriter().println(s + " " + StateLog.getStateLog().get(s));
+        }
+        resp.getWriter().println("</pre>");
 
         resp.getWriter().println("<h3>Registries</h3>");
         resp.getWriter().println("<pre>");

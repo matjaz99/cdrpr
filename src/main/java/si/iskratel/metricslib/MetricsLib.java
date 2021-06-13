@@ -1,6 +1,5 @@
 package si.iskratel.metricslib;
 
-import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import okhttp3.*;
 import org.codehaus.commons.nullanalysis.NotNull;
@@ -8,14 +7,15 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import si.iskratel.metricslib.servlets.*;
+import si.iskratel.metricslib.util.ShutdownHook;
+import si.iskratel.metricslib.util.StateLog;
 
 import javax.net.ssl.*;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -27,6 +27,7 @@ public class MetricsLib {
 
     /** MetricsLib API version */
     public static String METRICSLIB_API_VERSION = "v1";
+    public static String METRICSLIB_PID_FILE = "metricslib.pid";
     /** Hostname where MetricsLib is running */
     public static String METRICSLIB_HOSTNAME;
     /** Port for Jetty http server */
@@ -69,13 +70,15 @@ public class MetricsLib {
     /** Number of replicas. Used when creating index template. */
     public static int ES_NUMBER_OF_REPLICAS = 0;
     /** The name of ILM policy. Used when creating index template. */
-    public static String ES_ILM_POLICY_NAME = "pmon_ilm_policy";
-    public static String ES_ILM_POLICY_FILE = "pmon_ilm_policy.json";
-    public static String ES_ILM_CLUSTER_FILE = "cluster.json";
+    public static String ES_ILM_POLICY_NAME = "ilm_policy";
+    public static String ES_ILM_POLICY_FILE = "ilm_policy.json";
+    public static String ES_CLUSTER_FILE = "cluster.json";
     /** Alarm endpoint where alarms are pushed */
     public static String ALARM_DESTINATION = "http://localhost:9097/webhook";
     public static boolean EXPORT_ENABLED = false;
     public static String EXPORT_DIRECTORY = "export/";
+
+    private static Logger logger = LoggerFactory.getLogger(MetricsLib.class);
 
     /** A separate thread for uploading files */
     public static FileClient fut;
@@ -100,6 +103,7 @@ public class MetricsLib {
      * @throws Exception if properties contain invalid values
      */
     public static void init(Properties props) throws Exception {
+        METRICSLIB_PID_FILE = (String) props.getOrDefault("metricslib.pid.file", "metricslib.pid");
         METRICSLIB_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.jetty.port", "9099"));
         PATH_PREFIX = (String) props.getOrDefault("metricslib.jetty.pathPrefix", "/");
         if (PATH_PREFIX.length() > 0 && !PATH_PREFIX.endsWith("/")) PATH_PREFIX += "/";
@@ -129,7 +133,7 @@ public class MetricsLib {
         ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
         ES_ILM_POLICY_NAME = (String) props.getOrDefault("metricslib.elasticsearch.ilm.policy.name", "ilm_policy");
         ES_ILM_POLICY_FILE = (String) props.getOrDefault("metricslib.elasticsearch.ilm.policy.file", "ilm_policy.json");
-        ES_ILM_CLUSTER_FILE = (String) props.getOrDefault("metricslib.elasticsearch.ilm.cluster", "cluster.json");
+        ES_CLUSTER_FILE = (String) props.getOrDefault("metricslib.elasticsearch.ilm.cluster", "cluster.json");
 
         ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", null);
 
@@ -144,14 +148,22 @@ public class MetricsLib {
             METRICSLIB_HOSTNAME = "localhost";
         }
 
+        String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+        System.out.println("PID: " + pid);
+        logger.info("PID: " + pid);
+        FileClient.writeToFile(METRICSLIB_PID_FILE, pid);
+
+        Runtime.getRuntime().addShutdownHook(new ShutdownHook());
+
         // check if running inside container
         try (Stream< String > stream =
                      Files.lines(Paths.get("/proc/1/cgroup"))) {
-            System.out.println("Running in container: " + stream.anyMatch(line -> line.contains("/docker")));
+            logger.info("Running in container: " + stream.anyMatch(line -> line.contains("/docker")));
             METRICSLIB_IS_CONTAINERIZED = true;
         } catch (IOException e) {
             METRICSLIB_IS_CONTAINERIZED = false;
         }
+        StateLog.addToStateLog("Containerized", Boolean.toString(METRICSLIB_IS_CONTAINERIZED));
 
         if (METRICSLIB_PORT > 0 && server == null) {
             server = new Server(port);
@@ -159,7 +171,6 @@ public class MetricsLib {
             context.setContextPath("/");
             server.setHandler(context);
             HelloServlet hs = new HelloServlet();
-//        context.addServlet(new ServletHolder(hs), "/");
             context.addServlet(new ServletHolder(hs), PATH_PREFIX + "hello");
             context.addServlet(new ServletHolder(new IndicesServlet()), PATH_PREFIX + "indices");
             context.addServlet(new ServletHolder(new MetricsServletExtended()), PATH_PREFIX + "metrics");

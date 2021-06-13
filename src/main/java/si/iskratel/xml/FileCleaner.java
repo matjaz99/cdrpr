@@ -25,16 +25,16 @@ public class FileCleaner implements Runnable {
                 }
             });
 
-            if (files.length == 0) continue;
+            if (files.length > 0) {
+                long now = new Date().getTime();
 
-            long now = new Date().getTime();
+                for (int i = 0; i < files.length; i++) {
+                    long diff = now - files[i].lastModified();
 
-            for (int i = 0; i < files.length; i++) {
-                long diff = now - files[i].lastModified();
-
-                if (diff > XmlParser.XML_FILES_RETENTION_HOURS * 60 * 60 * 1000) {
-                    files[i].delete();
-                    logger.info("Delete old file: " + files[i].getAbsolutePath());
+                    if (diff > XmlParser.XML_FILES_RETENTION_HOURS * 3600 * 1000) {
+                        files[i].delete();
+                        logger.info("Delete old file: " + files[i].getAbsolutePath());
+                    }
                 }
             }
 

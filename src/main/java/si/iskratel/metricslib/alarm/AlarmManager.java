@@ -6,6 +6,7 @@ import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.iskratel.metricslib.MetricsLib;
+import si.iskratel.metricslib.util.StateLog;
 import si.iskratel.metricslib.PromExporter;
 
 import java.io.FileInputStream;
@@ -32,6 +33,7 @@ public class AlarmManager {
             }
         } catch (IOException e) {
             logger.error("Error loading severities.properties: " + e.getMessage());
+            StateLog.addToStateLog("severities.properties", "File not found. Using defaults.");
             alarmSeveritiesMap.put(0, "Indeterminate");
             alarmSeveritiesMap.put(1, "Critical");
             alarmSeveritiesMap.put(2, "Major");
@@ -107,7 +109,7 @@ public class AlarmManager {
         try {
             return "[" + mapper.writeValueAsString(alarm) + "]";
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error("JsonProcessingException: " + e.getMessage());
         }
         return null;
     }
@@ -117,7 +119,7 @@ public class AlarmManager {
         try {
             return mapper.writeValueAsString(activeAlarmsList.values());
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error("JsonProcessingException: " + e.getMessage());
         }
         return null;
     }

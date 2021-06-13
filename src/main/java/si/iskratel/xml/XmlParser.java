@@ -141,8 +141,6 @@ public class XmlParser {
                     logger.error("parse(): JAXBException: " + e.getMessage());
                 }
 
-//                System.out.println(xmlMultiValueMetric.toString());
-//                System.out.println(xmlMultiValueMetric.toStringDetail());
                 es.sendBulkPost(xmlMetric);
                 es.sendBulkPost(xmlMultiValueMetric);
 

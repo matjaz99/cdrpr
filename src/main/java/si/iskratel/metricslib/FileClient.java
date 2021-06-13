@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.iskratel.metricslib.alarm.Alarm;
 import si.iskratel.metricslib.alarm.AlarmManager;
+import si.iskratel.metricslib.util.StateLog;
 
 import java.io.*;
 
@@ -28,36 +29,46 @@ public class FileClient extends Thread {
 
     public static void dumpToFile(PMetric metric) {
         if (!MetricsLib.DUMP_TO_FILE_ENABLED) {
-            logger.warn("dumpToFile(): Dumping is disabled. Metric will be dropped!!!");
+            logger.warn("Dumping is disabled. Metric will be dropped!!!");
             PromExporter.metricslib_dropped_metrics_total.inc();
             return;
         }
-        writeToFile(metric.getName(), PMetricFormatter.toEsNdJsonString(metric));
+        writeDumpedDataToFile(metric.getName(), PMetricFormatter.toEsNdJsonString(metric));
     }
 
     public static void dumpToFile(PMultiValueMetric metric) {
         if (!MetricsLib.DUMP_TO_FILE_ENABLED) {
-            logger.warn("dumpToFile(): Dumping is disabled. Metric will be dropped!!!");
+            logger.warn("Dumping is disabled. Metric will be dropped!!!");
             PromExporter.metricslib_dropped_metrics_total.inc();
             return;
         }
-        writeToFile(metric.getName(), PMetricFormatter.toEsNdJsonString(metric));
+        writeDumpedDataToFile(metric.getName(), PMetricFormatter.toEsNdJsonString(metric));
     }
 
-    private static void writeToFile(String metricName, String data) {
+    /**
+     * Only for writing dumped data.
+     * @param metricName name of metric
+     * @param data data content
+     */
+    private static void writeDumpedDataToFile(String metricName, String data) {
         try {
             String fileName = metricName + "_" + System.currentTimeMillis() + "_" + (dump_count++) + ".ndjson";
-            logger.info("dumpToFile(): Dumping to file: " + fileName);
+            logger.info("Dumping to file: " + fileName);
             FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + fileName);
             myWriter.write(data);
             myWriter.close();
             PromExporter.metricslib_dump_to_file_total.inc();
         } catch (IOException e) {
-            logger.error("dumpToFile(): IOException: " + e.getMessage());
+            logger.error("IOException: " + e.getMessage());
         }
     }
 
-    public String readFile(File file) {
+    /**
+     * Read file and return content as String.
+     * @param file file
+     * @return content
+     */
+    public static String readFile(File file) {
 
         StringBuilder sb = new StringBuilder();
         try {
@@ -69,13 +80,37 @@ public class FileClient extends Thread {
             reader.close();
             return sb.toString();
         } catch (FileNotFoundException e) {
-            logger.error("readFile(): FileNotFoundException: " + file.getName());
+            logger.error("FileNotFoundException: " + file.getName());
         } catch (IOException e) {
-            logger.error("readFile(): IOException: ", e);
+            logger.error("IOException: ", e);
         }
 
         return null;
 
+    }
+
+    /**
+     * Generic write to file.
+     * @param filename file name
+     * @param text contents
+     */
+    public static void writeToFile(String filename, String text) {
+        try {
+            FileWriter myWriter = new FileWriter(filename);
+            myWriter.write(text);
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Remove any file.
+     * @param filename file
+     */
+    public static void removeFile(String filename) {
+        File file = new File(filename);
+        if (file.exists()) file.delete();
     }
 
     public static void exportToCsv(PMetric metric) {
@@ -99,13 +134,13 @@ public class FileClient extends Thread {
         }
 
         try {
-            logger.info("exportToCsv(): Exporting to file: " + metric.getName());
+            logger.info("Exporting to file: " + metric.getName());
             FileWriter myWriter = new FileWriter(MetricsLib.EXPORT_DIRECTORY + metric.getName() + "_" + System.currentTimeMillis() + "_" + (export_count++) + ".csv");
             myWriter.write(sb.toString());
             myWriter.close();
             PromExporter.metricslib_dump_to_file_total.inc();
         } catch (IOException e) {
-            logger.error("dumpToFile(): IOException: " + e.getMessage());
+            logger.error("IOException: " + e.getMessage());
         }
 
     }
@@ -116,19 +151,24 @@ public class FileClient extends Thread {
 
         if (!new File(MetricsLib.DUMP_DIRECTORY).exists()) {
             logger.warn("Dump directory does not exist: " + MetricsLib.DUMP_DIRECTORY);
+            StateLog.addToStateLog("Dump directory", "Directory does not exist.");
+            return;
         }
 
         while (true) {
 
-            File dumpDir = new File(MetricsLib.DUMP_DIRECTORY);
-            if (!dumpDir.exists()) {
-                try {
-                    Thread.sleep(MetricsLib.UPLOAD_INTERVAL_SECONDS * 1000);
-                } catch (InterruptedException e) {
-                }
+            try {
+                Thread.sleep(MetricsLib.UPLOAD_INTERVAL_SECONDS * 1000);
+            } catch (InterruptedException e) {
+            }
+
+            if (!EsClient.ES_IS_READY) {
+                logger.warn("Uploading postponed. ElasticSearch is not ready.");
                 continue;
             }
-            File[] bkpFiles = dumpDir.listFiles(new FileFilter() {
+
+            File dumpDir = new File(MetricsLib.DUMP_DIRECTORY);
+            File[] dumpFiles = dumpDir.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File f) {
                     if (f.getName().endsWith(".ndjson")) return true;
@@ -136,17 +176,17 @@ public class FileClient extends Thread {
                 }
             });
 
-            PromExporter.metricslib_files_waiting_for_upload.set(bkpFiles.length);
+            PromExporter.metricslib_files_waiting_for_upload.set(dumpFiles.length);
 
-            if (bkpFiles.length == 0) AlarmManager.clearAlarm(alarm_files_dumped);
-            if (bkpFiles.length > 50) AlarmManager.raiseAlarm(alarm_files_dumped);
+            if (dumpFiles.length == 0) AlarmManager.clearAlarm(alarm_files_dumped);
+            if (dumpFiles.length > 50) AlarmManager.raiseAlarm(alarm_files_dumped);
 
-            for (int i = 0; i < bkpFiles.length; i++) {
-                String s = readFile(bkpFiles[i]);
+            for (int i = 0; i < dumpFiles.length; i++) {
+                String s = readFile(dumpFiles[i]);
                 boolean b = esClient.sendBulkPost(s);
-                logger.info("Uploading file: " + bkpFiles[i].getName() + " [result=" + b + "]");
+                logger.info("Uploading file: " + dumpFiles[i].getName() + " [result=" + b + "]");
                 if (b) {
-                    bkpFiles[i].delete();
+                    dumpFiles[i].delete();
                     PromExporter.metricslib_dump_files_uploads_total.labels("success").inc();
                 } else {
                     PromExporter.metricslib_dump_files_uploads_total.labels("failed").inc();
@@ -154,10 +194,7 @@ public class FileClient extends Thread {
                 }
             }
 
-            try {
-                Thread.sleep(MetricsLib.UPLOAD_INTERVAL_SECONDS * 1000);
-            } catch (InterruptedException e) {
-            }
+            if (dumpFiles.length > 0) logger.info("Finished uploading dumped files");
 
         }
 

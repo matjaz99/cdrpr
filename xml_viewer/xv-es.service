@@ -1,0 +1,20 @@
+[Unit]
+Description=ElasticSearch_7
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=forking
+ExecStart=/opt/xml_parser/elasticsearch-7.12.1/bin/elasticsearch -d -p /opt/xml_parser/es.pid
+ExecStop=/bin/bash /opt/xml_parser/stop_elasticsearch.sh
+SuccessExitStatus=0
+#Restart=on-failure
+
+User=matjaz
+Group=matjaz
+
+LimitNOFILE=65535
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target
