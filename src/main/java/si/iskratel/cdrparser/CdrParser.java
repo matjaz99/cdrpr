@@ -68,48 +68,61 @@ public class CdrParser {
 
         while (true) {
 
-            File dir = new File(CDR_INPUT_DIR);
+            File inputDir = new File(CDR_INPUT_DIR);
 
-            File[] files = dir.listFiles(new FileFilter() {
+            File[] nodeDirectories = inputDir.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {
-                    return pathname.isFile() && pathname.getAbsolutePath().endsWith(".si2");
+                    return pathname.isDirectory();
                 }
             });
 
-            if (files.length == 0) logger.info("No CDR files found in " + CDR_INPUT_DIR);
+            for (File nodeDir : nodeDirectories) {
 
-            for (File f : files) {
-
-                logger.info("Reading file: " + f.getAbsolutePath());
-
-                List<CdrBean> cdrList = parse(f);
-
-                String cdrJson = "";
-                int count = 0;
-                for (int i = 0; i < cdrList.size(); i++) {
-                    cdrJson += putToStringBuilder(cdrList.get(i));
-                    count++;
-                    if (count % 1000 == 0) {
-                        es.sendBulkPost(cdrJson);
-                        count = 0;
-                        cdrJson = "";
+                File[] files = inputDir.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File pathname) {
+                        return pathname.isFile() && pathname.getAbsolutePath().endsWith(".si2");
                     }
-                    if (i == cdrList.size() - 1) {
-                        es.sendBulkPost(cdrJson);
+                });
+
+                if (files.length == 0) logger.info("No CDR files found in " + CDR_INPUT_DIR);
+
+                for (File f : files) {
+
+                    logger.info("Reading file: " + f.getAbsolutePath());
+
+                    List<CdrBean> cdrList = parse(f);
+
+                    String cdrJson = "";
+                    int count = 0;
+                    for (int i = 0; i < cdrList.size(); i++) {
+                        cdrJson += putToStringBuilder(cdrList.get(i));
+                        count++;
+                        if (count % 1000 == 0) {
+                            es.sendBulkPost(cdrJson);
+                            count = 0;
+                            cdrJson = "";
+                        }
+                        if (i == cdrList.size() - 1) {
+                            es.sendBulkPost(cdrJson);
+                        }
                     }
-                }
 
-                // move processed file
-                String absPath = f.getAbsolutePath();
-                absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
-                logger.info("Moving file to new location: " + absPath);
-                f.renameTo(new File(absPath));
+                    // move processed file
+                    String absPath = f.getAbsolutePath();
+                    absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+                    logger.info("Moving file to new location: " + absPath);
+                    f.renameTo(new File(absPath));
 
 
-            } // END foreach file
+                } // END foreach file
 
-            if (files.length > 0) logger.info("Processed CDR files: " + files.length);
+                if (files.length > 0) logger.info("Processed CDR files: " + files.length);
+
+            }
+
+
 
             try {
                 Thread.sleep(60 * 1000);
