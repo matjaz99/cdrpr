@@ -1,14 +1,12 @@
 package si.iskratel.cdrparser;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.kafka.common.protocol.types.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.iskratel.cdr.manager.BadCdrRecordException;
 import si.iskratel.cdr.parser.*;
-import si.iskratel.metricslib.EsClient;
-import si.iskratel.metricslib.PMetric;
-import si.iskratel.metricslib.PMetricRegistry;
-import si.iskratel.metricslib.PMultivalueTimeSeries;
+import si.iskratel.metricslib.*;
 import si.iskratel.simulator.Start;
 import si.iskratel.simulator.Utils;
 import si.iskratel.xml.FileCleaner;
@@ -18,14 +16,8 @@ import si.iskratel.xml.model.MeasCollecFile;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 public class CdrParser {
 
@@ -33,6 +25,8 @@ public class CdrParser {
 
     public static String CDR_INPUT_DIR = "cdr_input_dir";
     public static String CDR_OUTPUT_DIR = "cdr_output_dir";
+
+    public static Properties releaseCausesProps;
 
     public static PMetric cdr_metric = PMetric.build()
             .setName("pmon_cdrparser_metric")
@@ -43,7 +37,26 @@ public class CdrParser {
 
     public static void main(String[] args) throws Exception {
 
-        EsClient es = new EsClient("http", "centosvm", 9200);
+        releaseCausesProps = new Properties();
+        try {
+            releaseCausesProps.load(new FileInputStream("call_release_causes.properties"));
+        } catch (IOException e) {
+            logger.error("IOException: " + e.getMessage());
+        }
+
+        String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
+        Properties cdrProps = new Properties();
+        try {
+            cdrProps.load(new FileInputStream(xProps));
+        } catch (IOException e) {
+            logger.error("IOException: " + e.getMessage());
+        }
+
+        MetricsLib.init(cdrProps);
+
+        EsClient es = new EsClient(cdrProps.getProperty("metricslib.elasticsearch.default.schema"),
+                cdrProps.getProperty("metricslib.elasticsearch.default.host"),
+                Integer.parseInt(cdrProps.getProperty("metricslib.elasticsearch.default.port")));
 
         while (!EsClient.ES_IS_READY) {
             try {
@@ -68,13 +81,24 @@ public class CdrParser {
 
             for (File f : files) {
 
-                PMetricRegistry.getRegistry("xml_metrics").resetMetrics();
-                PMetricRegistry.getRegistry("xml_multivalue_metrics").resetMetrics();
-
                 logger.info("Reading file: " + f.getAbsolutePath());
 
                 List<CdrBean> cdrList = parse(f);
 
+                String cdrJson = "";
+                int count = 0;
+                for (int i = 0; i < cdrList.size(); i++) {
+                    cdrJson += putToStringBuilder(cdrList.get(i));
+                    count++;
+                    if (count % 1000 == 0) {
+                        es.sendBulkPost(cdrJson);
+                        count = 0;
+                        cdrJson = "";
+                    }
+                    if (i == cdrList.size() - 1) {
+                        es.sendBulkPost(cdrJson);
+                    }
+                }
 
                 // move processed file
                 String absPath = f.getAbsolutePath();
@@ -85,6 +109,7 @@ public class CdrParser {
 
             } // END foreach file
 
+            if (files.length > 0) logger.info("Processed CDR files: " + files.length);
 
             try {
                 Thread.sleep(60 * 1000);
@@ -133,11 +158,12 @@ public class CdrParser {
 
     }
 
-    private String putToStringBuilder(CdrBean cdrBean) {
+    private static String putToStringBuilder(CdrBean cdrBean) {
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append("{ \"index\":{} }\n").append("{");
+        sb.append("{\"index\":{\"_index\":\"").append("cdr_index").append("\"}}\n");
+        sb.append("{");
         sb.append("\"id\":\"").append(cdrBean.getId()).append("\",");
         sb.append("\"callId\":\"").append(cdrBean.getCallid()).append("\",");
         sb.append("\"sequence\":\"").append(cdrBean.getSequence()).append("\",");
@@ -149,7 +175,7 @@ public class CdrParser {
         sb.append("\"cdrRingingTimeBeforeAnsw\":").append(cdrBean.getCdrRingingTimeBeforeAnsw()).append(",");
         sb.append("\"duration\":").append(cdrBean.getDuration()).append(",");
         sb.append("\"cause\":").append(cdrBean.getCause()).append(",");
-        sb.append("\"causeString\":\"").append(Start.releaseCausesProps.getOrDefault(cdrBean.getCause() + "", "unknown")).append("\",");
+        sb.append("\"causeString\":\"").append(releaseCausesProps.getOrDefault(cdrBean.getCause() + "", "unknown")).append("\",");
         sb.append("\"callReleasingSide\":\"").append(cdrBean.getCallReleasingSide()).append("\",");
         sb.append("\"startTime\":\"").append(Utils.toDateString(cdrBean.getStartTime())).append("\",");
         sb.append("\"endTime\":\"").append(Utils.toDateString(cdrBean.getEndTime())).append("\",");
@@ -162,9 +188,6 @@ public class CdrParser {
         sb.append("\"outTrunkGroupId\":\"").append(cdrBean.getOutTrunkGroupId()).append("\",");
         sb.append("\"inTrunkGroupName\":\"").append(cdrBean.getInTrunkGroupNameIE144()).append("\",");
         sb.append("\"outTrunkGroupName\":\"").append(cdrBean.getOutTrunkGroupNameIE145()).append("\",");
-        sb.append("\"icId\":\"").append(cdrBean.getIcid()).append("\",");
-        sb.append("\"chgUnits\":\"").append(cdrBean.getChgUnits()).append("\",");
-        sb.append("\"price\":\"").append(cdrBean.getPrice()).append("\",");
         sb.append("\"servId\":\"").append(cdrBean.getServId()).append("\",");
         sb.append("\"servIdOrig\":\"").append(cdrBean.getServIdOrig()).append("\",");
         sb.append("\"servIdTerm\":\"").append(cdrBean.getServIdTerm()).append("\",");
@@ -174,7 +197,7 @@ public class CdrParser {
         sb.append("\"bgidOrig\":\"").append(cdrBean.getBgidOrig()).append("\",");
         sb.append("\"bgidTerm\":\"").append(cdrBean.getBgidTerm()).append("\",");
         sb.append("\"nodeId\":\"").append(cdrBean.getNodeId()).append("\",");
-        sb.append("\"timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
+        sb.append("\"@timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
 
         return sb.toString();
     }

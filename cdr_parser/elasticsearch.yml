@@ -1,0 +1,5 @@
+node.name: node-1
+path.data: /opt/elastic/data
+network.host: 0.0.0.0
+discovery.seed_hosts: ["localhost"]
+cluster.initial_master_nodes: ["node-1"]

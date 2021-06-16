@@ -26,6 +26,7 @@ public class EsClient {
     private Alarm alarm_dumping_files = new Alarm(100001, "Dumping files", 2, "No connection to ElasticSearch", "");
 
 //    private OkHttpClient httpClient = new OkHttpClient();
+    private OkHttpClient httpClient = MetricsLib.instantiateHttpClient();
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
     // Elastic endpoints
@@ -409,7 +410,7 @@ public class EsClient {
 
             Histogram.Timer t = PromExporter.metricslib_http_request_duration_seconds.labels(request.url().toString(), request.method(), metric).startTimer();
 
-            OkHttpClient httpClient = MetricsLib.instantiateHttpClient();
+//            OkHttpClient httpClient = MetricsLib.instantiateHttpClient();
             Response response = httpClient.newCall(request).execute();
             duration = System.currentTimeMillis() - startTime;
             PromExporter.metricslib_http_requests_total.labels(Integer.toString(response.code()), request.method().toUpperCase(), request.url().toString()).inc();

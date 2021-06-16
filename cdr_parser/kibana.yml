@@ -1,0 +1,5 @@
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://localhost:9200"]
+server.name: "My-kibana"
+pid.file: /opt/elastic/kibana.pid
+logging.dest: /opt/elastic/kibana-7.12.1-linux-x86_64/log/kibana.log
