@@ -79,41 +79,46 @@ public class CdrParser {
 
             for (File nodeDir : nodeDirectories) {
 
-                File[] files = inputDir.listFiles(new FileFilter() {
+                File[] files = nodeDir.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File pathname) {
                         return pathname.isFile() && pathname.getAbsolutePath().endsWith(".si2");
                     }
                 });
 
-                if (files.length == 0) logger.info("No CDR files found in " + CDR_INPUT_DIR);
+                if (files.length == 0) logger.info("No CDR files found in " + CDR_INPUT_DIR + "/" + nodeDir.getName());
 
                 for (File f : files) {
 
                     logger.info("Reading file: " + f.getAbsolutePath());
 
                     List<CdrBean> cdrList = parse(f);
+                    logger.info("CDR contains " + cdrList.size() + " records");
 
                     String cdrJson = "";
                     int count = 0;
                     for (int i = 0; i < cdrList.size(); i++) {
-                        cdrJson += putToStringBuilder(cdrList.get(i));
+                        CdrBean cdrBean = cdrList.get(i);
+                        cdrBean.setNodeId(nodeDir.getName());
+                        cdrJson += putToStringBuilder(cdrBean);
                         count++;
-                        if (count % 1000 == 0) {
+                        if (count % 3000 == 0) {
                             es.sendBulkPost(cdrJson);
                             count = 0;
                             cdrJson = "";
                         }
                         if (i == cdrList.size() - 1) {
                             es.sendBulkPost(cdrJson);
+                            cdrJson = "";
                         }
                     }
 
                     // move processed file
-                    String absPath = f.getAbsolutePath();
-                    absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
-                    logger.info("Moving file to new location: " + absPath);
-                    f.renameTo(new File(absPath));
+                    // FIXME create new output node dir
+//                    String absPath = f.getAbsolutePath();
+//                    absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+//                    logger.info("Moving file to new location: " + absPath);
+//                    f.renameTo(new File(absPath));
 
 
                 } // END foreach file

@@ -18,8 +18,8 @@ public class ShutdownHook extends Thread {
     public void run() {
 
         logger.info("Shutdown hook activated");
-        logger.info("Stopping...");
 
+        logger.info("Removing pid file");
         FileClient.removeFile(MetricsLib.METRICSLIB_PID_FILE);
 
         logger.info("Stopped\n");
