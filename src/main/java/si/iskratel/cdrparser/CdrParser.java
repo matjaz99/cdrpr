@@ -1,7 +1,6 @@
 package si.iskratel.cdrparser;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.kafka.common.protocol.types.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.iskratel.cdr.manager.BadCdrRecordException;
@@ -9,13 +8,7 @@ import si.iskratel.cdr.parser.*;
 import si.iskratel.metricslib.*;
 import si.iskratel.simulator.Start;
 import si.iskratel.simulator.Utils;
-import si.iskratel.xml.FileCleaner;
-import si.iskratel.xml.XmlParser;
-import si.iskratel.xml.model.MeasCollecFile;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.*;
 import java.util.*;
 
@@ -25,14 +18,21 @@ public class CdrParser {
 
     public static String CDR_INPUT_DIR = "cdr_input_dir";
     public static String CDR_OUTPUT_DIR = "cdr_output_dir";
+    private static boolean runOnce = true;
 
     public static Properties releaseCausesProps;
 
-    public static PMetric cdr_metric = PMetric.build()
-            .setName("pmon_cdrparser_metric")
-            .setHelp("adfasf")
+    public static PMetric cdr_files_total = PMetric.build()
+            .setName("cdrparser_processed_files_total")
+            .setHelp("Number of processed files")
             .setLabelNames("status")
-            .register("pmon_internal");
+            .register();
+
+    public static PMetric cdr_records_total = PMetric.build()
+            .setName("cdrparser_records_total")
+            .setHelp("Number of extracted records")
+            .setLabelNames("fileType")
+            .register();
 
 
     public static void main(String[] args) throws Exception {
@@ -93,23 +93,24 @@ public class CdrParser {
                     logger.info("Reading file: " + f.getAbsolutePath());
 
                     List<CdrBean> cdrList = parse(f);
+                    cdr_files_total.setLabelValues("Success").inc();
                     logger.info("CDR contains " + cdrList.size() + " records");
 
-                    String cdrJson = "";
+                    StringBuilder cdrJson = new StringBuilder();
                     int count = 0;
                     for (int i = 0; i < cdrList.size(); i++) {
                         CdrBean cdrBean = cdrList.get(i);
                         cdrBean.setNodeId(nodeDir.getName());
-                        cdrJson += putToStringBuilder(cdrBean);
+                        cdrJson.append(putToStringBuilder(cdrBean));
                         count++;
-                        if (count % 3000 == 0) {
-                            es.sendBulkPost(cdrJson);
+                        if (count % 9000 == 0) {
+                            es.sendBulkPost(cdrJson.toString());
                             count = 0;
-                            cdrJson = "";
+                            cdrJson = new StringBuilder();
                         }
                         if (i == cdrList.size() - 1) {
-                            es.sendBulkPost(cdrJson);
-                            cdrJson = "";
+                            es.sendBulkPost(cdrJson.toString());
+                            cdrJson = new StringBuilder();
                         }
                     }
 
@@ -125,16 +126,18 @@ public class CdrParser {
 
                 if (files.length > 0) logger.info("Processed CDR files: " + files.length);
 
-            }
+            } // END foreach directory
 
-
+            if (runOnce) break;
 
             try {
                 Thread.sleep(60 * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        } // END while true
+
+        System.exit(0);
 
     }
 
@@ -160,15 +163,14 @@ public class CdrParser {
             try {
                 CdrBean cdrBean = cbc.parseBinaryCdr(dr.getDataRecordBytes(), null);
                 returnList.add(cdrBean);
-                cdr_metric.setLabelValues("Success").inc();
-                Start.totalCount++;
+                cdr_records_total.setLabelValues("CDR").inc();
                 logger.debug(cdrBean.toString());
             } catch (BadCdrRecordException e) {
-                Start.badCdrRecordExceptionCount++;
                 PpdrBean ppdrBean = cbc.parseBinaryPpdr(dr);
+                cdr_records_total.setLabelValues("PPDR").inc();
             } catch (Exception e) {
-                e.printStackTrace();
-                cdr_metric.setLabelValues("Fail").inc();
+                logger.error("Exception: ", e);
+                cdr_records_total.setLabelValues("Unknown").inc();
             }
         }
 
@@ -218,6 +220,53 @@ public class CdrParser {
         sb.append("\"@timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
 
         return sb.toString();
+    }
+
+    private static PMultiValueMetric toMultivalueMetric(CdrBean cdrBean) {
+
+        PMultiValueMetric mv = PMultiValueMetric.build()
+                .setName("cdr_multivalue_metric")
+                .setHelp("cdr data")
+                .register("cdr_index");
+
+        PMultivalueTimeSeries mvts = new PMultivalueTimeSeries();
+        mvts.addValue("id", cdrBean.getId());
+        mvts.addValue("callId", cdrBean.getCallid());
+        mvts.addValue("sequence", cdrBean.getSequence());
+        mvts.addValue("callType", cdrBean.getCallType());
+        mvts.addLabel("ownerNumber", cdrBean.getOwnerNumber());
+        mvts.addLabel("callingNumber", cdrBean.getCallingNumber());
+        mvts.addLabel("calledNumber", cdrBean.getCalledNumber());
+        mvts.addValue("cdrTimeBeforeRinging", cdrBean.getCdrTimeBeforeRinging());
+        mvts.addValue("cdrRingingTimeBeforeAnsw", cdrBean.getCdrRingingTimeBeforeAnsw());
+        mvts.addValue("duration", cdrBean.getDuration());
+        mvts.addValue("cause", cdrBean.getCause());
+        mvts.addLabel("causeString", (String) releaseCausesProps.getOrDefault(cdrBean.getCause() + "", "unknown"));
+        mvts.addValue("callReleasingSide", cdrBean.getCallReleasingSide());
+        mvts.addLabel("startTime", Utils.toDateString(cdrBean.getStartTime()));
+        mvts.addLabel("endTime", Utils.toDateString(cdrBean.getEndTime()));
+        mvts.addValue("cacType", cdrBean.getCacType());
+        mvts.addValue("cacPrefix", cdrBean.getCacPrefix());
+        mvts.addValue("cacNumber", cdrBean.getCacNumber());
+        mvts.addValue("inTrunkId", cdrBean.getInTrunkId());
+        mvts.addValue("inTrunkGroupId", cdrBean.getInTrunkGroupId());
+        mvts.addValue("outTrunkId", cdrBean.getOutTrunkId());
+        mvts.addValue("outTrunkGroupId", cdrBean.getOutTrunkGroupId());
+        mvts.addLabel("inTrunkGroupName", cdrBean.getInTrunkGroupNameIE144());
+        mvts.addLabel("outTrunkGroupName", cdrBean.getOutTrunkGroupNameIE145());
+        mvts.addValue("servId", cdrBean.getServId());
+        mvts.addValue("servIdOrig", cdrBean.getServIdOrig());
+        mvts.addValue("servIdTerm", cdrBean.getServIdTerm());
+        mvts.addValue("ctxCall", cdrBean.getCtxCall());
+        mvts.addLabel("ctxCallingNumber", cdrBean.getCtxCallingNumber());
+        mvts.addLabel("ctxCalledNumber", cdrBean.getCtxCalledNumber());
+        mvts.addValue("bgidOrig", cdrBean.getBgidOrig());
+        mvts.addValue("bgidTerm", cdrBean.getBgidTerm());
+        mvts.addLabel("nodeId", cdrBean.getNodeId());
+
+        mv.setTimestamp(cdrBean.getStartTime().getTime());
+
+        return mv;
     }
 
 }

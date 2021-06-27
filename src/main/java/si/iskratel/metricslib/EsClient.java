@@ -211,8 +211,8 @@ public class EsClient {
      */
     public boolean sendBulkPost(String ndJson) {
 
-        if (ndJson == null) {
-            logger.warn("Body is null. Request will be ignored.");
+        if (ndJson == null || ndJson.trim().length() == 0) {
+            logger.warn("Body is null or empty. Request will be ignored.");
             return false;
         }
 
