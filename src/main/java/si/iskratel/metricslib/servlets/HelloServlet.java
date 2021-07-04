@@ -24,6 +24,7 @@ public class HelloServlet extends HttpServlet {
         resp.getWriter().println("<pre>");
         resp.getWriter().println("Hostname: " + METRICSLIB_HOSTNAME);
         resp.getWriter().println("PID: " + FileClient.readFile(new File(METRICSLIB_PID_FILE)).trim());
+        resp.getWriter().println("HOME_DIR: " + System.getProperty("user.dir"));
         resp.getWriter().println("Start Time: " + Utils.getFormatedTimestamp(METRICSLIB_START_TIME_MILLIS));
         resp.getWriter().println("Up Time: " + Utils.convertToDHMSFormat((int) ((System.currentTimeMillis() - METRICSLIB_START_TIME_MILLIS) / 1000)));
         resp.getWriter().println("</pre>");
@@ -37,6 +38,7 @@ public class HelloServlet extends HttpServlet {
 
         resp.getWriter().println("<h3>Configuration</h3>");
         resp.getWriter().println("<pre>"
+                + "metricslib.pid.file=" + METRICSLIB_PID_FILE + "\n"
                 + "metricslib.port=" + METRICSLIB_PORT + "\n"
                 + "metricslib.pathPrefix=" + PATH_PREFIX + "\n"
                 + "metricslib.prometheus.enable=" + PROM_METRICS_EXPORT_ENABLE + "\n"
