@@ -75,6 +75,7 @@ public class CdrToCsv {
         StringBuilder sb = new StringBuilder();
 
         sb.append(cdrBean.getId()).append(",");
+        sb.append(cdrBean.getSequence()).append(",");
         sb.append(cdrBean.getCallType()).append(",");
         sb.append(cdrBean.getOwnerNumber()).append(",");
         sb.append(cdrBean.getCallingNumber()).append(",");
