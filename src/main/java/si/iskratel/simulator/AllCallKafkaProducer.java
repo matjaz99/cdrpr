@@ -1,14 +1,7 @@
 package si.iskratel.simulator;
 
-import okhttp3.*;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.metricslib.KafkaClient;
-import si.iskratel.metricslib.PromExporter;
-
-import java.util.Properties;
 
 public class AllCallKafkaProducer implements Runnable {
 
@@ -41,7 +34,7 @@ public class AllCallKafkaProducer implements Runnable {
                 CdrBean c = Start.pollCdr();
                 if (c != null) {
                     String call = toJson(c);
-                    kafkaClient.sendCdr(TOPIC_NAME, call);
+                    kafkaClient.sendMsg(TOPIC_NAME, call);
                 } else {
                     break;
                 }

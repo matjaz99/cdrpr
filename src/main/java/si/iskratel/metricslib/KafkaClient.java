@@ -31,9 +31,15 @@ public class KafkaClient {
 
     }
 
-    public void sendCdr(String topic, String cdrJson) {
+    /**
+     * Generic method to send any String message to Kafka topic. Message could be formatted as plain text, json,
+     * or any other format; it is up to consumer how it will deserialize the message.
+     * @param topic
+     * @param message
+     */
+    public void sendMsg(String topic, String message) {
 
-        producer.send(new ProducerRecord<String, String>(topic, Long.toString(msgCounter), cdrJson));
+        producer.send(new ProducerRecord<String, String>(topic, Long.toString(msgCounter), message));
 
         if (msgCounter % 1000 == 0) System.out.println("Kafka messages sent: " + msgCounter);
         msgCounter++;
