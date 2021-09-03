@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.metricslib.FileClient;
+import si.iskratel.metricslib.KafkaClient;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -17,6 +18,8 @@ public class CdrToKafka {
 
 
     public static void main(String[] args) throws Exception {
+
+        KafkaClient kafkaClient = new KafkaClient("mcrk-docker-1:9092");
 
         File inputDir = new File(CDR_INPUT_DIR);
 
@@ -41,6 +44,7 @@ public class CdrToKafka {
                 CdrBean cdrBean = data.cdrList.get(i);
                 cdrBean.setNodeId("test_node");
 
+                kafkaClient.sendMsg("cdr_topic", CdrParser.toCsv(cdrBean));
 
 
             }

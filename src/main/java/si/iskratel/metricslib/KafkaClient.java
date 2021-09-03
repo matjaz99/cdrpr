@@ -31,6 +31,23 @@ public class KafkaClient {
 
     }
 
+    public KafkaClient(String bootstrapServers) {
+
+        clientId = kafkaClientsCount++;
+
+        props.put("bootstrap.servers", bootstrapServers);
+        props.put("acks", "all");
+        props.put("retries", 0);
+        props.put("batch.size", 16384);
+        props.put("linger.ms", 1);
+        props.put("buffer.memory", 33554432);
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        producer = new KafkaProducer<String, String>(props);
+
+    }
+
     /**
      * Generic method to send any String message to Kafka topic. Message could be formatted as plain text, json,
      * or any other format; it is up to consumer how it will deserialize the message.
