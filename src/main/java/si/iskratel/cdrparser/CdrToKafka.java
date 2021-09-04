@@ -46,7 +46,6 @@ public class CdrToKafka {
 
                 kafkaClient.sendMsg("cdr_topic", CdrParser.toCsv(cdrBean));
 
-
             }
 
         }
