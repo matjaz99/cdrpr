@@ -33,6 +33,7 @@ services:
       - /var/log:/opt/log
       - ./cdr_input_dir:/opt/cdr_input_dir
       - ./cdr_output_dir:/opt/cdr_output_dir
+      - ./logback.xml:/opt/logback.xml
     deploy:
       mode: replicated
       replicas: 1

@@ -21,12 +21,13 @@ public class CdrToKafka {
     public static void main(String[] args) throws Exception {
 
         Props.EXIT_WHEN_DONE = false;
+//        Props.KAFKA_BOOTSTRAP_SERVER = "centosvm:9092";
 
         KafkaClient kafkaClient = new KafkaClient(Props.KAFKA_BOOTSTRAP_SERVER);
 
-        File inputDir = new File(CDR_INPUT_DIR);
-
         while (true) {
+
+            File inputDir = new File(CDR_INPUT_DIR);
 
             File[] files = inputDir.listFiles(new FileFilter() {
                 @Override
@@ -35,7 +36,7 @@ public class CdrToKafka {
                 }
             });
 
-            if (files.length == 0) logger.info("No CDR files found in " + CDR_INPUT_DIR + "/" + inputDir.getName());
+            if (files.length == 0) logger.info("No CDR files found in " + inputDir.getName());
 
             for (File f : files) {
 
@@ -49,7 +50,7 @@ public class CdrToKafka {
                     CdrBean cdrBean = data.cdrList.get(i);
                     cdrBean.setNodeId("test_node");
 
-                    kafkaClient.sendMsg("cdr_topic", CdrParser.toCsv(cdrBean));
+                    kafkaClient.sendMsg("cdr_topic", CdrParser.toCsv(cdrBean).trim());
 
                 }
 

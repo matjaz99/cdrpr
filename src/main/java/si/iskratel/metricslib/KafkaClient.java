@@ -3,10 +3,14 @@ package si.iskratel.metricslib;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
 public class KafkaClient {
+
+    private static Logger logger = LoggerFactory.getLogger(KafkaClient.class);
 
     private static int kafkaClientsCount = 0;
     private int clientId;
@@ -15,6 +19,8 @@ public class KafkaClient {
     private long msgCounter = 0L;
 
     public KafkaClient() {
+
+        logger.info("initializing Kafka producer [default]");
 
         clientId = kafkaClientsCount++;
 
@@ -32,6 +38,8 @@ public class KafkaClient {
     }
 
     public KafkaClient(String bootstrapServers) {
+
+        logger.info("initializing Kafka producer [" + bootstrapServers + "]");
 
         clientId = kafkaClientsCount++;
 
