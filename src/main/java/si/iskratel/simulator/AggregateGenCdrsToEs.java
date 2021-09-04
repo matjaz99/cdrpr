@@ -5,7 +5,7 @@ import si.iskratel.metricslib.*;
 
 import java.sql.SQLException;
 
-public class AggregatedCalls implements Runnable {
+public class AggregateGenCdrsToEs implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
@@ -13,16 +13,16 @@ public class AggregatedCalls implements Runnable {
     private PgClient pgClient;
     private EsClient esClient;
 
-    private static final String INDEX_CDR_CALLS = Start.ES_INDEX_PREFIX + "pmon_cdr_node_calls_idx";
-    private static final String INDEX_CDR_KPI_ASR = Start.ES_INDEX_PREFIX + "pmon_cdr_node_calls_asr_idx";
-    private static final String INDEX_CDR_ACTIVE_CALLS = Start.ES_INDEX_PREFIX + "pmon_cdr_node_active_calls_idx";
-    private static final String INDEX_CDR_CALL_DURATION = Start.ES_INDEX_PREFIX + "pmon_cdr_node_durations_idx";
-    private static final String INDEX_CDR_BG = Start.ES_INDEX_PREFIX + "pmon_cdr_business_group_idx";
-    private static final String INDEX_CDR_SUPP_SERVICE = Start.ES_INDEX_PREFIX + "pmon_cdr_supplementary_service_idx";
-    private static final String INDEX_CDR_SG = Start.ES_INDEX_PREFIX + "pmon_cdr_subscriber_group_idx";
-    private static final String INDEX_CDR_VOIP = Start.ES_INDEX_PREFIX + "pmon_cdr_voip_idx";
-    private static final String INDEX_CDR_TRUNK = Start.ES_INDEX_PREFIX + "pmon_cdr_trunk_calls_idx";
-    private static final String INDEX_CDR_TRUNK_DURATION = Start.ES_INDEX_PREFIX + "pmon_cdr_trunk_durations_idx";
+    private static final String INDEX_CDR_CALLS = Props.ES_INDEX_PREFIX + "pmon_cdr_node_calls_idx";
+    private static final String INDEX_CDR_KPI_ASR = Props.ES_INDEX_PREFIX + "pmon_cdr_node_calls_asr_idx";
+    private static final String INDEX_CDR_ACTIVE_CALLS = Props.ES_INDEX_PREFIX + "pmon_cdr_node_active_calls_idx";
+    private static final String INDEX_CDR_CALL_DURATION = Props.ES_INDEX_PREFIX + "pmon_cdr_node_durations_idx";
+    private static final String INDEX_CDR_BG = Props.ES_INDEX_PREFIX + "pmon_cdr_business_group_idx";
+    private static final String INDEX_CDR_SUPP_SERVICE = Props.ES_INDEX_PREFIX + "pmon_cdr_supplementary_service_idx";
+    private static final String INDEX_CDR_SG = Props.ES_INDEX_PREFIX + "pmon_cdr_subscriber_group_idx";
+    private static final String INDEX_CDR_VOIP = Props.ES_INDEX_PREFIX + "pmon_cdr_voip_idx";
+    private static final String INDEX_CDR_TRUNK = Props.ES_INDEX_PREFIX + "pmon_cdr_trunk_calls_idx";
+    private static final String INDEX_CDR_TRUNK_DURATION = Props.ES_INDEX_PREFIX + "pmon_cdr_trunk_durations_idx";
 
     // metrics
     public static PMetric pmon_cdr_calls_by_cause = PMetric.build()
@@ -106,10 +106,10 @@ public class AggregatedCalls implements Runnable {
             .setLabelNames("nodeName", "duration")
             .register(INDEX_CDR_KPI_ASR);
 
-    public AggregatedCalls(int id) {
+    public AggregateGenCdrsToEs(int id) {
         threadId = id;
-        pgClient = new PgClient(Start.PG_URL, Start.PG_USER, Start.PG_PASS);
-        esClient = new EsClient(Start.ES_SCHEMA, Start.ES_HOST, Start.ES_PORT);
+        pgClient = new PgClient(Props.PG_URL, Props.PG_USER, Props.PG_PASS);
+        esClient = new EsClient(Props.ES_SCHEMA, Props.ES_HOST, Props.ES_PORT);
     }
 
 
@@ -119,7 +119,7 @@ public class AggregatedCalls implements Runnable {
         while (running) {
 
             try {
-                Thread.sleep(Start.SEND_INTERVAL_SEC * 1000);
+                Thread.sleep(Props.SEND_INTERVAL_SEC * 1000);
             } catch (InterruptedException e) {
             }
 
@@ -164,13 +164,13 @@ public class AggregatedCalls implements Runnable {
 
             SimulatorMetrics.bulkCount.set(pmon_cdr_calls_by_cause.getTimeSeriesSize());
 
-            pmon_cdr_calls_in_progress.setLabelValues(Start.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
+            pmon_cdr_calls_in_progress.setLabelValues(Props.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
 
             // TEST operations on metrics
             // convert millis to hours
             pmon_cdr_call_duration.MULTIPLY(1.0/1000 * 1.0/3600);
 
-            if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
+            if (Props.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_CALLS));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_KPI_ASR));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_CALL_DURATION));
@@ -182,8 +182,8 @@ public class AggregatedCalls implements Runnable {
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_TRUNK_DURATION));
             }
 
-            if (Start.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
-                if (Start.PG_CREATE_TABLES_ON_START) {
+            if (Props.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("POSTGRES")) {
+                if (Props.PG_CREATE_TABLES_ON_START) {
                     try {
                         pgClient.createTable(pmon_cdr_calls_by_cause);
                         pgClient.createTable(pmon_cdr_call_duration);
@@ -191,7 +191,7 @@ public class AggregatedCalls implements Runnable {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    Start.PG_CREATE_TABLES_ON_START = false;
+                    Props.PG_CREATE_TABLES_ON_START = false;
                 }
                 pgClient.sendBulk(pmon_cdr_calls_by_cause);
                 pgClient.sendBulk(pmon_cdr_call_duration);

@@ -4,7 +4,7 @@ import si.iskratel.cdr.parser.*;
 
 import java.util.*;
 
-public class CdrSimulatorThread extends Thread {
+public class CdrGeneratorThread extends Thread {
 
     private boolean running = true;
     private int threadId = 0;
@@ -12,7 +12,7 @@ public class CdrSimulatorThread extends Thread {
     private static int randomFactor = getRandomInRange(2, 12);
     private static String nodeId;
 
-    public CdrSimulatorThread(int id) {
+    public CdrGeneratorThread(int id) {
         threadId = id;
         nodeId = Start.getRandomNodeId();
     }
@@ -26,7 +26,7 @@ public class CdrSimulatorThread extends Thread {
         }
 
 //        int delay = getRandomGaussian(Start.SIMULATOR_CALL_DELAY, Start.SIMULATOR_CALL_DELAY / 4);
-        int delay = Start.SIMULATOR_CALL_DELAY;
+        int delay = Props.SIMULATOR_CALL_DELAY;
 
         while (running) {
 
@@ -55,14 +55,14 @@ public class CdrSimulatorThread extends Thread {
 
         String aNumber = getAvailableANumber();
         cdrBean.setCallingNumber(aNumber);
-        String bNumber = "" + getRandomInRange(Start.SIMULATOR_BNUM_START, Start.SIMULATOR_BNUM_START + Start.SIMULATOR_BNUM_RANGE);
+        String bNumber = "" + getRandomInRange(Props.SIMULATOR_BNUM_START, Props.SIMULATOR_BNUM_START + Props.SIMULATOR_BNUM_RANGE);
         cdrBean.setCalledNumber(bNumber);
 
         cdrBean.setCdrTimeBeforeRinging((int) (getRandomGaussian(2500, 100)));
         cdrBean.setCdrRingingTimeBeforeAnsw((int) (getRandomGaussian(25000, 1000)));
 
-        cdrBean.setCause(Start.SIMULATOR_CALL_REASON);
-        if (Start.SIMULATOR_CALL_REASON == 0) {
+        cdrBean.setCause(Props.SIMULATOR_CALL_REASON);
+        if (Props.SIMULATOR_CALL_REASON == 0) {
             if (totalCount % 2 == 0) {
                 cdrBean.setCause(16);
             } else if (totalCount % 3 == 0) {
@@ -143,7 +143,7 @@ public class CdrSimulatorThread extends Thread {
     }
 
     private String getAvailableANumber() {
-        int a = getRandomInRange(Start.SIMULATOR_ANUM_START, Start.SIMULATOR_ANUM_START + Start.SIMULATOR_ANUM_RANGE);
+        int a = getRandomInRange(Props.SIMULATOR_ANUM_START, Props.SIMULATOR_ANUM_START + Props.SIMULATOR_ANUM_RANGE);
         while (StorageThread.contains(a + "")) {
             a++;
         }

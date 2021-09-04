@@ -17,19 +17,19 @@ public class XmlSimulatorThread extends Thread {
     @Override
     public void run() {
 
-        EsClient esClient = new EsClient(Start.ES_SCHEMA, Start.ES_HOST, Start.ES_PORT);
+        EsClient esClient = new EsClient(Props.ES_SCHEMA, Props.ES_HOST, Props.ES_PORT);
 
         PMetric xml_metric = PMetric.build()
                 .setName("pmon_xml_metric")
                 .setHelp("Metric from xml")
                 .setLabelNames("nodeName", "measurement", "elementType", "measInfoId", "jobId")
-                .register(Start.ES_INDEX_PREFIX + "pmon_xml_measurements_idx");
+                .register(Props.ES_INDEX_PREFIX + "pmon_xml_measurements_idx");
 
         PMetric inventory_metric = PMetric.build()
                 .setName("pmon_cdr_inventory")
                 .setHelp("Inventory of PAM-CDR module")
                 .setLabelNames("nodeId", "nodeName", "productCategory", "subType", "status")
-                .register(Start.ES_INDEX_PREFIX + "pmon_inventory_idx");
+                .register(Props.ES_INDEX_PREFIX + "pmon_inventory_idx");
 
         PMultiValueMetric test_mv_metric = PMultiValueMetric.build()
                 .setName("test_mv_metric")
@@ -43,7 +43,7 @@ public class XmlSimulatorThread extends Thread {
             } catch (InterruptedException e) {
             }
 
-            PMetricRegistry.getRegistry(Start.ES_INDEX_PREFIX + "pmon_xml_measurements_idx").resetMetrics();
+            PMetricRegistry.getRegistry(Props.ES_INDEX_PREFIX + "pmon_xml_measurements_idx").resetMetrics();
 
             for (int i = 0; i < measurements.length; i++) {
                 xml_metric.setLabelValues(
@@ -64,7 +64,7 @@ public class XmlSimulatorThread extends Thread {
 
 
             Map<String, Object> nodesMap = new HashMap<>();
-            String[] nodes = Start.SIMULATOR_NODEID.split(",");
+            String[] nodes = Props.SIMULATOR_NODEID.split(",");
             for (int i = 0; i < nodes.length; i++) {
                 nodesMap.put(nodes[i], null);
             }

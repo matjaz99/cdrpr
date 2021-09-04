@@ -1,8 +1,10 @@
-package si.iskratel.cdrparser;
+package si.iskratel.simulator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.iskratel.cdr.parser.CdrBean;
+import si.iskratel.cdrparser.CdrData;
+import si.iskratel.cdrparser.CdrParser;
 import si.iskratel.metricslib.EsClient;
 import si.iskratel.metricslib.MetricsLib;
 import si.iskratel.metricslib.PMetric;
@@ -19,7 +21,6 @@ public class CdrToEs {
 
     public static String CDR_INPUT_DIR = "cdr_input_dir";
     public static String CDR_OUTPUT_DIR = "cdr_output_dir";
-    private static boolean runOnce = true;
 
     public static PMetric cdr_files_total = PMetric.build()
             .setName("cdrparser_processed_files_total")
@@ -28,6 +29,8 @@ public class CdrToEs {
             .register();
 
     public static void main(String[] args) throws Exception {
+
+        Props.EXIT_WHEN_DONE = true;
 
         String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
         Properties cdrProps = new Properties();
@@ -113,7 +116,7 @@ public class CdrToEs {
 
             } // END foreach directory
 
-            if (runOnce) break;
+            if (Props.EXIT_WHEN_DONE) break; // run only once
 
             try {
                 Thread.sleep(60 * 1000);

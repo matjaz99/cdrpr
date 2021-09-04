@@ -1,16 +1,14 @@
-package si.iskratel.cdrparser;
+package si.iskratel.simulator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.iskratel.cdr.parser.CdrBean;
+import si.iskratel.cdrparser.CdrData;
+import si.iskratel.cdrparser.CdrParser;
 import si.iskratel.metricslib.FileClient;
-import si.iskratel.simulator.Utils;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
 
 public class CdrToCsv {
 

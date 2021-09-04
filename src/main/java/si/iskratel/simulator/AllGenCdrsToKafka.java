@@ -3,7 +3,7 @@ package si.iskratel.simulator;
 import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.metricslib.KafkaClient;
 
-public class AllCallKafkaProducer implements Runnable {
+public class AllGenCdrsToKafka implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
@@ -11,7 +11,7 @@ public class AllCallKafkaProducer implements Runnable {
     private String TOPIC_NAME = "pmon_all_calls_topic";
 
 
-    public AllCallKafkaProducer(int id) {
+    public AllGenCdrsToKafka(int id) {
         this.threadId = id;
         kafkaClient = new KafkaClient();
     }
@@ -60,7 +60,7 @@ public class AllCallKafkaProducer implements Runnable {
 
     private String toJson(CdrBean cdrBean) {
 
-        if (Start.SIMULATOR_MINIMUM_DATA) {
+        if (Props.SIMULATOR_MINIMUM_DATA) {
             return toJsonMinimalistic(cdrBean);
         }
 

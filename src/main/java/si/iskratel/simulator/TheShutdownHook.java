@@ -14,7 +14,7 @@ public class TheShutdownHook extends Thread {
 		
 		Start.running = false;
 
-		for (CdrSimulatorThread t :
+		for (CdrGeneratorThread t :
 				Start.simulatorThreads) {
 			t.setRunning(false);
 		}

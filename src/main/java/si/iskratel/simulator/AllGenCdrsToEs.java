@@ -2,26 +2,29 @@ package si.iskratel.simulator;
 
 import okhttp3.*;
 import si.iskratel.cdr.parser.CdrBean;
+import si.iskratel.metricslib.EsClient;
 import si.iskratel.metricslib.PromExporter;
 
-public class AllCallData implements Runnable {
+public class AllGenCdrsToEs implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
-    private int sendInterval = Start.SEND_INTERVAL_SEC * 1000;
+    private int sendInterval = Props.SEND_INTERVAL_SEC * 1000;
     private int bulkCount = 0;
     private String url;
 
     private StringBuilder sb = new StringBuilder();
 
+    EsClient esClient = new EsClient(Props.ES_SCHEMA, Props.ES_HOST, Props.ES_PORT); // TODO use this!
+
     private OkHttpClient httpClient = new OkHttpClient();
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
-    private int dynamicBulkSize = Start.BULK_SIZE;
+    private int dynamicBulkSize = Props.BULK_SIZE;
 
-    public AllCallData(int id) {
+    public AllGenCdrsToEs(int id) {
         this.threadId = id;
-        url = Start.ES_SCHEMA + "://" + Start.ES_HOST + ":" + Start.ES_PORT + "/cdrs/_bulk";
+        url = Props.ES_SCHEMA + "://" + Props.ES_HOST + ":" + Props.ES_PORT + "/cdrs/_bulk";
     }
 
 
@@ -47,17 +50,17 @@ public class AllCallData implements Runnable {
 
             }
 
-            if (Start.getQueueSize() > 3 * Start.BULK_SIZE) {
+            if (Start.getQueueSize() > 3 * Props.BULK_SIZE) {
                 sendInterval = sendInterval - 10;
                 if (sendInterval < 1) sendInterval = 1;
             }
-            if (Start.getQueueSize() > 5 * Start.BULK_SIZE) {
+            if (Start.getQueueSize() > 5 * Props.BULK_SIZE) {
                 dynamicBulkSize = dynamicBulkSize + 100;
                 if (dynamicBulkSize > 100000) dynamicBulkSize = 100000;
             }
-            if (Start.getQueueSize() < Start.BULK_SIZE) {
-                sendInterval = Start.SEND_INTERVAL_SEC * 1000;
-                dynamicBulkSize = Start.BULK_SIZE;
+            if (Start.getQueueSize() < Props.BULK_SIZE) {
+                sendInterval = Props.SEND_INTERVAL_SEC * 1000;
+                dynamicBulkSize = Props.BULK_SIZE;
             }
 
             SimulatorMetrics.bulkCount.set(bulkCount);
@@ -134,7 +137,7 @@ public class AllCallData implements Runnable {
 
     private void putToStringBuilder(CdrBean cdrBean) {
 
-        if (Start.SIMULATOR_MINIMUM_DATA) {
+        if (Props.SIMULATOR_MINIMUM_DATA) {
             putToStringBuilderMinimalistic(cdrBean);
             return;
         }

@@ -24,8 +24,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <!--<mainClass>si.iskratel.simulator.Start</mainClass>-->
-                            <mainClass>si.iskratel.xml.XmlParser</mainClass>
+                            <mainClass>si.iskratel.simulator.Start</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
