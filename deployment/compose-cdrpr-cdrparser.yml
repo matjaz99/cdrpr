@@ -7,9 +7,7 @@ networks:
 
 services:
   cdrsim:
-    #image: matjaz99/cdrpr:2.1
-    # support for ssl in 2.2
-    image: matjaz99/cdrpr:2.2
+    image: matjaz99/cdrpr:3.0
     networks:
       - net
     ports:
@@ -33,8 +31,8 @@ services:
       - CDRPR_EXIT_WHEN_DONE=false
     volumes:
       - /var/log:/opt/log
-      - cdr_input_dir:/opt/cdr_input_dir
-      - cdr_output_dir:/opt/cdr_output_dir
+      - ./cdr_input_dir:/opt/cdr_input_dir
+      - ./cdr_output_dir:/opt/cdr_output_dir
     deploy:
       mode: replicated
       replicas: 1

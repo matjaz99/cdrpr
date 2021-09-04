@@ -73,7 +73,7 @@ public class Start {
             CdrToEs.main(new String[1]);
         }
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_TO_KAFKA")) {
-            CdrToEs.main(new String[1]);
+            CdrToKafka.main(new String[1]);
         }
 
 
