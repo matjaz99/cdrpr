@@ -9,6 +9,9 @@ import si.iskratel.metricslib.KafkaClient;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 public class CdrToKafka {
 
@@ -57,7 +60,7 @@ public class CdrToKafka {
                 String absPath = f.getAbsolutePath();
                 absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
                 logger.info("Moving file to new location: " + absPath);
-                f.renameTo(new File(absPath));
+                Files.move(Paths.get(f.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
 
             } // END foreach file
 
