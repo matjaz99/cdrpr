@@ -13,6 +13,9 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
 public class CdrToEs {
@@ -30,7 +33,7 @@ public class CdrToEs {
 
     public static void main(String[] args) throws Exception {
 
-        Props.EXIT_WHEN_DONE = true;
+//        Props.EXIT_WHEN_DONE = true;
 
         String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
         Properties cdrProps = new Properties();
@@ -70,7 +73,7 @@ public class CdrToEs {
                 File[] files = nodeDir.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File pathname) {
-                        return pathname.isFile() && pathname.getAbsolutePath().endsWith(".si2");
+                        return pathname.isFile();// && pathname.getAbsolutePath().endsWith(".si2");
                     }
                 });
 
@@ -89,7 +92,7 @@ public class CdrToEs {
                     for (int i = 0; i < data.cdrList.size(); i++) {
                         CdrBean cdrBean = data.cdrList.get(i);
                         cdrBean.setNodeId(nodeDir.getName());
-                        cdrJson.append(CdrParser.toEsNdjson("cdr_index", cdrBean));
+                        cdrJson.append(CdrParser.toEsNdjsonShort("cdr_index", cdrBean));
                         count++;
                         if (count % 9000 == 0) {
                             es.sendBulkPost(cdrJson.toString());
@@ -104,10 +107,10 @@ public class CdrToEs {
 
                     // move processed file
                     // FIXME create new output node dir
-//                    String absPath = f.getAbsolutePath();
-//                    absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
-//                    logger.info("Moving file to new location: " + absPath);
-//                    f.renameTo(new File(absPath));
+                    String absPath = f.getAbsolutePath();
+                    absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+                    logger.info("Moving file to new location: " + absPath);
+                    Files.move(Paths.get(f.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
 
 
                 } // END foreach file

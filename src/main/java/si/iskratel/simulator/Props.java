@@ -29,7 +29,7 @@ public class Props {
     public static String PG_PASS;
     public static boolean PG_CREATE_TABLES_ON_START = true;
     public static String ES_INDEX_PREFIX = "";
-    public static boolean EXIT_WHEN_DONE = false;
+    public static boolean EXIT_WHEN_DONE = true;
     public static String SIMULATOR_MODE;
     public static String SIMULATOR_STORAGE_TYPE;
     public static String SIMULATOR_NODEID;
@@ -64,7 +64,7 @@ public class Props {
                 "London, Zurich, Minsk, Manchester, Frankfurt, Grenoble, Madrid, Moscow");
 
         // possible values:
-        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "STORE_ALL_TO_KAFKA");
+        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "CDR_TO_ES");
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
 

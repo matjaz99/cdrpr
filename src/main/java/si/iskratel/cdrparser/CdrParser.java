@@ -160,6 +160,33 @@ public class CdrParser {
         return sb.toString();
     }
 
+    public static String toEsNdjsonShort(String index, CdrBean cdrBean) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{\"index\":{\"_index\":\"").append(index).append("\"}}\n");
+        sb.append("{");
+        sb.append("\"id\":\"").append(cdrBean.getId()).append("\",");
+        sb.append("\"ownerNumber\":\"").append(cdrBean.getOwnerNumber()).append("\",");
+        sb.append("\"callingNumber\":\"").append(cdrBean.getCallingNumber()).append("\",");
+        sb.append("\"calledNumber\":\"").append(cdrBean.getCalledNumber()).append("\",");
+        sb.append("\"cdrTimeBeforeRinging\":").append(cdrBean.getCdrTimeBeforeRinging()).append(",");
+        sb.append("\"cdrRingingTimeBeforeAnsw\":").append(cdrBean.getCdrRingingTimeBeforeAnsw()).append(",");
+        sb.append("\"duration\":").append(cdrBean.getDuration()).append(",");
+        sb.append("\"cause\":").append(cdrBean.getCause()).append(",");
+        sb.append("\"causeString\":\"").append(releaseCausesProps.getOrDefault(cdrBean.getCause() + "", "unknown")).append("\",");
+        sb.append("\"startTime\":\"").append(Utils.toDateString(cdrBean.getStartTime())).append("\",");
+        sb.append("\"endTime\":\"").append(Utils.toDateString(cdrBean.getEndTime())).append("\",");
+        sb.append("\"inTrunkGroupId\":\"").append(cdrBean.getInTrunkGroupId()).append("\",");
+        sb.append("\"outTrunkGroupId\":\"").append(cdrBean.getOutTrunkGroupId()).append("\",");
+        sb.append("\"inTrunkGroupName\":\"").append(cdrBean.getInTrunkGroupNameIE144()).append("\",");
+        sb.append("\"outTrunkGroupName\":\"").append(cdrBean.getOutTrunkGroupNameIE145()).append("\",");
+        sb.append("\"nodeId\":\"").append(cdrBean.getNodeId()).append("\",");
+        sb.append("\"@timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
+
+        return sb.toString();
+    }
+
     public static PMultiValueMetric toMultivalueMetric(CdrBean cdrBean) {
 
         PMultiValueMetric mv = PMultiValueMetric.build()
