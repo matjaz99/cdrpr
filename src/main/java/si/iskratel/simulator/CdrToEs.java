@@ -34,7 +34,7 @@ public class CdrToEs {
 
     public static void main(String[] args) throws Exception {
 
-        Props.EXIT_WHEN_DONE = false;
+//        Props.EXIT_WHEN_DONE = false;
 
         String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
         Properties cdrProps = new Properties();
