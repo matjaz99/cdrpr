@@ -14,6 +14,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
@@ -33,7 +34,7 @@ public class CdrToEs {
 
     public static void main(String[] args) throws Exception {
 
-//        Props.EXIT_WHEN_DONE = true;
+        Props.EXIT_WHEN_DONE = false;
 
         String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
         Properties cdrProps = new Properties();
@@ -73,7 +74,7 @@ public class CdrToEs {
                 File[] files = nodeDir.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File pathname) {
-                        return pathname.isFile();// && pathname.getAbsolutePath().endsWith(".si2");
+                        return pathname.isFile() && !pathname.getName().startsWith(".");// && pathname.getAbsolutePath().endsWith(".si2");
                     }
                 });
 
@@ -105,8 +106,19 @@ public class CdrToEs {
                         }
                     }
 
+
+
+                    // create new output node dir
+                    String nodeOutDir = nodeDir.getAbsolutePath();
+                    nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+                    File nodeOutDirFile = new File(nodeOutDir);
+                    if (!nodeOutDirFile.exists()) {
+                        logger.info("Creating new output directory: " + nodeOutDir);
+                        Path outDir = Paths.get(nodeOutDir);
+                        Files.createDirectories(outDir);
+                    }
+
                     // move processed file
-                    // FIXME create new output node dir
                     String absPath = f.getAbsolutePath();
                     absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
                     logger.info("Moving file to new location: " + absPath);

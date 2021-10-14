@@ -46,7 +46,7 @@ public class CdrParser {
         logger.info("records in file: " + list.size());
 
         for (DataRecord dr : list) {
-            logger.debug(dr.toString());
+//            logger.debug(dr.toString());
             CdrBeanCreator cbc = new CdrBeanCreator() {
                 @Override
                 public void setSpecificBeanValues(CdrObject cdrObj, CdrBean cdrBean) {
@@ -57,7 +57,7 @@ public class CdrParser {
                 CdrBean cdrBean = cbc.parseBinaryCdr(dr.getDataRecordBytes(), null);
                 cdrData.cdrList.add(cdrBean);
                 cdr_records_total.setLabelValues("CDR").inc();
-                logger.debug(cdrBean.toString());
+//                logger.debug(cdrBean.toString());
             } catch (BadCdrRecordException e) {
                 PpdrBean ppdrBean = cbc.parseBinaryPpdr(dr);
                 cdrData.ppdrList.add(ppdrBean);
@@ -167,6 +167,7 @@ public class CdrParser {
         sb.append("{\"index\":{\"_index\":\"").append(index).append("\"}}\n");
         sb.append("{");
         sb.append("\"id\":\"").append(cdrBean.getId()).append("\",");
+        sb.append("\"sequence\":\"").append(cdrBean.getSequence()).append("\",");
         sb.append("\"ownerNumber\":\"").append(cdrBean.getOwnerNumber()).append("\",");
         sb.append("\"callingNumber\":\"").append(cdrBean.getCallingNumber()).append("\",");
         sb.append("\"calledNumber\":\"").append(cdrBean.getCalledNumber()).append("\",");

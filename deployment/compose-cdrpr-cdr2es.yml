@@ -16,7 +16,7 @@ services:
       - CDRPR_SIMULATOR_MODE=CDR_TO_ES
       - CDRPR_SEND_INTERVAL_SEC=60
       - CDRPR_ES_SCHEMA=http
-      - CDRPR_ES_HOST=172.29.6.6
+      - CDRPR_ES_HOST=172.29.6.25
       - CDRPR_ES_PORT=9200
       # if true, create ILM (pmon_ilm_policy) manually before running simulator!
       # if false, create mapping manually before running simulator (if you want to use timestamp)!
@@ -25,12 +25,13 @@ services:
       - CDRPR_ES_NUMBER_OF_REPLICAS=0
       - CDRPR_DUMP_TO_FILE=true
       - CDRPR_KAFKA_BOOTSTRAP_SERVER=172.29.6.25:9092
-      - CDRPR_EXIT_WHEN_DONE=true
+      - CDRPR_EXIT_WHEN_DONE=false
     volumes:
       - /var/log:/opt/log
       - ./cdr_input_dir:/opt/cdr_input_dir
       - ./cdr_output_dir:/opt/cdr_output_dir
       - ./logback.xml:/opt/logback.xml
+      - ./cdr_parser/cdr_parser.properties:/opt/cdr_parser/cdr_parser.properties
     deploy:
       mode: replicated
       replicas: 1
