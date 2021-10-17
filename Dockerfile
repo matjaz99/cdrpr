@@ -8,9 +8,9 @@ RUN mkdir -p /opt/cdr
 RUN mkdir -p /opt/dump
 #COPY target/cdrpr-2.0-jar-with-dependencies.jar /opt/cdrpr-2.0-jar-with-dependencies.jar
 COPY --from=build /usr/src/app/target/cdrpr-3.0-jar-with-dependencies.jar /opt/cdrpr-3.0-jar-with-dependencies.jar
-COPY call_release_causes.properties /opt/call_release_causes.properties
+COPY config/call_release_causes.properties /opt/call_release_causes.properties
 COPY init.sh /opt/init.sh
-COPY logback.xml /opt/logback.xml
+COPY config/logback.xml /opt/logback.xml
 
 WORKDIR /opt
 

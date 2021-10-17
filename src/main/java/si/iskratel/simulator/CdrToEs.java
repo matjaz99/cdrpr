@@ -52,7 +52,7 @@ public class CdrToEs {
 
         while (!EsClient.ES_IS_READY) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

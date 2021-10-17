@@ -27,47 +27,34 @@ public class Start {
 
         releaseCausesProps = new Properties();
         try {
-            releaseCausesProps.load(new FileInputStream("call_release_causes.properties"));
+            releaseCausesProps.load(new FileInputStream("config/call_release_causes.properties"));
         } catch (IOException e) {
             System.err.println("IOException: " + e.getMessage());
         }
 
-        MetricsLib.PROM_METRICS_EXPORT_ENABLE = Props.ENABLE_PROMETHEUS_METRICS;
-        MetricsLib.DUMP_TO_FILE_ENABLED = Props.ENABLE_DUMP_TO_FILE;
-        MetricsLib.ES_DEFAULT_SCHEMA = Props.ES_SCHEMA;
-        MetricsLib.ES_BASIC_USER = Props.ES_BASIC_USER;
-        MetricsLib.ES_BASIC_PASS = Props.ES_BASIC_PASS;
-        MetricsLib.ES_DEFAULT_HOST = Props.ES_HOST;
-        MetricsLib.ES_DEFAULT_PORT = Props.ES_PORT;
-        MetricsLib.ES_AUTO_CREATE_INDEX = Props.ES_AUTO_CREATE_INDEX;
-        MetricsLib.ES_NUMBER_OF_SHARDS = Props.ES_NUMBER_OF_SHARDS;
-        MetricsLib.ES_NUMBER_OF_REPLICAS = Props.ES_NUMBER_OF_REPLICAS;
-        MetricsLib.RETRIES = Props.RETRIES;
-        MetricsLib.ALARM_DESTINATION = Props.ALARM_DESTINATION;
-//        MetricsLib.EXPORT_ENABLED = true;
-        MetricsLib.init();
-
-
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AND_STORE_ALL_TO_ES")) {
+            initMetricsLib();
             startCdrGenerators();
             Thread t = new Thread(new AllGenCdrsToEs(1));
             t.setName("aggregator");
             t.start();
         }
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AGGREGATE_AND_STORE_TO_ES")) {
+            initMetricsLib();
             startCdrGenerators();
             Thread t = new Thread(new AggregateGenCdrsToEs(1));
             t.setName("aggregator");
             t.start();
         }
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AND_STORE_ALL_TO_KAFKA")) {
+            initMetricsLib();
             startCdrGenerators();
             Thread t = new Thread(new AllGenCdrsToKafka(1));
             t.setName("aggregator");
             t.start();
         }
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_TO_CSV")) {
-            CdrToCsv.main(new String[1]);
+            CdrToCsv.main(null);
         }
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_TO_ES")) {
             CdrToEs.main(new String[1]);
@@ -99,6 +86,23 @@ public class Start {
         XmlSimulatorThread xst = new XmlSimulatorThread();
         xst.setName("XmlSimulatorThread");
         xst.start();
+    }
+
+    public static void initMetricsLib() throws Exception {
+        MetricsLib.PROM_METRICS_EXPORT_ENABLE = Props.ENABLE_PROMETHEUS_METRICS;
+        MetricsLib.DUMP_TO_FILE_ENABLED = Props.ENABLE_DUMP_TO_FILE;
+        MetricsLib.ES_DEFAULT_SCHEMA = Props.ES_SCHEMA;
+        MetricsLib.ES_BASIC_USER = Props.ES_BASIC_USER;
+        MetricsLib.ES_BASIC_PASS = Props.ES_BASIC_PASS;
+        MetricsLib.ES_DEFAULT_HOST = Props.ES_HOST;
+        MetricsLib.ES_DEFAULT_PORT = Props.ES_PORT;
+        MetricsLib.ES_AUTO_CREATE_INDEX = Props.ES_AUTO_CREATE_INDEX;
+        MetricsLib.ES_NUMBER_OF_SHARDS = Props.ES_NUMBER_OF_SHARDS;
+        MetricsLib.ES_NUMBER_OF_REPLICAS = Props.ES_NUMBER_OF_REPLICAS;
+        MetricsLib.RETRIES = Props.RETRIES;
+        MetricsLib.ALARM_DESTINATION = Props.ALARM_DESTINATION;
+//        MetricsLib.EXPORT_ENABLED = true;
+        MetricsLib.init();
     }
 
 
