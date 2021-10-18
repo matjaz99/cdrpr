@@ -17,6 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class CdrToEs {
@@ -86,12 +88,14 @@ public class CdrToEs {
 
                     CdrData data = CdrParser.parse(f);
                     cdr_files_total.setLabelValues("Success").inc();
-                    logger.info("CDR contains " + data.cdrList.size() + " records");
+                    logger.info("File contains " + data.cdrList.size() + " CDR records");
+                    logger.info("File contains " + data.ppdrList.size() + " PPDR records");
 
                     StringBuilder cdrJson = new StringBuilder();
                     int count = 0;
                     for (int i = 0; i < data.cdrList.size(); i++) {
                         CdrBean cdrBean = data.cdrList.get(i);
+                        logger.info(cdrBean.toString());
                         cdrBean.setNodeId(nodeDir.getName());
                         cdrJson.append(CdrParser.toEsNdjsonShort("cdr_index", cdrBean));
                         count++;
@@ -105,8 +109,6 @@ public class CdrToEs {
                             cdrJson = new StringBuilder();
                         }
                     }
-
-
 
                     // create new output node dir
                     String nodeOutDir = nodeDir.getAbsolutePath();

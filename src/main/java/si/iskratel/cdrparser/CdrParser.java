@@ -27,7 +27,7 @@ public class CdrParser {
     static {
         releaseCausesProps = new Properties();
         try {
-            releaseCausesProps.load(new FileInputStream("call_release_causes.properties"));
+            releaseCausesProps.load(new FileInputStream("config/call_release_causes.properties"));
         } catch (IOException e) {
             logger.error("IOException: " + e.getMessage());
         }
@@ -65,6 +65,35 @@ public class CdrParser {
             } catch (Exception e) {
                 logger.error("Exception: ", e);
                 cdr_records_total.setLabelValues("Unknown").inc();
+            }
+        }
+
+        // PpdrBean [recordLength=69, recordIndex=207961128, recordTime=Wed Sep 01 14:01:22 CEST 2021, trunkGroupId=2, trunkGroupName=IX_Dialogic_LJ_1, numberOfAllTrunks=1500, numberOfOutOfServiceTrunks=0, trunkGroupOperatingMode=0]
+
+        Map<Integer, String> tg_id_name = new HashMap<>();
+        Map<String, Integer> tg_name_id = new HashMap<>();
+        for (int i = 0; i < cdrData.ppdrList.size(); i++) {
+            tg_id_name.put(cdrData.ppdrList.get(i).getTrunkGroupId(), cdrData.ppdrList.get(i).getTrunkGroupName());
+            tg_name_id.put(cdrData.ppdrList.get(i).getTrunkGroupName(), cdrData.ppdrList.get(i).getTrunkGroupId());
+        }
+
+        for (int i = 0; i < cdrData.cdrList.size(); i++) {
+            if (cdrData.cdrList.get(i).getInTrunkGroupId() == null) {
+                cdrData.cdrList.get(i).setInTrunkGroupId(
+                        tg_name_id.getOrDefault(cdrData.cdrList.get(i).getInTrunkGroupNameIE144(), null));
+            }
+            if (cdrData.cdrList.get(i).getInTrunkGroupNameIE144() == null) {
+                cdrData.cdrList.get(i).setInTrunkGroupNameIE144(
+                        tg_id_name.getOrDefault(cdrData.cdrList.get(i).getInTrunkGroupId(), null));
+
+            }
+            if (cdrData.cdrList.get(i).getOutTrunkGroupId() == null) {
+                cdrData.cdrList.get(i).setOutTrunkGroupId(
+                        tg_name_id.getOrDefault(cdrData.cdrList.get(i).getOutTrunkGroupNameIE145(), null));
+            }
+            if (cdrData.cdrList.get(i).getOutTrunkGroupNameIE145() == null) {
+                cdrData.cdrList.get(i).setOutTrunkGroupNameIE145(
+                        tg_id_name.getOrDefault(cdrData.cdrList.get(i).getOutTrunkGroupId(), null));
             }
         }
 
