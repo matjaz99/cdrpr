@@ -95,7 +95,6 @@ public class CdrToEs {
                     int count = 0;
                     for (int i = 0; i < data.cdrList.size(); i++) {
                         CdrBean cdrBean = data.cdrList.get(i);
-                        logger.info(cdrBean.toString());
                         cdrBean.setNodeId(nodeDir.getName());
                         cdrJson.append(CdrParser.toEsNdjsonShort("cdr_index", cdrBean));
                         count++;
