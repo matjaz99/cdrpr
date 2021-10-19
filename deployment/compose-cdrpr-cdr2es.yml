@@ -28,9 +28,11 @@ services:
       - CDRPR_EXIT_WHEN_DONE=false
     volumes:
       - /var/log:/opt/log
-      - ./cdr_input_dir:/opt/cdr_input_dir
-      - ./cdr_output_dir:/opt/cdr_output_dir
-      - ./logback.xml:/opt/logback.xml
+      #- ./cdr_input_dir:/opt/cdr_input_dir
+      #- ./cdr_output_dir:/opt/cdr_output_dir
+      - /home/pmon/cdr_storage_1:/opt/cdr_input_dir
+      - /home/pmon/cdr_storage_2:/opt/cdr_output_dir
+      #- ./logback.xml:/opt/logback.xml
       - ./dump:/opt/dump
       - ./cdr_parser/cdr_parser.properties:/opt/cdr_parser/cdr_parser.properties
     deploy:
