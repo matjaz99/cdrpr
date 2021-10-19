@@ -27,7 +27,7 @@ public class AlarmManager {
 
     static {
         try {
-            alarmSeveritiesProperties.load(new FileInputStream("severities.properties"));
+            alarmSeveritiesProperties.load(new FileInputStream("config/severities.properties"));
             for (Object o : alarmSeveritiesProperties.keySet()) {
                 alarmSeveritiesMap.put(Integer.parseInt(String.valueOf(o)), alarmSeveritiesProperties.getProperty(String.valueOf(o)));
             }
