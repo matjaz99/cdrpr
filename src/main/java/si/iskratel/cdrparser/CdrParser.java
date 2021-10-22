@@ -55,14 +55,23 @@ public class CdrParser {
             };
             try {
                 CdrBean cdrBean = cbc.parseBinaryCdr(dr.getDataRecordBytes(), null);
+                cdrBean.setCauseString((String) releaseCausesProps.getOrDefault(cdrBean.getCause() + "", "unknown"));
                 cdrData.cdrList.add(cdrBean);
                 cdr_records_total.setLabelValues("CDR").inc();
-//                logger.debug(cdrBean.toString());
+                logger.debug(cdrBean.toString());
+//                System.out.println(cdrBean.toString());
             } catch (BadCdrRecordException e) {
-                PpdrBean ppdrBean = cbc.parseBinaryPpdr(dr);
-                cdrData.ppdrList.add(ppdrBean);
-                cdr_records_total.setLabelValues("PPDR").inc();
+//                System.out.println("====== BCRException: " + e.getMessage());
+                try {
+                    PpdrBean ppdrBean = cbc.parseBinaryPpdr(dr);
+//                    System.out.println(ppdrBean.toString());
+                    cdrData.ppdrList.add(ppdrBean);
+                    cdr_records_total.setLabelValues("PPDR").inc();
+                } catch (Exception e1) {
+//                    System.out.println("====== Exception1: " + e1.getMessage());
+                }
             } catch (Exception e) {
+                System.out.println("====== Exception: " + e.getMessage());
                 logger.error("Exception: ", e);
                 cdr_records_total.setLabelValues("Unknown").inc();
             }

@@ -16,7 +16,27 @@ public class PMultivalueTimeSeries {
 
     public PMultivalueTimeSeries addValue(String key, double value) {
         if (valuesMap == null) valuesMap = new HashMap<>();
+        if (key == null) return this;
         valuesMap.put(key, value);
+        return this;
+    }
+
+    /**
+     * Increment given key by value
+     * @param key
+     * @param value
+     * @return
+     */
+    public PMultivalueTimeSeries incValue(String key, double value) {
+        if (valuesMap == null) valuesMap = new HashMap<>();
+        if (key == null) return this;
+        if (valuesMap.containsKey(key)) {
+            double val = valuesMap.get(key);
+            val = val + value;
+            valuesMap.put(key, val);
+        } else {
+            valuesMap.put(key, value);
+        }
         return this;
     }
 

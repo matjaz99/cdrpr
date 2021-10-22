@@ -41,6 +41,7 @@ public class PMultiValueMetric {
     }
 
     public String getName() {
+        if (name == null) throw new PMetricException("Name missing");
         return name;
     }
 
