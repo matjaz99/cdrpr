@@ -4,6 +4,9 @@ import si.iskratel.cdr.parser.*;
 
 import java.util.*;
 
+/**
+ * This thread generates CdrBeans with random data.
+ */
 public class CdrGeneratorThread extends Thread {
 
     private boolean running = true;

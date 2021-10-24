@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Parse CDR files and store each record in Elasticsearch
+ */
 public class CdrToEs {
 
     private static Logger logger = LoggerFactory.getLogger(CdrToEs.class);
@@ -31,26 +34,6 @@ public class CdrToEs {
             .setHelp("Number of processed files")
             .setLabelNames("status")
             .register();
-
-    public static PMultiValueMetric cdr_seizures = PMultiValueMetric.build()
-            .setName("cdr_seizures")
-            .setHelp("Number of call seizures")
-            .register("stat");
-
-    public static PMultiValueMetric cdr_active_calls = PMultiValueMetric.build()
-            .setName("cdr_active_calls")
-            .setHelp("Number of active calls")
-            .register("stat");
-
-    public static PMultiValueMetric cdr_release_causes = PMultiValueMetric.build()
-            .setName("cdr_release_causes")
-            .setHelp("Number of calls by release cause")
-            .register("stat");
-
-    public static PMultiValueMetric cdr_durations = PMultiValueMetric.build()
-            .setName("cdr_durations")
-            .setHelp("Duration of calls")
-            .register("stat");
 
     public static void main(String[] args) throws Exception {
 
@@ -70,13 +53,13 @@ public class CdrToEs {
                 cdrProps.getProperty("metricslib.elasticsearch.default.host"),
                 Integer.parseInt(cdrProps.getProperty("metricslib.elasticsearch.default.port")));
 
-//        while (!EsClient.ES_IS_READY) {
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        while (!EsClient.ES_IS_READY) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
         while (true) {
 
@@ -135,8 +118,6 @@ public class CdrToEs {
 
                     }
 
-                    doAggregations(data, f.getName());
-
                     // create new output node dir
                     String nodeOutDir = nodeDir.getAbsolutePath();
                     nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
@@ -173,60 +154,5 @@ public class CdrToEs {
 
     }
 
-    private static void doAggregations(CdrData data, String samplingTime) {
-
-        PMultivalueTimeSeries mvts_node_active_calls = new PMultivalueTimeSeries();
-        PMultivalueTimeSeries mvts_node_seizures = new PMultivalueTimeSeries();
-        PMultivalueTimeSeries mvts_in_tg_seizures = new PMultivalueTimeSeries();
-        PMultivalueTimeSeries mvts_out_tg_seizures = new PMultivalueTimeSeries();
-        PMultivalueTimeSeries mvts_node_durations = new PMultivalueTimeSeries();
-        PMultivalueTimeSeries mvts_node_release_causes = new PMultivalueTimeSeries();
-
-        for (int i = 0; i < data.cdrList.size(); i++) {
-            CdrBean cdrBean = data.cdrList.get(i);
-            cdrBean.setNodeId(data.nodeName);
-
-            if (cdrBean.getSequence() == 1 || cdrBean.getSequence() == 2) {
-                mvts_node_seizures.addLabel("nodeName", cdrBean.getNodeId())
-                        .incValue("call_seizures", 1);
-                mvts_in_tg_seizures.addLabel("nodeName", cdrBean.getNodeId())
-                        .addLabel("tg_direction", "inc")
-                        .incValue(cdrBean.getInTrunkGroupNameIE144(), 1);
-                mvts_out_tg_seizures.addLabel("nodeName", cdrBean.getNodeId())
-                        .addLabel("tg_direction", "out")
-                        .incValue(cdrBean.getOutTrunkGroupNameIE145(), 1);
-            }
-            if (cdrBean.getSequence() == 3) {
-                mvts_node_active_calls.addLabel("nodeName", cdrBean.getNodeId())
-                        .incValue("active_calls", 1);
-            }
-            if (cdrBean.getSequence() == 1 || cdrBean.getSequence() == 4 || cdrBean.getSequence() == 5) {
-                mvts_node_release_causes.addLabel("nodeName", cdrBean.getNodeId())
-                        .incValue(cdrBean.getCauseString(), 1);
-            }
-            if (cdrBean.getDuration() > 0) {
-                mvts_node_durations.addLabel("nodeName", cdrBean.getNodeId())
-                        .incValue("duration", cdrBean.getDuration());
-            }
-
-        }
-
-        cdr_seizures.addMultiValueTimeSeries(mvts_node_seizures);
-        cdr_seizures.addMultiValueTimeSeries(mvts_in_tg_seizures);
-        cdr_seizures.addMultiValueTimeSeries(mvts_out_tg_seizures);
-        System.out.println(cdr_seizures.toStringDetail());
-
-        cdr_active_calls.addMultiValueTimeSeries(mvts_node_active_calls);
-        System.out.println(cdr_active_calls.toStringDetail());
-
-        cdr_durations.addMultiValueTimeSeries(mvts_node_durations);
-        System.out.println(cdr_durations.toStringDetail());
-
-        cdr_release_causes.addMultiValueTimeSeries(mvts_node_release_causes);
-        System.out.println(cdr_release_causes.toStringDetail());
-
-//                    es.sendBulkPost(cdr_seizures);
-
-    }
 
 }
