@@ -53,13 +53,25 @@ public class CdrAggsToEs {
             .register("stat");
 
     // metrics
-    public static PMetric m_cdr_seizures = PMetric.build()
+    public static PMetric m_cdr_node_seizures = PMetric.build()
             .setName("cdr_node_seizures")
             .setHelp("Number of call seizures")
             .setLabelNames("nodeName")
             .register("cdrmetrics");
 
-    public static PMetric m_cdr_active_calls = PMetric.build()
+    public static PMetric m_cdr_inctg_seizures = PMetric.build()
+            .setName("cdr_inctg_node_seizures")
+            .setHelp("Number of call seizures on incoming trunk group")
+            .setLabelNames("nodeName", "trunkGroup")
+            .register("cdrmetrics");
+
+    public static PMetric m_cdr_outtg_seizures = PMetric.build()
+            .setName("cdr_outtg_node_seizures")
+            .setHelp("Number of call seizures on outgoing trunk group")
+            .setLabelNames("nodeName", "trunkGroup")
+            .register("cdrmetrics");
+
+    public static PMetric m_cdr_node_active_calls = PMetric.build()
             .setName("cdr_node_active_calls")
             .setHelp("Number of active calls")
             .setLabelNames("nodeName")
@@ -155,8 +167,10 @@ public class CdrAggsToEs {
 //                    mv_cdr_active_calls.clear();
 //                    mv_cdr_durations.clear();
 //                    mv_cdr_release_causes.clear();
-                    m_cdr_seizures.clear();
-                    m_cdr_active_calls.clear();
+                    m_cdr_node_seizures.clear();
+                    m_cdr_inctg_seizures.clear();
+                    m_cdr_outtg_seizures.clear();
+                    m_cdr_node_active_calls.clear();
                     m_cdr_node_durations.clear();
                     m_cdr_inctg_durations.clear();
                     m_cdr_outtg_durations.clear();
@@ -202,21 +216,32 @@ public class CdrAggsToEs {
 //                                    .addLabel("nodeName", cdrBean.getNodeId())
 //                                    .addLabel("tg_direction", "out")
 //                                    .incValue(cdrBean.getOutTrunkGroupNameIE145(), 1);
+                            m_cdr_node_seizures.setLabelValues(data.nodeName).inc();
+                            m_cdr_inctg_seizures.setLabelValues(data.nodeName, cdrBean.getInTrunkGroupNameIE144()).inc();
+                            m_cdr_outtg_seizures.setLabelValues(data.nodeName, cdrBean.getOutTrunkGroupNameIE145()).inc();
+
                         }
                         if (cdrBean.getSequence() == 3) {
 //                            mvts_node_active_calls
 //                                    .addLabel("nodeName", cdrBean.getNodeId())
 //                                    .incValue("active_calls", 1);
+                            m_cdr_node_active_calls.setLabelValues(data.nodeName).inc();
                         }
                         if (cdrBean.getSequence() == 1 || cdrBean.getSequence() == 4 || cdrBean.getSequence() == 5) {
 //                            mvts_node_release_causes
 //                                    .addLabel("nodeName", cdrBean.getNodeId())
 //                                    .incValue(cdrBean.getCauseString(), 1);
+                            m_cdr_node_release_causes.setLabelValues(data.nodeName, cdrBean.getCauseString()).inc();
+                            m_cdr_inctg_release_causes.setLabelValues(data.nodeName, cdrBean.getInTrunkGroupNameIE144(), cdrBean.getCauseString()).inc();
+                            m_cdr_outtg_release_causes.setLabelValues(data.nodeName, cdrBean.getOutTrunkGroupNameIE145(), cdrBean.getCauseString()).inc();
                         }
                         if (cdrBean.getDuration() > 0) {
 //                            mvts_node_durations
 //                                    .addLabel("nodeName", cdrBean.getNodeId())
 //                                    .incValue("duration", cdrBean.getDuration());
+                            m_cdr_node_durations.setLabelValues(data.nodeName).inc(cdrBean.getDuration());
+                            m_cdr_inctg_durations.setLabelValues(data.nodeName, cdrBean.getInTrunkGroupNameIE144()).inc(cdrBean.getDuration());
+                            m_cdr_outtg_durations.setLabelValues(data.nodeName, cdrBean.getOutTrunkGroupNameIE145()).inc(cdrBean.getDuration());
                         }
 
                     }
@@ -243,7 +268,27 @@ public class CdrAggsToEs {
 ////                    System.out.println(cdr_release_causes.toStringDetail());
 //                    es.sendBulkPost(mv_cdr_release_causes);
 
-                    es.sendBulkPost(m_cdr_seizures);
+                    m_cdr_node_seizures.setTimestamp(timestamp);
+                    m_cdr_inctg_seizures.setTimestamp(timestamp);
+                    m_cdr_outtg_seizures.setTimestamp(timestamp);
+                    m_cdr_node_active_calls.setTimestamp(timestamp);
+                    m_cdr_node_durations.setTimestamp(timestamp);
+                    m_cdr_inctg_durations.setTimestamp(timestamp);
+                    m_cdr_outtg_durations.setTimestamp(timestamp);
+                    m_cdr_node_release_causes.setTimestamp(timestamp);
+                    m_cdr_inctg_release_causes.setTimestamp(timestamp);
+                    m_cdr_outtg_release_causes.setTimestamp(timestamp);
+
+                    es.sendBulkPost(m_cdr_node_seizures);
+                    es.sendBulkPost(m_cdr_inctg_seizures);
+                    es.sendBulkPost(m_cdr_outtg_seizures);
+                    es.sendBulkPost(m_cdr_node_active_calls);
+                    es.sendBulkPost(m_cdr_node_durations);
+                    es.sendBulkPost(m_cdr_inctg_durations);
+                    es.sendBulkPost(m_cdr_outtg_durations);
+                    es.sendBulkPost(m_cdr_node_release_causes);
+                    es.sendBulkPost(m_cdr_inctg_release_causes);
+                    es.sendBulkPost(m_cdr_outtg_release_causes);
 
 
                     //es.sendBulkPost(cdr_seizures);
