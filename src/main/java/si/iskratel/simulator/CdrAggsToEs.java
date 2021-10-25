@@ -115,7 +115,7 @@ public class CdrAggsToEs {
 
     public static void main(String[] args) throws Exception {
 
-        Props.EXIT_WHEN_DONE = true;
+//        Props.EXIT_WHEN_DONE = true;
 
         String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
         Properties cdrProps = new Properties();
