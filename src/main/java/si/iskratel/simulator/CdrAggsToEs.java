@@ -11,6 +11,10 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
@@ -294,20 +298,20 @@ public class CdrAggsToEs {
                     //es.sendBulkPost(cdr_seizures);
 
                     // create new output node dir
-//                    String nodeOutDir = nodeDir.getAbsolutePath();
-//                    nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
-//                    File nodeOutDirFile = new File(nodeOutDir);
-//                    if (!nodeOutDirFile.exists()) {
-//                        logger.info("Creating new output directory: " + nodeOutDir);
-//                        Path outDir = Paths.get(nodeOutDir);
-//                        Files.createDirectories(outDir);
-//                    }
+                    String nodeOutDir = nodeDir.getAbsolutePath();
+                    nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+                    File nodeOutDirFile = new File(nodeOutDir);
+                    if (!nodeOutDirFile.exists()) {
+                        logger.info("Creating new output directory: " + nodeOutDir);
+                        Path outDir = Paths.get(nodeOutDir);
+                        Files.createDirectories(outDir);
+                    }
 
                     // move processed file
-//                    String absPath = f.getAbsolutePath();
-//                    absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
-//                    logger.info("Moving file to new location: " + absPath);
-//                    Files.move(Paths.get(f.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
+                    String absPath = f.getAbsolutePath();
+                    absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+                    logger.info("Moving file to new location: " + absPath);
+                    Files.move(Paths.get(f.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
 
 
                 } // END foreach file
