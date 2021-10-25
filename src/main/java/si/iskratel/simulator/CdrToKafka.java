@@ -46,7 +46,6 @@ public class CdrToKafka {
                 logger.info("Reading file: " + f.getAbsolutePath());
 
                 CdrData data = CdrParser.parse(f);
-                logger.info("CDR contains " + data.cdrList.size() + " records");
 
                 for (int i = 0; i < data.cdrList.size(); i++) {
 

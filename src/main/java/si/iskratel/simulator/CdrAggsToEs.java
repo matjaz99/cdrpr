@@ -171,31 +171,24 @@ public class CdrAggsToEs {
 //                    mv_cdr_active_calls.clear();
 //                    mv_cdr_durations.clear();
 //                    mv_cdr_release_causes.clear();
-                    m_cdr_node_seizures.clear();
-                    m_cdr_inctg_seizures.clear();
-                    m_cdr_outtg_seizures.clear();
-                    m_cdr_node_active_calls.clear();
-                    m_cdr_node_durations.clear();
-                    m_cdr_inctg_durations.clear();
-                    m_cdr_outtg_durations.clear();
-                    m_cdr_node_release_causes.clear();
-                    m_cdr_inctg_release_causes.clear();
-                    m_cdr_outtg_release_causes.clear();
+                    PMetricRegistry.getRegistry("cdrmetrics").resetMetrics();
+//                    m_cdr_node_seizures.clear();
+//                    m_cdr_inctg_seizures.clear();
+//                    m_cdr_outtg_seizures.clear();
+//                    m_cdr_node_active_calls.clear();
+//                    m_cdr_node_durations.clear();
+//                    m_cdr_inctg_durations.clear();
+//                    m_cdr_outtg_durations.clear();
+//                    m_cdr_node_release_causes.clear();
+//                    m_cdr_inctg_release_causes.clear();
+//                    m_cdr_outtg_release_causes.clear();
 
                     logger.info("Reading file: " + f.getAbsolutePath());
 
                     long timestamp = getSamplingTimeFromFilename(f.getName()).getTime();
-                    CdrData data = null;
-                    try {
-                        data = CdrParser.parse(f);
-                        data.nodeName = nodeDir.getName();
-                    } catch (Exception e) {
-                        System.out.println("====== Exception2: " + e.getMessage());
-                    }
-                    //CdrData data = CdrParser.parse(f);
+                    CdrData data = CdrParser.parse(f);
+                    data.nodeName = nodeDir.getName();
                     cdr_files_total.setLabelValues("Success").inc();
-                    logger.info("File contains " + data.cdrList.size() + " CDR records");
-                    logger.info("File contains " + data.ppdrList.size() + " PPDR records");
 
 //                    PMultivalueTimeSeries mvts_node_active_calls = new PMultivalueTimeSeries();
 //                    PMultivalueTimeSeries mvts_node_seizures = new PMultivalueTimeSeries();

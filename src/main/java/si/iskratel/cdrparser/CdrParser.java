@@ -77,6 +77,9 @@ public class CdrParser {
             }
         }
 
+        logger.info("File contains " + cdrData.cdrList.size() + " CDR records");
+        logger.info("File contains " + cdrData.ppdrList.size() + " PPDR records");
+
         // PpdrBean [recordLength=69, recordIndex=207961128, recordTime=Wed Sep 01 14:01:22 CEST 2021, trunkGroupId=2, trunkGroupName=IX_Dialogic_LJ_1, numberOfAllTrunks=1500, numberOfOutOfServiceTrunks=0, trunkGroupOperatingMode=0]
 
         Map<Integer, String> tg_id_name = new HashMap<>();

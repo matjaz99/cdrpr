@@ -96,8 +96,6 @@ public class CdrToEs {
                     }
                     //CdrData data = CdrParser.parse(f);
                     cdr_files_total.setLabelValues("Success").inc();
-                    logger.info("File contains " + data.cdrList.size() + " CDR records");
-                    logger.info("File contains " + data.ppdrList.size() + " PPDR records");
 
                     StringBuilder cdrJson = new StringBuilder();
                     int count = 0;
