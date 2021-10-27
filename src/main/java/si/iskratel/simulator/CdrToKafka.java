@@ -23,7 +23,7 @@ public class CdrToKafka {
 
     public static void main(String[] args) throws Exception {
 
-        Props.EXIT_WHEN_DONE = false;
+        Props.SIMULATOR_EXIT_WHEN_DONE = false;
 //        Props.KAFKA_BOOTSTRAP_SERVER = "centosvm:9092";
 
         KafkaClient kafkaClient = new KafkaClient(Props.KAFKA_BOOTSTRAP_SERVER);
@@ -65,7 +65,7 @@ public class CdrToKafka {
 
             if (files.length > 0) logger.info("Processed CDR files: " + files.length);
 
-            if (Props.EXIT_WHEN_DONE) break; // run only once
+            if (Props.SIMULATOR_EXIT_WHEN_DONE) break; // run only once
 
             try {
                 Thread.sleep(60 * 1000);

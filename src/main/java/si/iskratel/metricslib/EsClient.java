@@ -66,6 +66,20 @@ public class EsClient {
         esHost = hostUrl;
     }
 
+    /**
+     * This method will block indefinitely until EsHealthcheck confirms that Elasticsearch is up and running.
+     * If this method is not called, then the EsClient will dump all data to files (if enabled).
+     */
+    public void waitUntilElasticsearchIsReady() {
+        while (!EsClient.ES_IS_READY) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     /**
      * Create index. Well, first check if template exists and create it if it does not exist. Then check if alias exists

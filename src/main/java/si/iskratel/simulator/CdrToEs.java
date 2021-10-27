@@ -15,8 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -139,7 +137,7 @@ public class CdrToEs {
 
             } // END foreach directory
 
-            if (Props.EXIT_WHEN_DONE) break; // run only once
+            if (Props.SIMULATOR_EXIT_WHEN_DONE) break; // run only once
 
             try {
                 Thread.sleep(60 * 1000);

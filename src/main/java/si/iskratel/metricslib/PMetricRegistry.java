@@ -78,6 +78,21 @@ public class PMetricRegistry {
     }
 
     /**
+     * Set timestamp for all metrics in registry
+     * @param timestamp
+     */
+    public void setTimestamp(long timestamp) {
+        for (PMetricRegistry r : registriesMap.values()) {
+            for (PMetric m : r.metricsMap.values()) {
+                m.setTimestamp(timestamp);
+            }
+            for (PMultiValueMetric mvm : r.multiValueMetricsMap.values()) {
+                mvm.setTimestamp(timestamp);
+            }
+        }
+    }
+
+    /**
      * Convert all metrics in given registry to Prometheus format. Prometheus metrics are available
      * at /metrics endpoint.
      * @param registryName

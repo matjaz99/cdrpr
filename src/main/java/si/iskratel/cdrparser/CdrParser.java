@@ -43,7 +43,6 @@ public class CdrParser {
         byte[] bytes = IOUtils.toByteArray(is);
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         List<DataRecord> list = CDRReader.readDataRecords(bais);
-        logger.info("records in file: " + list.size());
 
         for (DataRecord dr : list) {
 //            logger.debug(dr.toString());

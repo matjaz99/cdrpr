@@ -29,6 +29,9 @@ public class CdrAggsToEs {
     public static String CDR_INPUT_DIR = "cdr_input_dir";
     public static String CDR_OUTPUT_DIR = "cdr_output_dir";
 
+    public static final String INDEX_CDRSTATS = "cdrstats";
+    public static final String INDEX_CDRMETRICS = "cdrmetrics";
+
     public static PMetric cdr_files_total = PMetric.build()
             .setName("cdrparser_processed_files_total")
             .setHelp("Number of processed files")
@@ -39,87 +42,95 @@ public class CdrAggsToEs {
     public static PMultiValueMetric mv_cdr_seizures = PMultiValueMetric.build()
             .setName("cdr_seizures")
             .setHelp("Number of call seizures")
-            .register("stat");
+            .register(INDEX_CDRSTATS);
 
     public static PMultiValueMetric mv_cdr_active_calls = PMultiValueMetric.build()
             .setName("cdr_active_calls")
             .setHelp("Number of active calls")
-            .register("stat");
+            .register(INDEX_CDRSTATS);
 
     public static PMultiValueMetric mv_cdr_release_causes = PMultiValueMetric.build()
             .setName("cdr_release_causes")
             .setHelp("Number of calls by release cause")
-            .register("stat");
+            .register(INDEX_CDRSTATS);
 
     public static PMultiValueMetric mv_cdr_durations = PMultiValueMetric.build()
             .setName("cdr_durations")
             .setHelp("Duration of calls")
-            .register("stat");
+            .register(INDEX_CDRSTATS);
 
     // metrics
     public static PMetric m_cdr_node_seizures = PMetric.build()
             .setName("cdr_node_seizures")
             .setHelp("Number of call seizures")
             .setLabelNames("nodeName")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
+
+    public static PMetric m_cdr_node_seizure_answers = PMetric.build()
+            .setName("cdr_node_seizures")
+            .setHelp("Number of call seizures that are answered")
+            .setLabelNames("nodeName")
+            .register(INDEX_CDRMETRICS);
 
     public static PMetric m_cdr_inctg_seizures = PMetric.build()
             .setName("cdr_inctg_node_seizures")
             .setHelp("Number of call seizures on incoming trunk group")
             .setLabelNames("nodeName", "trunkGroup")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
 
     public static PMetric m_cdr_outtg_seizures = PMetric.build()
             .setName("cdr_outtg_node_seizures")
             .setHelp("Number of call seizures on outgoing trunk group")
             .setLabelNames("nodeName", "trunkGroup")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
 
     public static PMetric m_cdr_node_active_calls = PMetric.build()
             .setName("cdr_node_active_calls")
             .setHelp("Number of active calls")
             .setLabelNames("nodeName")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
 
     public static PMetric m_cdr_node_release_causes = PMetric.build()
             .setName("cdr_node_release_causes")
             .setHelp("Number of calls by release cause")
             .setLabelNames("nodeName", "releaseCause")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
 
     public static PMetric m_cdr_inctg_release_causes = PMetric.build()
             .setName("cdr_inctg_release_causes")
             .setHelp("Number of calls by release cause on incoming trunk group")
             .setLabelNames("nodeName", "trunkGroup", "releaseCause")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
 
     public static PMetric m_cdr_outtg_release_causes = PMetric.build()
             .setName("cdr_outtg_release_causes")
             .setHelp("Number of calls by release cause on outgoing trunk group")
             .setLabelNames("nodeName", "trunkGroup", "releaseCause")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
 
     public static PMetric m_cdr_node_durations = PMetric.build()
             .setName("cdr_durations")
             .setHelp("Duration of calls")
             .setLabelNames("nodeName")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
 
     public static PMetric m_cdr_inctg_durations = PMetric.build()
             .setName("cdr_inctg_durations")
             .setHelp("Duration of calls on incoming trunk group")
             .setLabelNames("nodeName", "trunkGroup")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
 
     public static PMetric m_cdr_outtg_durations = PMetric.build()
             .setName("cdr_outtg_durations")
             .setHelp("Duration of calls on outgoing trunk group")
             .setLabelNames("nodeName", "trunkGroup")
-            .register("cdrmetrics");
+            .register(INDEX_CDRMETRICS);
+
 
     public static void main(String[] args) throws Exception {
 
 //        Props.EXIT_WHEN_DONE = true;
+        Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED = false;
 
         String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
         Properties cdrProps = new Properties();
@@ -135,13 +146,15 @@ public class CdrAggsToEs {
                 cdrProps.getProperty("metricslib.elasticsearch.default.host"),
                 Integer.parseInt(cdrProps.getProperty("metricslib.elasticsearch.default.port")));
 
-        while (!EsClient.ES_IS_READY) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+//        while (!EsClient.ES_IS_READY) {
+//            try {
+//                Thread.sleep(100);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+        if (Props.CLIENT_WAIT_UNTIL_READY) es.waitUntilElasticsearchIsReady();
 
         while (true) {
 
@@ -171,7 +184,7 @@ public class CdrAggsToEs {
 //                    mv_cdr_active_calls.clear();
 //                    mv_cdr_durations.clear();
 //                    mv_cdr_release_causes.clear();
-                    PMetricRegistry.getRegistry("cdrmetrics").resetMetrics();
+                    PMetricRegistry.getRegistry(INDEX_CDRMETRICS).resetMetrics();
 //                    m_cdr_node_seizures.clear();
 //                    m_cdr_inctg_seizures.clear();
 //                    m_cdr_outtg_seizures.clear();
@@ -216,6 +229,8 @@ public class CdrAggsToEs {
                             m_cdr_node_seizures.setLabelValues(data.nodeName).inc();
                             m_cdr_inctg_seizures.setLabelValues(data.nodeName, cdrBean.getInTrunkGroupNameIE144()).inc();
                             m_cdr_outtg_seizures.setLabelValues(data.nodeName, cdrBean.getOutTrunkGroupNameIE145()).inc();
+
+                            if (cdrBean.getDuration() > 0) m_cdr_node_seizure_answers.setLabelValues(data.nodeName).inc();
 
                         }
                         if (cdrBean.getSequence() == 3) {
@@ -265,46 +280,53 @@ public class CdrAggsToEs {
 ////                    System.out.println(cdr_release_causes.toStringDetail());
 //                    es.sendBulkPost(mv_cdr_release_causes);
 
-                    m_cdr_node_seizures.setTimestamp(timestamp);
-                    m_cdr_inctg_seizures.setTimestamp(timestamp);
-                    m_cdr_outtg_seizures.setTimestamp(timestamp);
-                    m_cdr_node_active_calls.setTimestamp(timestamp);
-                    m_cdr_node_durations.setTimestamp(timestamp);
-                    m_cdr_inctg_durations.setTimestamp(timestamp);
-                    m_cdr_outtg_durations.setTimestamp(timestamp);
-                    m_cdr_node_release_causes.setTimestamp(timestamp);
-                    m_cdr_inctg_release_causes.setTimestamp(timestamp);
-                    m_cdr_outtg_release_causes.setTimestamp(timestamp);
+//                    m_cdr_node_seizures.setTimestamp(timestamp);
+//                    m_cdr_node_seizure_answers.setTimestamp(timestamp);
+//                    m_cdr_inctg_seizures.setTimestamp(timestamp);
+//                    m_cdr_outtg_seizures.setTimestamp(timestamp);
+//                    m_cdr_node_active_calls.setTimestamp(timestamp);
+//                    m_cdr_node_durations.setTimestamp(timestamp);
+//                    m_cdr_inctg_durations.setTimestamp(timestamp);
+//                    m_cdr_outtg_durations.setTimestamp(timestamp);
+//                    m_cdr_node_release_causes.setTimestamp(timestamp);
+//                    m_cdr_inctg_release_causes.setTimestamp(timestamp);
+//                    m_cdr_outtg_release_causes.setTimestamp(timestamp);
+                    PMetricRegistry.getRegistry(INDEX_CDRMETRICS).setTimestamp(timestamp);
 
-                    es.sendBulkPost(m_cdr_node_seizures);
-                    es.sendBulkPost(m_cdr_inctg_seizures);
-                    es.sendBulkPost(m_cdr_outtg_seizures);
-                    es.sendBulkPost(m_cdr_node_active_calls);
-                    es.sendBulkPost(m_cdr_node_durations);
-                    es.sendBulkPost(m_cdr_inctg_durations);
-                    es.sendBulkPost(m_cdr_outtg_durations);
-                    es.sendBulkPost(m_cdr_node_release_causes);
-                    es.sendBulkPost(m_cdr_inctg_release_causes);
-                    es.sendBulkPost(m_cdr_outtg_release_causes);
+//                    es.sendBulkPost(m_cdr_node_seizures);
+//                    es.sendBulkPost(m_cdr_node_seizure_answers);
+//                    es.sendBulkPost(m_cdr_inctg_seizures);
+//                    es.sendBulkPost(m_cdr_outtg_seizures);
+//                    es.sendBulkPost(m_cdr_node_active_calls);
+//                    es.sendBulkPost(m_cdr_node_durations);
+//                    es.sendBulkPost(m_cdr_inctg_durations);
+//                    es.sendBulkPost(m_cdr_outtg_durations);
+//                    es.sendBulkPost(m_cdr_node_release_causes);
+//                    es.sendBulkPost(m_cdr_inctg_release_causes);
+//                    es.sendBulkPost(m_cdr_outtg_release_causes);
+                    es.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDRMETRICS));
 
 
                     //es.sendBulkPost(cdr_seizures);
 
-                    // create new output node dir
-                    String nodeOutDir = nodeDir.getAbsolutePath();
-                    nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
-                    File nodeOutDirFile = new File(nodeOutDir);
-                    if (!nodeOutDirFile.exists()) {
-                        logger.info("Creating new output directory: " + nodeOutDir);
-                        Path outDir = Paths.get(nodeOutDir);
-                        Files.createDirectories(outDir);
-                    }
 
-                    // move processed file
-                    String absPath = f.getAbsolutePath();
-                    absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
-                    logger.info("Moving file to new location: " + absPath);
-                    Files.move(Paths.get(f.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
+                    if (Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED) {
+                        // create new output node dir
+                        String nodeOutDir = nodeDir.getAbsolutePath();
+                        nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+                        File nodeOutDirFile = new File(nodeOutDir);
+                        if (!nodeOutDirFile.exists()) {
+                            logger.info("Creating new output directory: " + nodeOutDir);
+                            Path outDir = Paths.get(nodeOutDir);
+                            Files.createDirectories(outDir);
+                        }
+
+                        // move processed file
+                        String absPath = f.getAbsolutePath();
+                        absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+                        logger.info("Moving file to new location: " + absPath);
+                        Files.move(Paths.get(f.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
+                    }
 
 
                 } // END foreach file
@@ -313,7 +335,7 @@ public class CdrAggsToEs {
 
             } // END foreach directory
 
-            if (Props.EXIT_WHEN_DONE) break; // run only once
+            if (Props.SIMULATOR_EXIT_WHEN_DONE) break; // run only once
 
             try {
                 Thread.sleep(60 * 1000);

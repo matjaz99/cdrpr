@@ -92,7 +92,7 @@ public class Start {
     }
 
     public static void initMetricsLib() throws Exception {
-        MetricsLib.PROM_METRICS_EXPORT_ENABLE = Props.ENABLE_PROMETHEUS_METRICS;
+        MetricsLib.PROM_METRICS_EXPORT_ENABLE = Props.PROMETHEUS_ENABLE_METRICS;
         MetricsLib.DUMP_TO_FILE_ENABLED = Props.ENABLE_DUMP_TO_FILE;
         MetricsLib.ES_DEFAULT_SCHEMA = Props.ES_SCHEMA;
         MetricsLib.ES_BASIC_USER = Props.ES_BASIC_USER;
