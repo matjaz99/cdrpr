@@ -123,6 +123,8 @@ points that will be written in the DB.
 
 ### ElasticSearch metric format
 
+##### PMetric object
+
 ```json
 {
   "metric_name": "cdr_calls_by_cause_count",
@@ -133,6 +135,64 @@ points that will be written in the DB.
   "value": 100
 }
 ```
+
+##### PMultivalueMetric object
+
+```json
+{
+  "metric_name": "cdr_calls_by_cause_count",
+  "node": "Node1",
+  "subscriberGroup": "group1",
+  "seizures": 150,
+  "answered": 120,
+  "busy": 15,
+  "timestamp": 1234567890
+}
+```
+
+
+##### Experimental Metric object
+
+```json
+{
+  "metric_name": "cdr_calls_by_cause_count",
+  "node": "Node1",
+  "subscriberGroup": "group1",
+  "release_cause": {
+    "answered":  120,
+    "busy": 10
+  },
+  "inc_tg": {
+    "answered": 150,
+    "busy": 20
+  },
+  "duration": {
+    "node": 15000,
+    "trunkGrop": [
+      "tg1": 4000,
+      "tg2": 3000
+    ]
+  },
+  "seizures": 120,
+  "timestamp": 1234567890
+}
+```
+
+
+timestamp: from_filename
+node:
+  - name: node100
+  - seizures: 2000
+  - answered: 700
+trunkGroups:
+  - tg1:
+    - seizures: 1000
+    - answered: 500
+    - busy: 30
+    - duration: 156000
+    - active_channels: 30
+
+
 
 ### Postgres metric format
 

@@ -133,7 +133,7 @@ public class MetricsLib {
         ES_NUMBER_OF_REPLICAS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfReplicas", "0"));
         ES_ILM_POLICY_NAME = (String) props.getOrDefault("metricslib.elasticsearch.ilm.policy.name", "ilm_policy");
         ES_ILM_POLICY_FILE = (String) props.getOrDefault("metricslib.elasticsearch.ilm.policy.file", "ilm_policy.json");
-        ES_CLUSTER_FILE = (String) props.getOrDefault("metricslib.elasticsearch.ilm.cluster", "cluster.json");
+        ES_CLUSTER_FILE = (String) props.getOrDefault("metricslib.elasticsearch.cluster.file", "cluster.json");
 
         ALARM_DESTINATION = (String) props.getOrDefault("metricslib.alarm.destination", null);
 
@@ -198,6 +198,9 @@ public class MetricsLib {
 
     }
 
+    public static EsClient getClientInstance() {
+        return new EsClient(ES_DEFAULT_SCHEMA, ES_DEFAULT_HOST, ES_DEFAULT_PORT);
+    }
 
 
     public static OkHttpClient instantiateHttpClient() {

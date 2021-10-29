@@ -23,9 +23,8 @@ public class EsClient {
     private String esHost = "http://elasticvm:9200";
 
     private Alarm alarm_no_connection_to_es = new Alarm(3730080, "Database Connection Fault", 1, "No connection to ElasticSearch", "Cannot connect");
-    private Alarm alarm_dumping_files = new Alarm(100001, "Dumping files", 2, "No connection to ElasticSearch", "");
+    private Alarm alarm_dumping_files = new Alarm(100001, "Dumping files", 2, "EsClient", "No connection to ElasticSearch");
 
-//    private OkHttpClient httpClient = new OkHttpClient();
     private OkHttpClient httpClient = MetricsLib.instantiateHttpClient();
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 

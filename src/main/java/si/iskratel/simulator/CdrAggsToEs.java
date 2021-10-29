@@ -131,6 +131,7 @@ public class CdrAggsToEs {
 
 //        Props.EXIT_WHEN_DONE = true;
         Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED = false;
+        boolean USE_MULTIVALUE_METRIC = true;
 
         String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
         Properties cdrProps = new Properties();
@@ -141,10 +142,11 @@ public class CdrAggsToEs {
         }
 
         MetricsLib.init(cdrProps);
+        EsClient es = MetricsLib.getClientInstance();
 
-        EsClient es = new EsClient(cdrProps.getProperty("metricslib.elasticsearch.default.schema"),
-                cdrProps.getProperty("metricslib.elasticsearch.default.host"),
-                Integer.parseInt(cdrProps.getProperty("metricslib.elasticsearch.default.port")));
+//        EsClient es = new EsClient(cdrProps.getProperty("metricslib.elasticsearch.default.schema"),
+//                cdrProps.getProperty("metricslib.elasticsearch.default.host"),
+//                Integer.parseInt(cdrProps.getProperty("metricslib.elasticsearch.default.port")));
 
 //        while (!EsClient.ES_IS_READY) {
 //            try {
@@ -180,21 +182,8 @@ public class CdrAggsToEs {
 
                 for (File f : files) {
 
-//                    mv_cdr_seizures.clear();
-//                    mv_cdr_active_calls.clear();
-//                    mv_cdr_durations.clear();
-//                    mv_cdr_release_causes.clear();
+                    PMetricRegistry.getRegistry(INDEX_CDRSTATS).resetMetrics();
                     PMetricRegistry.getRegistry(INDEX_CDRMETRICS).resetMetrics();
-//                    m_cdr_node_seizures.clear();
-//                    m_cdr_inctg_seizures.clear();
-//                    m_cdr_outtg_seizures.clear();
-//                    m_cdr_node_active_calls.clear();
-//                    m_cdr_node_durations.clear();
-//                    m_cdr_inctg_durations.clear();
-//                    m_cdr_outtg_durations.clear();
-//                    m_cdr_node_release_causes.clear();
-//                    m_cdr_inctg_release_causes.clear();
-//                    m_cdr_outtg_release_causes.clear();
 
                     logger.info("Reading file: " + f.getAbsolutePath());
 
@@ -280,34 +269,9 @@ public class CdrAggsToEs {
 ////                    System.out.println(cdr_release_causes.toStringDetail());
 //                    es.sendBulkPost(mv_cdr_release_causes);
 
-//                    m_cdr_node_seizures.setTimestamp(timestamp);
-//                    m_cdr_node_seizure_answers.setTimestamp(timestamp);
-//                    m_cdr_inctg_seizures.setTimestamp(timestamp);
-//                    m_cdr_outtg_seizures.setTimestamp(timestamp);
-//                    m_cdr_node_active_calls.setTimestamp(timestamp);
-//                    m_cdr_node_durations.setTimestamp(timestamp);
-//                    m_cdr_inctg_durations.setTimestamp(timestamp);
-//                    m_cdr_outtg_durations.setTimestamp(timestamp);
-//                    m_cdr_node_release_causes.setTimestamp(timestamp);
-//                    m_cdr_inctg_release_causes.setTimestamp(timestamp);
-//                    m_cdr_outtg_release_causes.setTimestamp(timestamp);
                     PMetricRegistry.getRegistry(INDEX_CDRMETRICS).setTimestamp(timestamp);
 
-//                    es.sendBulkPost(m_cdr_node_seizures);
-//                    es.sendBulkPost(m_cdr_node_seizure_answers);
-//                    es.sendBulkPost(m_cdr_inctg_seizures);
-//                    es.sendBulkPost(m_cdr_outtg_seizures);
-//                    es.sendBulkPost(m_cdr_node_active_calls);
-//                    es.sendBulkPost(m_cdr_node_durations);
-//                    es.sendBulkPost(m_cdr_inctg_durations);
-//                    es.sendBulkPost(m_cdr_outtg_durations);
-//                    es.sendBulkPost(m_cdr_node_release_causes);
-//                    es.sendBulkPost(m_cdr_inctg_release_causes);
-//                    es.sendBulkPost(m_cdr_outtg_release_causes);
                     es.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDRMETRICS));
-
-
-                    //es.sendBulkPost(cdr_seizures);
 
 
                     if (Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED) {
