@@ -8,6 +8,7 @@ import java.util.List;
 
 public class CdrData {
 
+    public String fileName;
     public String nodeName;
     public List<CdrBean> cdrList = new ArrayList<>();
     public List<PpdrBean> ppdrList = new ArrayList<>();

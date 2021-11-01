@@ -3,6 +3,7 @@ package si.iskratel.simulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.iskratel.cdr.parser.CdrBean;
+import si.iskratel.cdr.parser.PpdrBean;
 import si.iskratel.cdrparser.CdrData;
 import si.iskratel.cdrparser.CdrParser;
 import si.iskratel.metricslib.*;
@@ -15,9 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Parse CDR files and aggregate them into multi-value metrics and store to Elasticsearch
@@ -40,7 +39,7 @@ public class CdrAggsToEs {
 
     // multivalue metrics
     public static PMultiValueMetric mv_cdr_seizures = PMultiValueMetric.build()
-            .setName("cdr_seizures")
+            .setName("cdr_node_seizures")
             .setHelp("Number of call seizures")
             .register(INDEX_CDRSTATS);
 
@@ -126,12 +125,12 @@ public class CdrAggsToEs {
             .setLabelNames("nodeName", "trunkGroup")
             .register(INDEX_CDRMETRICS);
 
+    private static Map<String, PMultivalueTimeSeries> seriesMap = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
 
 //        Props.EXIT_WHEN_DONE = true;
         Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED = false;
-        boolean USE_MULTIVALUE_METRIC = true;
 
         String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
         Properties cdrProps = new Properties();
@@ -184,6 +183,7 @@ public class CdrAggsToEs {
 
                     PMetricRegistry.getRegistry(INDEX_CDRSTATS).resetMetrics();
                     PMetricRegistry.getRegistry(INDEX_CDRMETRICS).resetMetrics();
+                    seriesMap.clear();
 
                     logger.info("Reading file: " + f.getAbsolutePath());
 
@@ -192,11 +192,10 @@ public class CdrAggsToEs {
                     data.nodeName = nodeDir.getName();
                     cdr_files_total.setLabelValues("Success").inc();
 
-//                    PMultivalueTimeSeries mvts_node_active_calls = new PMultivalueTimeSeries();
-//                    PMultivalueTimeSeries mvts_node_seizures = new PMultivalueTimeSeries();
-//                    PMultivalueTimeSeries mvts_in_tg_seizures = new PMultivalueTimeSeries();
-//                    PMultivalueTimeSeries mvts_out_tg_seizures = new PMultivalueTimeSeries();
-//                    PMultivalueTimeSeries mvts_node_durations = new PMultivalueTimeSeries();
+                    PMultivalueTimeSeries mvts_node_statistics = new PMultivalueTimeSeries();
+                    mvts_node_statistics
+                            .addLabel("node.name", data.nodeName)
+                            .addLabel("node.id", data.nodeName);
 //                    PMultivalueTimeSeries mvts_node_release_causes = new PMultivalueTimeSeries();
 
                     for (int i = 0; i < data.cdrList.size(); i++) {
@@ -204,17 +203,33 @@ public class CdrAggsToEs {
                         cdrBean.setNodeId(data.nodeName);
 
                         if (cdrBean.getSequence() == 1 || cdrBean.getSequence() == 2) {
-//                            mvts_node_seizures
-//                                    .addLabel("nodeName", cdrBean.getNodeId())
-//                                    .incValue("call_seizures", 1);
-//                            mvts_in_tg_seizures
-//                                    .addLabel("nodeName", cdrBean.getNodeId())
-//                                    .addLabel("tg_direction", "inc")
-//                                    .incValue(cdrBean.getInTrunkGroupNameIE144(), 1);
-//                            mvts_out_tg_seizures
-//                                    .addLabel("nodeName", cdrBean.getNodeId())
-//                                    .addLabel("tg_direction", "out")
-//                                    .incValue(cdrBean.getOutTrunkGroupNameIE145(), 1);
+
+                            mvts_node_statistics.incValue("node.seizures", 1);
+
+                            increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.seizures", 1);
+//                            if (cdrBean.getInTrunkGroupNameIE144() != null) {
+//                                PMultivalueTimeSeries m2 = seriesMap.getOrDefault(cdrBean.getInTrunkGroupNameIE144() + "-inc",
+//                                        new PMultivalueTimeSeries());
+//                                m2.addLabel("node.name", cdrBean.getNodeId())
+//                                        .addLabel("node.id", cdrBean.getNodeId())
+//                                        .addLabel("trunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+//                                        .addLabel("incTrunkGroup.id", Integer.toString(cdrBean.getInTrunkGroupId()))
+//                                        .addLabel("incTrunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+//                                        .incValue("incTrunkGroup.seizures", 1);
+//                                seriesMap.put(cdrBean.getInTrunkGroupNameIE144() + "-inc", m2);
+//                            }
+//                            if (cdrBean.getOutTrunkGroupNameIE145() != null) {
+//                                PMultivalueTimeSeries m3 = seriesMap.getOrDefault(cdrBean.getOutTrunkGroupNameIE145() + "-out",
+//                                        new PMultivalueTimeSeries());
+//                                m3.addLabel("node.name", cdrBean.getNodeId())
+//                                        .addLabel("node.id", cdrBean.getNodeId())
+//                                        .addLabel("trunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+//                                        .addLabel("outTrunkGroup.id", Integer.toString(cdrBean.getOutTrunkGroupId()))
+//                                        .addLabel("outTrunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+//                                        .incValue("outTrunkGroup.seizures", 1);
+//                                seriesMap.put(cdrBean.getOutTrunkGroupNameIE145() + "-out", m3);
+//                            }
+
                             m_cdr_node_seizures.setLabelValues(data.nodeName).inc();
                             m_cdr_inctg_seizures.setLabelValues(data.nodeName, cdrBean.getInTrunkGroupNameIE144()).inc();
                             m_cdr_outtg_seizures.setLabelValues(data.nodeName, cdrBean.getOutTrunkGroupNameIE145()).inc();
@@ -223,36 +238,146 @@ public class CdrAggsToEs {
 
                         }
                         if (cdrBean.getSequence() == 3) {
-//                            mvts_node_active_calls
-//                                    .addLabel("nodeName", cdrBean.getNodeId())
-//                                    .incValue("active_calls", 1);
-                            m_cdr_node_active_calls.setLabelValues(data.nodeName).inc();
+                            mvts_node_statistics.incValue("node.active_calls", 1);
                         }
                         if (cdrBean.getSequence() == 1 || cdrBean.getSequence() == 4 || cdrBean.getSequence() == 5) {
-//                            mvts_node_release_causes
-//                                    .addLabel("nodeName", cdrBean.getNodeId())
-//                                    .incValue(cdrBean.getCauseString(), 1);
                             m_cdr_node_release_causes.setLabelValues(data.nodeName, cdrBean.getCauseString()).inc();
                             m_cdr_inctg_release_causes.setLabelValues(data.nodeName, cdrBean.getInTrunkGroupNameIE144(), cdrBean.getCauseString()).inc();
                             m_cdr_outtg_release_causes.setLabelValues(data.nodeName, cdrBean.getOutTrunkGroupNameIE145(), cdrBean.getCauseString()).inc();
                         }
                         if (cdrBean.getDuration() > 0) {
-//                            mvts_node_durations
-//                                    .addLabel("nodeName", cdrBean.getNodeId())
-//                                    .incValue("duration", cdrBean.getDuration());
+                            mvts_node_statistics.incValue("node.duration", cdrBean.getDuration());
+
+                            increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.duration", cdrBean.getDuration());
+//                            if (cdrBean.getInTrunkGroupNameIE144() != null) {
+//                                PMultivalueTimeSeries m2 = seriesMap.getOrDefault(cdrBean.getInTrunkGroupNameIE144() + "-inc",
+//                                        new PMultivalueTimeSeries());
+//                                m2.addLabel("node.name", cdrBean.getNodeId())
+//                                        .addLabel("node.id", cdrBean.getNodeId())
+//                                        .addLabel("trunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+//                                        .addLabel("incTrunkGroup.id", Integer.toString(cdrBean.getInTrunkGroupId()))
+//                                        .addLabel("incTrunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+//                                        .addLabel("incTrunkGroup.direction", "incoming")
+//                                        .incValue("incTrunkGroup.duration", cdrBean.getDuration());
+//                                seriesMap.put(cdrBean.getInTrunkGroupNameIE144() + "-inc", m2);
+//                            }
+//                            if (cdrBean.getOutTrunkGroupNameIE145() != null) {
+//                                PMultivalueTimeSeries m3 = seriesMap.getOrDefault(cdrBean.getOutTrunkGroupNameIE145() + "-out",
+//                                        new PMultivalueTimeSeries());
+//                                m3.addLabel("node.name", cdrBean.getNodeId())
+//                                        .addLabel("node.id", cdrBean.getNodeId())
+//                                        .addLabel("trunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+//                                        .addLabel("outTrunkGroup.id", Integer.toString(cdrBean.getOutTrunkGroupId()))
+//                                        .addLabel("outTrunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+//                                        .addLabel("outTrunkGroup.direction", "outgoing")
+//                                        .incValue("outTrunkGroup.duration", cdrBean.getDuration());
+//                                seriesMap.put(cdrBean.getOutTrunkGroupNameIE145() + "-out", m3);
+//                            }
+
+
                             m_cdr_node_durations.setLabelValues(data.nodeName).inc(cdrBean.getDuration());
                             m_cdr_inctg_durations.setLabelValues(data.nodeName, cdrBean.getInTrunkGroupNameIE144()).inc(cdrBean.getDuration());
                             m_cdr_outtg_durations.setLabelValues(data.nodeName, cdrBean.getOutTrunkGroupNameIE145()).inc(cdrBean.getDuration());
                         }
 
+                        if (cdrBean.getCause() == 16) {
+                            mvts_node_statistics.incValue("node.answered", 1);
+
+                            increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.answered", 1);
+//                            if (cdrBean.getInTrunkGroupNameIE144() != null) {
+//                                PMultivalueTimeSeries m2 = seriesMap.getOrDefault(cdrBean.getInTrunkGroupNameIE144() + "-inc",
+//                                        new PMultivalueTimeSeries());
+//                                m2.addLabel("node.name", cdrBean.getNodeId())
+//                                        .addLabel("node.id", cdrBean.getNodeId())
+//                                        .addLabel("trunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+//                                        .addLabel("incTrunkGroup.id", Integer.toString(cdrBean.getInTrunkGroupId()))
+//                                        .addLabel("incTrunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+//                                        .addLabel("incTrunkGroup.direction", "incoming")
+//                                        .incValue("incTrunkGroup.answered", 1);
+//                                seriesMap.put(cdrBean.getInTrunkGroupNameIE144() + "-inc", m2);
+//                            }
+//                            if (cdrBean.getOutTrunkGroupNameIE145() != null) {
+//                                PMultivalueTimeSeries m3 = seriesMap.getOrDefault(cdrBean.getOutTrunkGroupNameIE145() + "-out",
+//                                        new PMultivalueTimeSeries());
+//                                m3.addLabel("node.name", cdrBean.getNodeId())
+//                                        .addLabel("node.id", cdrBean.getNodeId())
+//                                        .addLabel("trunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+//                                        .addLabel("outTrunkGroup.id", Integer.toString(cdrBean.getOutTrunkGroupId()))
+//                                        .addLabel("outTrunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+//                                        .addLabel("outTrunkGroup.direction", "outgoing")
+//                                        .incValue("outTrunkGroup.answered", 1);
+//                                seriesMap.put(cdrBean.getOutTrunkGroupNameIE145() + "-out", m3);
+//                            }
+
+                        }
+
+                        if (cdrBean.getCause() == 17) {
+                            mvts_node_statistics.incValue("node.busy", 1);
+
+                            increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.busy", 1);
+//                            if (cdrBean.getInTrunkGroupNameIE144() != null) {
+//                                PMultivalueTimeSeries m2 = seriesMap.getOrDefault(cdrBean.getInTrunkGroupNameIE144() + "-inc",
+//                                        new PMultivalueTimeSeries());
+//                                m2.addLabel("node.name", cdrBean.getNodeId())
+//                                        .addLabel("node.id", cdrBean.getNodeId())
+//                                        .addLabel("trunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+//                                        .addLabel("incTrunkGroup.id", Integer.toString(cdrBean.getInTrunkGroupId()))
+//                                        .addLabel("incTrunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+//                                        .addLabel("incTrunkGroup.direction", "incoming")
+//                                        .incValue("incTrunkGroup.busy", 1);
+//                                seriesMap.put(cdrBean.getInTrunkGroupNameIE144() + "-inc", m2);
+//                            }
+//                            if (cdrBean.getOutTrunkGroupNameIE145() != null) {
+//                                PMultivalueTimeSeries m3 = seriesMap.getOrDefault(cdrBean.getOutTrunkGroupNameIE145() + "-out",
+//                                        new PMultivalueTimeSeries());
+//                                m3.addLabel("node.name", cdrBean.getNodeId())
+//                                        .addLabel("node.id", cdrBean.getNodeId())
+//                                        .addLabel("trunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+//                                        .addLabel("outTrunkGroup.id", Integer.toString(cdrBean.getOutTrunkGroupId()))
+//                                        .addLabel("outTrunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+//                                        .addLabel("outTrunkGroup.direction", "outgoing")
+//                                        .incValue("outTrunkGroup.busy", 1);
+//                                seriesMap.put(cdrBean.getOutTrunkGroupNameIE145() + "-out", m3);
+//                            }
+
+                        }
+
+                        if (cdrBean.getCdrTimeBeforeRinging() != null) {
+                            mvts_node_statistics.incValue("node.timeBeforeRinging", cdrBean.getCdrTimeBeforeRinging());
+                        }
+
+                        if (cdrBean.getCdrRingingTimeBeforeAnsw() != null) {
+                            mvts_node_statistics.incValue("node.timeBeforeAnswer", cdrBean.getCdrRingingTimeBeforeAnsw());
+                        }
+
                     }
 
-//                    mv_cdr_seizures.addMultiValueTimeSeries(mvts_node_seizures);
-//                    mv_cdr_seizures.addMultiValueTimeSeries(mvts_in_tg_seizures);
-//                    mv_cdr_seizures.addMultiValueTimeSeries(mvts_out_tg_seizures);
-//                    mv_cdr_seizures.setTimestamp(timestamp);
+                    for (int i = 0; i < data.ppdrList.size(); i++) {
+                        PpdrBean ppdrBean = data.ppdrList.get(i);
+                        PMultivalueTimeSeries m2 = seriesMap.get(ppdrBean.getTrunkGroupName() + "-inc");
+                        if (m2 != null) {
+                            m2.incValue("incTrunkGroup.allChanels", ppdrBean.getNumberOfAllTrunks())
+                                    .incValue("incTrunkGroup.outOfserviceChanels", ppdrBean.getNumberOfOutOfServiceTrunks());
+                            seriesMap.put(ppdrBean.getTrunkGroupName() + "-inc", m2);
+                        }
+
+                        PMultivalueTimeSeries m3 = seriesMap.get(ppdrBean.getTrunkGroupName() + "-out");
+                        if (m3 != null) {
+                            m3.incValue("outTrunkGroup.allChanels", ppdrBean.getNumberOfAllTrunks())
+                                    .incValue("outTrunkGroup.outOfserviceChanels", ppdrBean.getNumberOfOutOfServiceTrunks());;
+                            seriesMap.put(ppdrBean.getTrunkGroupName() + "-out", m3);
+                        }
+
+                    }
+
+
+                    for (PMultivalueTimeSeries ts : seriesMap.values()) {
+                        mv_cdr_seizures.addMultiValueTimeSeries(ts);
+                    }
+                    mv_cdr_seizures.addMultiValueTimeSeries(mvts_node_statistics);
+                    mv_cdr_seizures.setTimestamp(timestamp);
 ////                    System.out.println(cdr_seizures.toStringDetail());
-//                    es.sendBulkPost(mv_cdr_seizures);
+                    es.sendBulkPost(mv_cdr_seizures);
 
 //                    mv_cdr_active_calls.addMultiValueTimeSeries(mvts_node_active_calls);
 //                    mv_cdr_active_calls.setTimestamp(timestamp);
@@ -327,7 +452,7 @@ public class CdrAggsToEs {
 
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, Integer.parseInt(year));
-        cal.set(Calendar.MONTH, Integer.parseInt(month));
+        cal.set(Calendar.MONTH, Integer.parseInt(month) - 1);
         cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day));
         cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
         cal.set(Calendar.MINUTE, Integer.parseInt(minute));
@@ -335,8 +460,34 @@ public class CdrAggsToEs {
         cal.set(Calendar.MILLISECOND, 0);
 
         Date d = cal.getTime();
+        logger.info("time-conversion: file: " + filename + "   -->    time: " + Utils.toDateString(d));
         return d;
 
+    }
+
+    private static void increaseTrunkGroupSeriesValue(CdrBean cdrBean, String key, double value) {
+        if (cdrBean.getInTrunkGroupNameIE144() != null) {
+            PMultivalueTimeSeries m2 = seriesMap.getOrDefault(cdrBean.getInTrunkGroupNameIE144() + "-inc",
+                    new PMultivalueTimeSeries());
+            m2.addLabel("node.name", cdrBean.getNodeId())
+                    .addLabel("node.id", cdrBean.getNodeId())
+                    .addLabel("trunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+                    .addLabel("incTrunkGroup.id", Integer.toString(cdrBean.getInTrunkGroupId()))
+                    .addLabel("incTrunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+                    .incValue("inc" + key, value);
+            seriesMap.put(cdrBean.getInTrunkGroupNameIE144() + "-inc", m2);
+        }
+        if (cdrBean.getOutTrunkGroupNameIE145() != null) {
+            PMultivalueTimeSeries m3 = seriesMap.getOrDefault(cdrBean.getOutTrunkGroupNameIE145() + "-out",
+                    new PMultivalueTimeSeries());
+            m3.addLabel("node.name", cdrBean.getNodeId())
+                    .addLabel("node.id", cdrBean.getNodeId())
+                    .addLabel("trunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+                    .addLabel("outTrunkGroup.id", Integer.toString(cdrBean.getOutTrunkGroupId()))
+                    .addLabel("outTrunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+                    .incValue("out" + key, value);
+            seriesMap.put(cdrBean.getOutTrunkGroupNameIE145() + "-out", m3);
+        }
     }
 
 }

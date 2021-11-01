@@ -37,6 +37,7 @@ public class CdrParser {
     public static CdrData parse(File f) throws Exception {
 
         CdrData cdrData = new CdrData();
+        cdrData.fileName  = f.getName();
 
         FileInputStream is = new FileInputStream(f);
 //        ByteArrayInputStream bais = new ByteArrayInputStream(is.readAllBytes()); // requires Java 9!!!
@@ -91,7 +92,7 @@ public class CdrParser {
         for (int i = 0; i < cdrData.cdrList.size(); i++) {
             if (cdrData.cdrList.get(i).getInTrunkGroupId() == null) {
                 cdrData.cdrList.get(i).setInTrunkGroupId(
-                        tg_name_id.getOrDefault(cdrData.cdrList.get(i).getInTrunkGroupNameIE144(), null));
+                        tg_name_id.getOrDefault(cdrData.cdrList.get(i).getInTrunkGroupNameIE144(), 0));
             }
             if (cdrData.cdrList.get(i).getInTrunkGroupNameIE144() == null) {
                 cdrData.cdrList.get(i).setInTrunkGroupNameIE144(
@@ -100,7 +101,7 @@ public class CdrParser {
             }
             if (cdrData.cdrList.get(i).getOutTrunkGroupId() == null) {
                 cdrData.cdrList.get(i).setOutTrunkGroupId(
-                        tg_name_id.getOrDefault(cdrData.cdrList.get(i).getOutTrunkGroupNameIE145(), null));
+                        tg_name_id.getOrDefault(cdrData.cdrList.get(i).getOutTrunkGroupNameIE145(), 0));
             }
             if (cdrData.cdrList.get(i).getOutTrunkGroupNameIE145() == null) {
                 cdrData.cdrList.get(i).setOutTrunkGroupNameIE145(
