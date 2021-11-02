@@ -203,9 +203,7 @@ public class CdrAggsToEs {
                         cdrBean.setNodeId(data.nodeName);
 
                         if (cdrBean.getSequence() == 1 || cdrBean.getSequence() == 2) {
-
                             mvts_node_statistics.incValue("node.seizures", 1);
-
                             increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.seizures", 1);
 //                            if (cdrBean.getInTrunkGroupNameIE144() != null) {
 //                                PMultivalueTimeSeries m2 = seriesMap.getOrDefault(cdrBean.getInTrunkGroupNameIE144() + "-inc",
@@ -247,7 +245,6 @@ public class CdrAggsToEs {
                         }
                         if (cdrBean.getDuration() > 0) {
                             mvts_node_statistics.incValue("node.duration", cdrBean.getDuration());
-
                             increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.duration", cdrBean.getDuration());
 //                            if (cdrBean.getInTrunkGroupNameIE144() != null) {
 //                                PMultivalueTimeSeries m2 = seriesMap.getOrDefault(cdrBean.getInTrunkGroupNameIE144() + "-inc",
@@ -282,7 +279,6 @@ public class CdrAggsToEs {
 
                         if (cdrBean.getCause() == 16) {
                             mvts_node_statistics.incValue("node.answered", 1);
-
                             increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.answered", 1);
 //                            if (cdrBean.getInTrunkGroupNameIE144() != null) {
 //                                PMultivalueTimeSeries m2 = seriesMap.getOrDefault(cdrBean.getInTrunkGroupNameIE144() + "-inc",
@@ -340,6 +336,15 @@ public class CdrAggsToEs {
 //                                seriesMap.put(cdrBean.getOutTrunkGroupNameIE145() + "-out", m3);
 //                            }
 
+                        }
+
+                        if (cdrBean.getCause() == 19) {
+                            mvts_node_statistics.incValue("node.noReply", 1);
+                            increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.noReply", 1);
+                        }
+                        if (cdrBean.getCause() == 21) {
+                            mvts_node_statistics.incValue("node.rejected", 1);
+                            increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.rejected", 1);
                         }
 
                         if (cdrBean.getCdrTimeBeforeRinging() != null) {
