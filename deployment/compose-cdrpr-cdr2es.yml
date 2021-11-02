@@ -17,6 +17,7 @@ services:
       - CDRPR_SEND_INTERVAL_SEC=60
       - CDRPR_DUMP_TO_FILE=true
       - CDRPR_EXIT_WHEN_DONE=false
+      - CDRPR_MOVE_FILES_WHEN_PROCESSED=true
       #- CDRPR_ES_SCHEMA=http
       #- CDRPR_ES_HOST=172.29.6.25
       #- CDRPR_ES_PORT=9200

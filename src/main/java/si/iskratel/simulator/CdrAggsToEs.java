@@ -130,7 +130,7 @@ public class CdrAggsToEs {
     public static void main(String[] args) throws Exception {
 
 //        Props.EXIT_WHEN_DONE = true;
-        Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED = false;
+//        Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED = false;
 
         String xProps = System.getProperty("cdrparser.configurationFile", "cdr_parser/cdr_parser.properties");
         Properties cdrProps = new Properties();
@@ -167,6 +167,10 @@ public class CdrAggsToEs {
                     return pathname.isDirectory();
                 }
             });
+
+            if (nodeDirectories.length == 0) {
+                logger.info("no monitored nodes found");
+            }
 
             for (File nodeDir : nodeDirectories) {
 

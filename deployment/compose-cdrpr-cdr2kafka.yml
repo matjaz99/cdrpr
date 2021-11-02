@@ -29,6 +29,7 @@ services:
       - CDRPR_DUMP_TO_FILE=false
       - CDRPR_KAFKA_BOOTSTRAP_SERVER=centosvm:9092
       - CDRPR_EXIT_WHEN_DONE=false
+      - CDRPR_MOVE_FILES_WHEN_PROCESSED=true
     volumes:
       - /var/log:/opt/log
       - ./cdr_input_dir:/opt/cdr_input_dir
