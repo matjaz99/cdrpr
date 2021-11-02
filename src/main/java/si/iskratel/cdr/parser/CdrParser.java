@@ -73,9 +73,11 @@ public class CdrParser {
     FIELDS_TO_PARSE.set(43); // 143 - Redirecting party number
     FIELDS_TO_PARSE.set(44); // 144 - Incoming Trunk Data
     FIELDS_TO_PARSE.set(45); // 145 - Outgoing Trunk Data
+    FIELDS_TO_PARSE.set(46); // 146 - Node Info
     FIELDS_TO_PARSE.set(47); // 147 - Global call reference
+    FIELDS_TO_PARSE.set(50); // 150 - Received called party number
     FIELDS_TO_PARSE.set(51); // 151 - Call Type (Traffic type)
-    FIELDS_TO_PARSE.set(56); // 156 - Additional Numbers (Connected number)
+    FIELDS_TO_PARSE.set(56); // 156 - Additional Numbers (Connected number, Received calling party number)
     FIELDS_TO_PARSE.set(59); // 159 - Centrex Numbers
     FIELDS_TO_PARSE.set(60); // 160 - Time Zone
   }

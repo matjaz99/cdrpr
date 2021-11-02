@@ -70,6 +70,7 @@ public abstract class CdrBeanCreator {
       setCtxCallingNumber(cdrObj, cdrBean);
       setCtxCalledNumber(cdrObj, cdrBean);
       setCtxRedirectingNumber(cdrObj, cdrBean);
+      setCallType(cdrObj, cdrBean);
       setBinaryRecord(cdrObj, cdrBean);
       setInTrunkGroupId(cdrObj, cdrBean);
       setInTrunkId(cdrObj, cdrBean);
@@ -326,6 +327,12 @@ public abstract class CdrBeanCreator {
   private void setCtxCall(CdrObject cdrObj, CdrBean cdrBean) {
     if (cdrObj.isCdrFlagF17()) {
       cdrBean.setCtxCall(1);
+    }
+  }
+
+  private void setCallType(CdrObject cdrObj, CdrBean cdrBean){
+    if(cdrObj.getProperty(CdrProperty.IE151_CALL_TYPE) != null) {
+      cdrBean.setCallType((Integer) cdrObj.getProperty(CdrProperty.IE151_CALL_TYPE));
     }
   }
 

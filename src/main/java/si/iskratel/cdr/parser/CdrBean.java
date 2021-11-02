@@ -83,7 +83,7 @@ public class CdrBean {
   protected Integer voipFaxModemRetrains = null;
   protected Integer voipFaxPagesTransferred = null;
   protected Integer voipFaxPagesRepeated = null;
-
+  protected Integer callState = null;
   public CdrBean() {
   }
 
@@ -726,6 +726,14 @@ public class CdrBean {
     this.voipFaxPagesRepeated = voipFaxPagesRepeated;
   }
 
+  public Integer getCallState() {
+    return callState;
+  }
+
+  public void setCallState(Integer callState) {
+    this.callState = callState;
+  }
+
   // TODO print binary record
   @Override
   public String toString() {
@@ -751,7 +759,7 @@ public class CdrBean {
         + ", voipMaxPacketsLostInBurst=" + voipMaxPacketsLostInBurst + ", voipMaxJitter=" + voipMaxJitter + ", voipMinJitter="
         + voipMinJitter + ", voipRxMos=" + voipRxMos + ", voipTxMos=" + voipTxMos + ", voipFaxTransferRate=" + voipFaxTransferRate
         + ", voipFaxModemRetrains=" + voipFaxModemRetrains + ", voipFaxPagesTransferred=" + voipFaxPagesTransferred
-        + ", voipFaxPagesRepeated=" + voipFaxPagesRepeated + "]";
+        + ", voipFaxPagesRepeated=" + voipFaxPagesRepeated + ", callState=" + callState + "]";
   }
 
 }

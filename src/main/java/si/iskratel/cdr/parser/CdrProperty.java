@@ -194,6 +194,24 @@ public class CdrProperty {
   public static final String REDIRECTING_NUMBER = "REDIRECTING_NUMBER";
 
   /**
+   * OTC specific NADI's (introduced in the project SPA)
+   */
+  public static final int NADI_OTC_DISPATCHER_CIRCLE = 126;
+  public static final int NADI_OTC_FORMAT_CALLED_NUMBER = 125;
+
+  /**
+   * Specified key name in Hashtable for variabled part in call record. This key name is associate with partner
+   * directory number. IE150 - Received Called Party Number
+   */
+  public static final String RECEIVED_CALLED_NUMBER = "RECEIVED_CALLED_PARTY_NUMBER";
+
+  /**
+   * Specified key name in Hashtable for variabled part in call record. This key name is associate with partner
+   * directory number. IE156 - Received Calling Party Number
+   */
+  public static final String RECEIVED_CALLING_NUMBER = "RECEIVED_CALLING_PARTY_NUMBER";
+
+  /**
    * Specified key name in Hashtable for variabled part in call record. This key name is associate with directory number
    * of the subscriber to whom the call has been transferred.
    */
@@ -550,9 +568,16 @@ public class CdrProperty {
   public static final String SUPPLEMENTARY_SERVICE_INFO_SCI = "SUPPLEMENTARY_SERVICE_INFO_SCI";
 
   /**
+   * IE146
+   */
+  public static final String NODE_ID = "NODE_ID";
+
+  /**
    * IE147
    */
   public static final String GLOBAL_CALL_REFERENCE = "GLOBAL_CALL_REFERENCE";
+
+
 
   /**
    * IE124

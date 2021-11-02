@@ -780,15 +780,16 @@ public class VariablePartCdr {
     int length = intBuf[sizeCounter] & 0xff;
     Integer[] additionalStatData = new Integer[5];
     ++sizeCounter;
-    int flag[] = new int[8];
+    int flag[] = new int[5];
     flag[0] = (intBuf[sizeCounter] & 0x01);
     flag[1] = ((intBuf[sizeCounter] & 0x02) >> 1);
     flag[2] = ((intBuf[sizeCounter] & 0x04) >> 2);
     flag[3] = ((intBuf[sizeCounter] & 0x08) >> 3);
     flag[4] = ((intBuf[sizeCounter] & 0x10) >> 4);
-    flag[5] = ((intBuf[sizeCounter] & 0x20) >> 5);
-    flag[6] = ((intBuf[sizeCounter] & 0x40) >> 6);
-    flag[7] = (intBuf[sizeCounter] >> 7);
+	//flag[5] = ((intBuf[sizeCounter] & 0x20) >> 5); 
+	//flag[6] = ((intBuf[sizeCounter] & 0x40) >> 6);
+	//flag[7] = (intBuf[sizeCounter] >> 7);
+	 
     for (int i = 0; i < flag.length; i++) {
       if (flag[i] == 1) {
         if (i == 0 || i == 1) {
@@ -961,6 +962,15 @@ public class VariablePartCdr {
 
   // Called party number
   public void setType140() {
+    PartyNumber pn = parseSpecialPartyNumber();
+    this.cdrObject.setProperty(CdrProperty.CALLED_NUMBER_FORMATTED, pn);
+  }
+
+  /**
+   * Common parsing method for the IE140 and IE150 which have the same structure
+   * @return
+   */
+  private PartyNumber parseSpecialPartyNumber() {
     int start = this.sizeCounter;
     this.sizeCounter += 2;
 
@@ -976,6 +986,15 @@ public class VariablePartCdr {
     int wholeNumLen = intBuf[sizeCounter] & 0x1F;
     this.sizeCounter++;
 
+    StringBuilder subscriberNumber = parseSubscriberNumber(networkNumLen, wholeNumLen);
+    pn.setNumber(subscriberNumber.toString());
+    if (typeLength != 0) {
+      this.sizeCounter = start + typeLength;
+    }
+    return pn;
+  }
+
+  private StringBuilder parseSubscriberNumber(int networkNumLen, int wholeNumLen) {
     StringBuilder subscriberNumber = new StringBuilder(networkNumLen + wholeNumLen);
     temp = (wholeNumLen) / 2 + (wholeNumLen) % 2;
 
@@ -1006,11 +1025,7 @@ public class VariablePartCdr {
         }
       }
     }
-    pn.setNumber(subscriberNumber.toString());
-    if (typeLength != 0) {
-      this.sizeCounter = start + typeLength;
-    }
-    this.cdrObject.setProperty(CdrProperty.CALLED_NUMBER_FORMATTED, pn);
+    return subscriberNumber;
   }
 
   private long decodeBinary(int pos, int numOfBytes) {
@@ -1203,6 +1218,25 @@ public class VariablePartCdr {
     this.cdrObject.setProperty(CdrProperty.IE145_Outgoing_Trunk_Group_Name, itd.toString());
   }
 
+  /**
+   * Handling of element Node Info, which may contain info about node id or node name. The method parses only node id.
+   *
+   * @see CdrProperty
+   */
+  public void setType146() {
+    int elementLength = intBuf[this.sizeCounter + 1];
+    //parse only node id if present
+    if((intBuf[this.sizeCounter + 2] & 0x1) == 1){
+      //use 4 bytes
+      Integer nodeID = 16777216 * intBuf[this.sizeCounter + 3] + 65536 * intBuf[this.sizeCounter + 4]
+              + 256 * intBuf[this.sizeCounter + 5] + intBuf[this.sizeCounter + 6];
+      cdrObject.setProperty(CdrProperty.NODE_ID, nodeID);
+    }
+    //oteher parametrs in IE are not parsed
+    this.sizeCounter += elementLength;
+  }
+
+
   // Global Call Reference
   public void setType147() {
     int len = this.typeLength;
@@ -1248,7 +1282,15 @@ public class VariablePartCdr {
     }
     this.cdrObject.setProperty(CdrProperty.GLOBAL_CALL_REFERENCE, gcr);
   }
-  
+
+  // Received Called Party Number
+  public void setType150() {
+    PartyNumber pn = parseSpecialPartyNumber();
+    this.cdrObject.setProperty(CdrProperty.RECEIVED_CALLED_NUMBER, pn);
+  }
+
+
+  //IE151 Call Type
   public void setType151() throws BadCdrRecordException {
     this.sizeCounter = this.sizeCounter + 2;
     int callType = intBuf[this.sizeCounter];
@@ -1273,17 +1315,23 @@ public class VariablePartCdr {
       int lengthOfNumber = intBuf[this.sizeCounter];
       String number = readBCD(lengthOfNumber);
       this.sizeCounter += temp;
+      PartyNumber pn;
       switch (numberType) {
       case 0: // TODO Spare
         break;
-      case 1: // TODO Recieved Calling Party Number
+      case 1: // TODO Received Calling Party Number
+        pn = new PartyNumber();
+        pn.setNatureOfAddress(natureOfAddrInd);
+        pn.setNumberingPlan(numberingPlanInd);
+        pn.setNumber(number);
+        this.cdrObject.setProperty(CdrProperty.RECEIVED_CALLING_NUMBER, pn);
         break;
       case 2: // TODO Called User's IMSI (International Mobile Subscriber Identity)
         break;
       case 3: // TODO Calling User's IMSI (International Mobile Subscriber Identity)
         break;
       case 4:
-        PartyNumber pn = new PartyNumber();
+        pn = new PartyNumber();
         pn.setNatureOfAddress(natureOfAddrInd);
         pn.setNumberingPlan(numberingPlanInd);
         pn.setNumber(number);
@@ -1301,6 +1349,7 @@ public class VariablePartCdr {
       throw new BadCdrRecordException("ERROR: Length of IE156 is wrong");
     }
   }
+
 
   // Centrex Numbers
   public void setType159() throws BadCdrRecordException {
