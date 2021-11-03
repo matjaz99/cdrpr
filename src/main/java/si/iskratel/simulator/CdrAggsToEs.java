@@ -270,11 +270,13 @@ public class CdrAggsToEs {
                         // summarize total call setup time
                         if (cdrBean.getCdrTimeBeforeRinging() != null) {
                             mvts_node_statistics.incValue("node.timeBeforeRinging", cdrBean.getCdrTimeBeforeRinging());
+                            increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.timeBeforeRinging", cdrBean.getDuration());
                         }
 
                         // summarize total time before answer
                         if (cdrBean.getCdrRingingTimeBeforeAnsw() != null) {
                             mvts_node_statistics.incValue("node.timeBeforeAnswer", cdrBean.getCdrRingingTimeBeforeAnsw());
+                            increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.timeBeforeAnswer", cdrBean.getDuration());
                         }
 
                     }
@@ -368,7 +370,7 @@ public class CdrAggsToEs {
         cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day));
         cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
         cal.set(Calendar.MINUTE, Integer.parseInt(minute));
-        cal.set(Calendar.SECOND, Integer.parseInt(second));
+        cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
 
         Date d = cal.getTime();
