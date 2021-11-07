@@ -1,0 +1,62 @@
+
+{
+	"metric_name":"cdr_node_statistics",
+	"node.id":"TS20638",
+	"incTrunkGroup.id":"116",
+	"trunkGroup.name":"IX_Dialogic_LJ_Resitve",
+	"node.name":"TS20638",
+	"incTrunkGroup.name":"IX_Dialogic_LJ_Resitve",
+	"incTrunkGroup.seizuresWithAnswer":12.0,
+	"incTrunkGroup.outOfserviceChanels":0.0,
+	"incTrunkGroup.allChanels":341.0,
+	"incTrunkGroup.seizures":25.0,
+	"incTrunkGroup.timeBeforeAnswer":2338210.0,
+	"incTrunkGroup.answered":10.0,
+	"incTrunkGroup.other":15.0,
+	"incTrunkGroup.timeBeforeRinging":2338210.0,
+	"incTrunkGroup.duration":2338210.0,
+	"@timestamp":0
+}
+
+
+{
+	"metric_name":"cdr_node_statistics",
+	"node.id":"TS20638",
+	"trunkGroup.name":"BWAS1_SOHO",
+	"outTrunkGroup.id":"11",
+	"node.name":"TS20638",
+	"outTrunkGroup.name":"BWAS1_SOHO",
+	"outTrunkGroup.allChanels":300.0,
+	"outTrunkGroup.outOfserviceChanels":0.0,
+	"outTrunkGroup.noReply":5.0,
+	"outTrunkGroup.timeBeforeRinging":2.984333E7,
+	"outTrunkGroup.seizures":995.0,
+	"outTrunkGroup.seizuresWithAnswer":347.0,
+	"outTrunkGroup.busy":508.0,
+	"outTrunkGroup.timeBeforeAnswer":2.984333E7,
+	"outTrunkGroup.answered":463.0,
+	"outTrunkGroup.duration":2.984333E7,
+	"outTrunkGroup.other":19.0,
+	"@timestamp":0
+}
+
+
+
+{
+	"metric_name":"cdr_node_statistics",
+	"node.id":"TS20638",
+	"node.name":"TS20638",
+	"node.answered":18440.0,
+	"node.timeBeforeRinging":3.864808E7,
+	"node.noReply":168.0,
+	"node.duration":1.74342169E9,
+	"node.other":7944.0,
+	"node.rejected":84.0,
+	"node.timeBeforeAnswer":2.8931345E8,
+	"node.seizures":32330.0,
+	"node.busy":5682.0,
+	"node.active_calls":2.0,
+	"node.seizuresWithAnswer":14326.0,
+	"@timestamp":0
+}
+

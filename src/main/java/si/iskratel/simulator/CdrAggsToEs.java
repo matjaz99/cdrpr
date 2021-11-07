@@ -38,24 +38,14 @@ public class CdrAggsToEs {
             .register();
 
     // multivalue metrics
-    public static PMultiValueMetric mv_cdr_seizures = PMultiValueMetric.build()
-            .setName("cdr_node_seizures")
-            .setHelp("Number of call seizures")
-            .register(INDEX_CDRSTATS);
-
-    public static PMultiValueMetric mv_cdr_active_calls = PMultiValueMetric.build()
-            .setName("cdr_active_calls")
-            .setHelp("Number of active calls")
+    public static PMultiValueMetric mv_cdr_statistics = PMultiValueMetric.build()
+            .setName("cdr_node_statistics")
+            .setHelp("Current counters on node")
             .register(INDEX_CDRSTATS);
 
     public static PMultiValueMetric mv_cdr_release_causes = PMultiValueMetric.build()
             .setName("cdr_release_causes")
             .setHelp("Number of calls by release cause")
-            .register(INDEX_CDRSTATS);
-
-    public static PMultiValueMetric mv_cdr_durations = PMultiValueMetric.build()
-            .setName("cdr_durations")
-            .setHelp("Duration of calls")
             .register(INDEX_CDRSTATS);
 
     // metrics
@@ -200,7 +190,7 @@ public class CdrAggsToEs {
                     mvts_node_statistics
                             .addLabel("node.name", data.nodeName)
                             .addLabel("node.id", data.nodeName);
-//                    PMultivalueTimeSeries mvts_node_release_causes = new PMultivalueTimeSeries();
+                    PMultivalueTimeSeries mvts_node_release_causes = new PMultivalueTimeSeries();
 
                     for (int i = 0; i < data.cdrList.size(); i++) {
                         CdrBean cdrBean = data.cdrList.get(i);
@@ -252,6 +242,8 @@ public class CdrAggsToEs {
                                     increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.other", 1);
                             }
 
+                            increaseReleaseCausesSeriesValue(cdrBean);
+
                             m_cdr_node_release_causes.setLabelValues(data.nodeName, cdrBean.getCauseString()).inc();
                             m_cdr_inctg_release_causes.setLabelValues(data.nodeName, cdrBean.getInTrunkGroupNameIE144(), cdrBean.getCauseString()).inc();
                             m_cdr_outtg_release_causes.setLabelValues(data.nodeName, cdrBean.getOutTrunkGroupNameIE145(), cdrBean.getCauseString()).inc();
@@ -302,15 +294,16 @@ public class CdrAggsToEs {
 
 
                     for (PMultivalueTimeSeries ts : seriesMap.values()) {
-                        mv_cdr_seizures.addMultiValueTimeSeries(ts);
+                        mv_cdr_statistics.addMultiValueTimeSeries(ts);
                     }
-                    mv_cdr_seizures.addMultiValueTimeSeries(mvts_node_statistics);
-                    mv_cdr_seizures.setTimestamp(timestamp);
+                    mv_cdr_statistics.addMultiValueTimeSeries(mvts_node_statistics);
+                    mv_cdr_statistics.setTimestamp(timestamp);
 ////                    System.out.println(cdr_seizures.toStringDetail());
-                    es.sendBulkPost(mv_cdr_seizures);
+                    es.sendBulkPost(mv_cdr_statistics);
+//                    System.out.println(PMetricFormatter.toEsNdJsonString(mv_cdr_statistics));
 
                     PMetricRegistry.getRegistry(INDEX_CDRMETRICS).setTimestamp(timestamp);
-                    es.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDRMETRICS));
+//                    es.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDRMETRICS));
 
 
                     if (Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED) {
@@ -386,6 +379,7 @@ public class CdrAggsToEs {
             m2.addLabel("node.name", cdrBean.getNodeId())
                     .addLabel("node.id", cdrBean.getNodeId())
                     .addLabel("trunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
+                    .addLabel("trunkGroup.id", Integer.toString(cdrBean.getInTrunkGroupId()))
                     .addLabel("incTrunkGroup.id", Integer.toString(cdrBean.getInTrunkGroupId()))
                     .addLabel("incTrunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
                     .incValue("inc" + key, value);
@@ -397,11 +391,31 @@ public class CdrAggsToEs {
             m3.addLabel("node.name", cdrBean.getNodeId())
                     .addLabel("node.id", cdrBean.getNodeId())
                     .addLabel("trunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
+                    .addLabel("trunkGroup.id", Integer.toString(cdrBean.getOutTrunkGroupId()))
                     .addLabel("outTrunkGroup.id", Integer.toString(cdrBean.getOutTrunkGroupId()))
                     .addLabel("outTrunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
                     .incValue("out" + key, value);
             seriesMap.put(cdrBean.getOutTrunkGroupNameIE145() + "-out", m3);
         }
+    }
+
+    private static void increaseReleaseCausesSeriesValue(CdrBean cdrBean) {
+        int id = cdrBean.getCause();
+        String name = cdrBean.getCauseString();
+
+        if (id != 16 || id != 17 || id != 18 || id != 19 || id != 21 || id != 1 || id != 3 || id != 6
+                || id != 25 || id != 27 || id != 31 || id != 34 || id != 23 || id != 127) {
+            id = 0;
+            name = "other";
+        }
+
+        PMultivalueTimeSeries m = seriesMap.getOrDefault("relCause" + name, new PMultivalueTimeSeries());
+        m.addLabel("node.name", cdrBean.getNodeId())
+                .addLabel("node.id", cdrBean.getNodeId())
+                .addLabel("releaseCause.name", name)
+                .addLabel("releaseCause.id", Integer.toString(id))
+                .incValue("releaseCause.count", 1);
+        seriesMap.put("relCause" + name, m);
     }
 
 }
