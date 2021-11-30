@@ -213,7 +213,7 @@ public class CdrAggsToEs {
                         }
 
                         // count how many calls are not finished yet in this interval
-                        if (cdrBean.getSequence() == 3) {
+                        if (cdrBean.getSequence() == 2 || cdrBean.getSequence() == 3) {
                             mvts_node_statistics.incValue("node.active_calls", 1);
                         }
 
