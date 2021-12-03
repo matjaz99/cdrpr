@@ -198,7 +198,7 @@ public class MetricsLib {
 
     }
 
-    public static EsClient getClientInstance() {
+    public static EsClient getEsClientInstance() {
         return new EsClient(ES_DEFAULT_SCHEMA, ES_DEFAULT_HOST, ES_DEFAULT_PORT);
     }
 

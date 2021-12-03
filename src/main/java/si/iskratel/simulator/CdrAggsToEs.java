@@ -131,19 +131,7 @@ public class CdrAggsToEs {
         }
 
         MetricsLib.init(cdrProps);
-        EsClient es = MetricsLib.getClientInstance();
-
-//        EsClient es = new EsClient(cdrProps.getProperty("metricslib.elasticsearch.default.schema"),
-//                cdrProps.getProperty("metricslib.elasticsearch.default.host"),
-//                Integer.parseInt(cdrProps.getProperty("metricslib.elasticsearch.default.port")));
-
-//        while (!EsClient.ES_IS_READY) {
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        EsClient es = MetricsLib.getEsClientInstance();
 
         if (Props.CLIENT_WAIT_UNTIL_READY) es.waitUntilElasticsearchIsReady();
 
@@ -271,6 +259,17 @@ public class CdrAggsToEs {
                             increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.timeBeforeAnswer", cdrBean.getDuration());
                         }
 
+                    } // END foreach cdr bean
+
+                    // calculate traffic intensity and traffic volume
+                    double d = mvts_node_statistics.getValuesMap().getOrDefault("node.duration", -1.0);
+                    if (d != -1.0) {
+                        d = d / 1000; // to seconds
+                        double trInt = d / 900; // trInt: duration in sec / interval
+                        double trVol = trInt * 0.25; // trVol: trInt * interval (h)
+                        System.out.println("dur: " + d + ", trInt: " + trInt + ", trVol: " + trVol);
+                        mvts_node_statistics.incValue("node.trafficIntensity", trInt);
+                        mvts_node_statistics.incValue("node.trafficVolume", trVol);
                     }
 
                     // collect number of channels/trunks from ppdr records
@@ -292,7 +291,7 @@ public class CdrAggsToEs {
 
                     }
 
-
+                    // merge time series into metric and prepare metric to be sent
                     for (PMultivalueTimeSeries ts : seriesMap.values()) {
                         mv_cdr_statistics.addMultiValueTimeSeries(ts);
                     }
@@ -306,6 +305,7 @@ public class CdrAggsToEs {
 //                    es.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDRMETRICS));
 
 
+                    // handle processed file
                     if (Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED) {
                         // create new output node dir
                         String nodeOutDir = nodeDir.getAbsolutePath();
