@@ -17,21 +17,22 @@ services:
       - CDRPR_SEND_INTERVAL_SEC=60
       - CDRPR_DUMP_TO_FILE=true
       - CDRPR_EXIT_WHEN_DONE=false
-      - CDRPR_MOVE_FILES_WHEN_PROCESSED=true
-      #- CDRPR_ES_SCHEMA=http
-      #- CDRPR_ES_HOST=172.29.6.25
-      #- CDRPR_ES_PORT=9200
+      # select: nothing, move, delete
+      - CDRPR_HANDLE_FILES_WHEN_PROCESSED=move
+      - CDRPR_ES_SCHEMA=http
+      - CDRPR_ES_HOST=192.168.0.123
+      - CDRPR_ES_PORT=9200
       # if true, create ILM (pmon_ilm_policy) manually before running simulator!
       # if false, create mapping manually before running simulator (if you want to use timestamp)!
-      #- CDRPR_ES_AUTO_CREATE_INDEX=true
-      #- CDRPR_ES_NUMBER_OF_SHARDS=1
-      #- CDRPR_ES_NUMBER_OF_REPLICAS=0
+      - CDRPR_ES_AUTO_CREATE_INDEX=true
+      - CDRPR_ES_NUMBER_OF_SHARDS=2
+      - CDRPR_ES_NUMBER_OF_REPLICAS=2
     volumes:
       - /var/log:/opt/log
-      #- ./cdr_input_dir:/opt/cdr_input_dir
-      #- ./cdr_output_dir:/opt/cdr_output_dir
-      - /home/pmon/cdr_storage_1:/opt/cdr_input_dir
-      - /home/pmon/cdr_storage_2:/opt/cdr_output_dir
+      - ./cdr_input_dir:/opt/cdr_input_dir
+      - ./cdr_output_dir:/opt/cdr_output_dir
+      #- /home/pmon/cdr_storage_1:/opt/cdr_input_dir
+      #- /home/pmon/cdr_storage_2:/opt/cdr_output_dir
       - ./dump:/opt/dump
       - ./cdr_parser/cdr_parser.properties:/opt/cdr_parser/cdr_parser.properties
     deploy:

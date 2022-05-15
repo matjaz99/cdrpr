@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdrAggs>
+    <metadata>
+        <startTime></startTime>
+        <endTime></endTime>
+        <nodeId></nodeId>
+        <productCategory></productCategory>
+        <hostname></hostname>
+        <filename></filename>
+    </metadata>
+    <statistics>
+        <node>
+            <callStats>
+                <records>1000</records>
+                <seizures>900</seizures>
+                <seizuresWithAnswer>490</seizuresWithAnswer>
+                <active>50</active>
+                <duration>15000000</duration>
+                <trafficIntensity></trafficIntensity>
+                <trafficVolume></trafficVolume>
+                <timeBeforeRinging>24300</timeBeforeRinging>
+                <timeBeforeAnswer>243000</timeBeforeAnswer>
+                <causes>
+                    <cause id="16" name="Answered">500</cause>
+                    <cause id="17" name="Busy">250</cause>
+                </causes>
+            </callStats>
+        </node>
+        <trunkGroups>
+            <trunkGroup id="1000" name="my-trunk-group" direction="inc">
+                <callStats>
+                    <records>1000</records>
+                    <seizures>900</seizures>
+                    <seizuresWithAnswer>490</seizuresWithAnswer>
+                    <active>50</active>
+                    <duration>15000000</duration>
+                    <trafficIntensity></trafficIntensity>
+                    <trafficVolume></trafficVolume>
+                    <timeBeforeRinging>24300</timeBeforeRinging>
+                    <timeBeforeAnswer>243000</timeBeforeAnswer>
+                    <causes>
+                        <cause id="16" name="Answered">500</cause>
+                        <cause id="17" name="Busy">250</cause>
+                    </causes>
+                </callStats>
+                <channels>
+                    <allChanels>64</allChanels>
+                    <outOfserviceChanels>0</outOfserviceChanels>
+                </channels>
+            </trunkGroup>
+        </trunkGroups>
+    </statistics>
+</cdrAggs>

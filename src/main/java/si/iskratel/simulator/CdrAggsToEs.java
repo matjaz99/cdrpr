@@ -161,16 +161,16 @@ public class CdrAggsToEs {
 
                 if (files.length == 0) logger.info("No CDR files found in " + CDR_INPUT_DIR + "/" + nodeDir.getName());
 
-                for (File f : files) {
+                for (File cdrFile : files) {
 
                     PMetricRegistry.getRegistry(INDEX_CDRSTATS).resetMetrics();
                     PMetricRegistry.getRegistry(INDEX_CDRMETRICS).resetMetrics();
                     seriesMap.clear();
 
-                    logger.info("Reading file: " + f.getAbsolutePath());
+                    logger.info("Reading file: " + cdrFile.getAbsolutePath());
 
-                    long timestamp = getSamplingTimeFromFilename(f.getName()).getTime();
-                    CdrData data = CdrParser.parse(f);
+                    long timestamp = getSamplingTimeFromFilename(cdrFile.getName()).getTime();
+                    CdrData data = CdrParser.parse(cdrFile);
                     data.nodeName = nodeDir.getName();
                     cdr_files_total.setLabelValues("Success").inc();
 
@@ -178,8 +178,9 @@ public class CdrAggsToEs {
                     mvts_node_statistics
                             .addLabel("node.name", data.nodeName)
                             .addLabel("node.id", data.nodeName);
-                    PMultivalueTimeSeries mvts_node_release_causes = new PMultivalueTimeSeries();
+//                    PMultivalueTimeSeries mvts_node_release_causes = new PMultivalueTimeSeries();
 
+                    // analyze each record
                     for (int i = 0; i < data.cdrList.size(); i++) {
                         CdrBean cdrBean = data.cdrList.get(i);
                         cdrBean.setNodeId(data.nodeName);
@@ -193,6 +194,8 @@ public class CdrAggsToEs {
                             m_cdr_inctg_seizures.setLabelValues(data.nodeName, cdrBean.getInTrunkGroupNameIE144()).inc();
                             m_cdr_outtg_seizures.setLabelValues(data.nodeName, cdrBean.getOutTrunkGroupNameIE145()).inc();
 
+                            // count seizures that have no release cause yet, but they have duration
+                            // this indicates that the call was answered (used for calculating ASR in the same interval)
                             if (cdrBean.getDuration() > 0) {
                                 mvts_node_statistics.incValue("node.seizuresWithAnswer", 1);
                                 increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.seizuresWithAnswer", 1);
@@ -259,7 +262,7 @@ public class CdrAggsToEs {
                             increaseTrunkGroupSeriesValue(cdrBean, "TrunkGroup.timeBeforeAnswer", cdrBean.getDuration());
                         }
 
-                    } // END foreach cdr bean
+                    } // END analyze each record (foreach cdr bean)
 
                     // calculate traffic intensity and traffic volume
                     double d = mvts_node_statistics.getValuesMap().getOrDefault("node.duration", -1.0);
@@ -306,7 +309,7 @@ public class CdrAggsToEs {
 
 
                     // handle processed file
-                    if (Props.SIMULATOR_MOVE_FILES_WHEN_PROCESSED) {
+                    if (Props.SIMULATOR_HANDLE_FILES_WHEN_PROCESSED.equalsIgnoreCase("move")) {
                         // create new output node dir
                         String nodeOutDir = nodeDir.getAbsolutePath();
                         nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
@@ -318,10 +321,14 @@ public class CdrAggsToEs {
                         }
 
                         // move processed file
-                        String absPath = f.getAbsolutePath();
+                        String absPath = cdrFile.getAbsolutePath();
                         absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
                         logger.info("Moving file to new location: " + absPath);
-                        Files.move(Paths.get(f.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
+                        Files.move(Paths.get(cdrFile.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
+                    } else if (Props.SIMULATOR_HANDLE_FILES_WHEN_PROCESSED.equalsIgnoreCase("delete")) {
+                        cdrFile.delete();
+                    } else {
+                        // do nothing
                     }
 
 
