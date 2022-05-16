@@ -4,11 +4,11 @@
         <name>node-1004</name>
         <nodeId>1004</nodeId>
         <sftp>
-            <hostname>node-1004.iskratel.si</hostname>
+            <hostname>node-1004.hostname.si</hostname>
             <port>22</port>
-            <username>neadmin</username>
-            <password>iskratel</password>
-            <cdrDirectory></cdrDirectory>
+            <username>username</username>
+            <password>password</password>
+            <cdrDirectory>/path/to/directory</cdrDirectory>
         </sftp>
     </node>
 </inventory>
