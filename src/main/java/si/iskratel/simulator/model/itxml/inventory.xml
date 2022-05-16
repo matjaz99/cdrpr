@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inventory>
+    <node>
+        <name>node-1004</name>
+        <nodeId>1004</nodeId>
+        <sftp>
+            <hostname>node-1004.iskratel.si</hostname>
+            <port>22</port>
+            <username>neadmin</username>
+            <password>iskratel</password>
+            <cdrDirectory></cdrDirectory>
+        </sftp>
+    </node>
+</inventory>
