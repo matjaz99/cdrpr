@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cdrAggs>
     <metadata>
-        <startTime></startTime>
-        <endTime></endTime>
-        <nodeId></nodeId>
-        <productCategory></productCategory>
-        <hostname></hostname>
-        <filename></filename>
+        <startTime>2022-05-16T10:15:00+02:00</startTime>
+        <endTime>2022-05-16T10:30:00+02:00</endTime>
+        <nodeId>1048700</nodeId>
+        <productCategory>IA</productCategory>
+        <hostname>tas.ims11.iskratel.mak</hostname>
+        <filename>104870020220516103099.si2</filename>
     </metadata>
     <statistics>
         <node>
@@ -23,6 +23,7 @@
                 <causes>
                     <cause id="16" name="Answered">500</cause>
                     <cause id="17" name="Busy">250</cause>
+                    <cause id="18" name="No response">20</cause>
                 </causes>
             </callStats>
         </node>
@@ -34,13 +35,14 @@
                     <seizuresWithAnswer>490</seizuresWithAnswer>
                     <active>50</active>
                     <duration>15000000</duration>
-                    <trafficIntensity></trafficIntensity>
-                    <trafficVolume></trafficVolume>
+                    <trafficIntensity>10.4</trafficIntensity>
+                    <trafficVolume>2.5</trafficVolume>
                     <timeBeforeRinging>24300</timeBeforeRinging>
                     <timeBeforeAnswer>243000</timeBeforeAnswer>
                     <causes>
                         <cause id="16" name="Answered">500</cause>
                         <cause id="17" name="Busy">250</cause>
+                        <cause id="18" name="No response">20</cause>
                     </causes>
                 </callStats>
                 <channels>
