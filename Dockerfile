@@ -13,6 +13,8 @@ COPY config/severities.properties /opt/config/severities.properties
 COPY config/logback.xml /opt/config/logback.xml
 COPY init.sh /opt/init.sh
 
+RUN apt install iputils-ping
+
 WORKDIR /opt
 
 EXPOSE 9099

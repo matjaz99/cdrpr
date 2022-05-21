@@ -53,7 +53,7 @@ public class FileClient extends Thread {
     private static void writeDumpedDataToFile(String metricName, String data) {
         try {
             String fileName = metricName + "_" + System.currentTimeMillis() + "_" + (dump_count++) + ".ndjson";
-            logger.info("Dumping to file: " + fileName);
+            logger.warn("Dumping to file: " + fileName);
             FileWriter myWriter = new FileWriter(MetricsLib.DUMP_DIRECTORY + fileName);
             myWriter.write(data);
             myWriter.close();

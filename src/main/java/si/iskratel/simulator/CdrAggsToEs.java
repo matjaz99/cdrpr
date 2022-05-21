@@ -309,7 +309,7 @@ public class CdrAggsToEs {
 
 
                     // handle processed file
-                    if (Props.SIMULATOR_HANDLE_FILES_WHEN_PROCESSED.equalsIgnoreCase("move")) {
+                    if (Props.HANDLE_FILES_WHEN_PROCESSED.equalsIgnoreCase("move")) {
                         // create new output node dir
                         String nodeOutDir = nodeDir.getAbsolutePath();
                         nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
@@ -325,8 +325,9 @@ public class CdrAggsToEs {
                         absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
                         logger.info("Moving file to new location: " + absPath);
                         Files.move(Paths.get(cdrFile.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
-                    } else if (Props.SIMULATOR_HANDLE_FILES_WHEN_PROCESSED.equalsIgnoreCase("delete")) {
+                    } else if (Props.HANDLE_FILES_WHEN_PROCESSED.equalsIgnoreCase("delete")) {
                         cdrFile.delete();
+                        logger.info("File deleted: " + cdrFile.getAbsolutePath());
                     } else {
                         // do nothing
                     }

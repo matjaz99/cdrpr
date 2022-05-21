@@ -34,7 +34,7 @@ public class Props {
     public static String SIMULATOR_STORAGE_TYPE;
     public static String SIMULATOR_NODEID;
     public static boolean SIMULATOR_EXIT_WHEN_DONE = true;
-    public static String SIMULATOR_HANDLE_FILES_WHEN_PROCESSED = "nothing";
+    public static String HANDLE_FILES_WHEN_PROCESSED = "nothing";
     public static int SIMULATOR_CALL_DELAY = 10;
     public static int SIMULATOR_CALL_REASON = 0;
     public static int SIMULATOR_ANUM_START = 0;
@@ -70,7 +70,7 @@ public class Props {
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
         SIMULATOR_EXIT_WHEN_DONE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT_WHEN_DONE", "true"));
-        SIMULATOR_HANDLE_FILES_WHEN_PROCESSED = getenv.getOrDefault("CDRPR_HANDLE_FILES_WHEN_PROCESSED", "nothing");
+        HANDLE_FILES_WHEN_PROCESSED = getenv.getOrDefault("CDRPR_HANDLE_FILES_WHEN_PROCESSED", "nothing");
 
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "50000"));
         SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "900"));
