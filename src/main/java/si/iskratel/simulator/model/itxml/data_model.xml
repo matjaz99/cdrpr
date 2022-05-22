@@ -16,8 +16,8 @@
                 <seizuresWithAnswer>490</seizuresWithAnswer>
                 <active>50</active>
                 <duration>15000000</duration>
-                <trafficIntensity></trafficIntensity>
-                <trafficVolume></trafficVolume>
+                <trafficIntensity unit="E"></trafficIntensity>
+                <trafficVolume unit="Eh"></trafficVolume>
                 <timeBeforeRinging>24300</timeBeforeRinging>
                 <timeBeforeAnswer>243000</timeBeforeAnswer>
                 <causes>
@@ -25,6 +25,11 @@
                     <cause id="17" name="Busy">250</cause>
                     <cause id="18" name="No response">20</cause>
                 </causes>
+                <kpis>
+                    <kpi name="trafficIntensity" unit="E"></kpi>
+                    <kpi name="trafficVolume" unit="Eh"></kpi>
+                    <kpi name="averageCallDuration" unit="ms"></kpi>
+                </kpis>
             </callStats>
         </node>
         <trunkGroups>

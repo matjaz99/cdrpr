@@ -65,6 +65,9 @@ public class Start {
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_TO_KAFKA")) {
             CdrToKafka.main(new String[1]);
         }
+        if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_AGGS_TO_IT_XML")) {
+            CdrAggsToItXml.main(new String[1]);
+        }
 
 
     }
