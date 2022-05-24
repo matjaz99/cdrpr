@@ -1,4 +1,4 @@
-package si.iskratel.simulator.model.itxml;
+package si.iskratel.simulator.model.xml;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -110,12 +110,15 @@ public class CdrAggs {
 
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "node"
+            "node",
+            "trunkGroups"
     })
     public static class Statistics {
 
         @XmlElement(required = true)
         protected Node node;
+        @XmlElement(required = true)
+        protected TrunkGroups trunkGroups;
 
         public Node getNode() {
             return node;
@@ -123,6 +126,14 @@ public class CdrAggs {
 
         public void setNode(Node node) {
             this.node = node;
+        }
+
+        public TrunkGroups getTrunkGroups() {
+            return trunkGroups;
+        }
+
+        public void setTrunkGroups(TrunkGroups trunkGroups) {
+            this.trunkGroups = trunkGroups;
         }
 
         @XmlAccessorType(XmlAccessType.FIELD)
@@ -308,6 +319,73 @@ public class CdrAggs {
 
             }
 
+        }
+
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "", propOrder = {
+                "trunkGroup"
+        })
+        public static class TrunkGroups {
+
+            @XmlElement(required = true, name="trunkGroup")
+            protected List<TrunkGroup> trunkGroup;
+
+            public List<TrunkGroup> getTrunkGroup() {
+                return trunkGroup;
+            }
+
+            public void setTrunkGroup(List<TrunkGroup> trunkGroup) {
+                this.trunkGroup = trunkGroup;
+            }
+
+            @XmlAccessorType(XmlAccessType.FIELD)
+            @XmlType(name = "", propOrder = {
+                    "callStats"
+            })
+            public static class TrunkGroup {
+
+                @XmlAttribute(name = "id", required = true)
+                protected String id;
+                @XmlAttribute(name = "name", required = true)
+                protected String name;
+                @XmlAttribute(name = "direction", required = true)
+                protected String direction;
+                @XmlElement(required = true)
+                protected CallStats callStats;
+
+                public String getId() {
+                    return id;
+                }
+
+                public void setId(String id) {
+                    this.id = id;
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public void setName(String name) {
+                    this.name = name;
+                }
+
+                public String getDirection() {
+                    return direction;
+                }
+
+                public void setDirection(String direction) {
+                    this.direction = direction;
+                }
+
+                public CallStats getCallStats() {
+                    return callStats;
+                }
+
+                public void setCallStats(CallStats callStats) {
+                    this.callStats = callStats;
+                }
+
+            }
         }
 
     }

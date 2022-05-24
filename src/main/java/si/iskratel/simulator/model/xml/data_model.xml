@@ -20,6 +20,10 @@
                 <trafficVolume unit="Eh"></trafficVolume>
                 <timeBeforeRinging>24300</timeBeforeRinging>
                 <timeBeforeAnswer>243000</timeBeforeAnswer>
+                <counters>
+                    <counter name="records.total">1000</counter>
+                    <counter name="duration.total" unit="ms">15000000</counter>
+                </counters>
                 <causes>
                     <cause id="16" name="Answered">500</cause>
                     <cause id="17" name="Busy">250</cause>

@@ -32,6 +32,9 @@ public class Start {
             System.err.println("IOException: " + e.getMessage());
         }
 
+        // start generator
+        // store each record into ES
+        // config via env vars
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AND_STORE_ALL_TO_ES")) {
             initMetricsLib();
             startCdrGenerators();
@@ -39,6 +42,11 @@ public class Start {
             t.setName("aggregator");
             t.start();
         }
+
+        // start generator
+        // aggregate (PMetric)
+        // store each record into ES
+        // config via env vars
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AGGREGATE_AND_STORE_TO_ES")) {
             initMetricsLib();
             startCdrGenerators();
@@ -46,6 +54,9 @@ public class Start {
             t.setName("aggregator");
             t.start();
         }
+
+        // start generator
+        // store each record into Kafka topic
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AND_STORE_ALL_TO_KAFKA")) {
             initMetricsLib();
             startCdrGenerators();
@@ -66,7 +77,7 @@ public class Start {
             CdrToKafka.main(new String[1]);
         }
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_AGGS_TO_IT_XML")) {
-            CdrAggsToItXml.main(new String[1]);
+            CdrAggsToXml.main(new String[1]);
         }
 
 
