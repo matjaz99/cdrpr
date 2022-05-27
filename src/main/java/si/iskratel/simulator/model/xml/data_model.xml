@@ -3,6 +3,7 @@
     <metadata>
         <startTime>2022-05-16T10:15:00+02:00</startTime>
         <endTime>2022-05-16T10:30:00+02:00</endTime>
+        <samplingInterval>900</samplingInterval>
         <nodeId>1048700</nodeId>
         <productCategory>IA</productCategory>
         <hostname>tas.ims11.iskratel.mak</hostname>
@@ -11,28 +12,26 @@
     <statistics>
         <node>
             <callStats>
-                <records>1000</records>
-                <seizures>900</seizures>
-                <seizuresWithAnswer>490</seizuresWithAnswer>
-                <active>50</active>
-                <duration>15000000</duration>
-                <trafficIntensity unit="E"></trafficIntensity>
-                <trafficVolume unit="Eh"></trafficVolume>
-                <timeBeforeRinging>24300</timeBeforeRinging>
-                <timeBeforeAnswer>243000</timeBeforeAnswer>
                 <counters>
-                    <counter name="records.total">1000</counter>
-                    <counter name="duration.total" unit="ms">15000000</counter>
+                    <counter name="node.records">1000</counter>
+                    <counter name="node.seizures">15000000</counter>
+                    <counter name="node.seizuresWithAnswer">1000</counter>
+                    <counter name="node.activeCalls">15000000</counter>
+                    <counter name="node.duration" unit="ms">15000000</counter>
+                    <counter name="node.trafficIntensity" unit="E">1000</counter>
+                    <counter name="node.trafficVolume" unit="Eh">15000000</counter>
+                    <counter name="node.timeBeforeRinging" unit="ms">1000</counter>
+                    <counter name="node.timeBeforeAnswer" unit="ms">15000000</counter>
                 </counters>
-                <causes>
-                    <cause id="16" name="Answered">500</cause>
-                    <cause id="17" name="Busy">250</cause>
-                    <cause id="18" name="No response">20</cause>
-                </causes>
+                <releaseCauses>
+                    <cause id="16" name="answered">500</cause>
+                    <cause id="17" name="busy">250</cause>
+                    <cause id="18" name="noResponse">20</cause>
+                </releaseCauses>
                 <kpis>
-                    <kpi name="trafficIntensity" unit="E"></kpi>
-                    <kpi name="trafficVolume" unit="Eh"></kpi>
-                    <kpi name="averageCallDuration" unit="ms"></kpi>
+                    <kpi name="node.trafficIntensity" unit="E"></kpi>
+                    <kpi name="node.trafficVolume" unit="Eh"></kpi>
+                    <kpi name="node.averageCallDuration" unit="ms"></kpi>
                 </kpis>
             </callStats>
         </node>

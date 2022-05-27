@@ -64,6 +64,9 @@ public class Start {
             t.setName("aggregator");
             t.start();
         }
+
+        // parse cdr
+        // convert to csv
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_TO_CSV")) {
             CdrToCsv.main(null);
         }
@@ -76,7 +79,7 @@ public class Start {
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_TO_KAFKA")) {
             CdrToKafka.main(new String[1]);
         }
-        if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_AGGS_TO_IT_XML")) {
+        if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_AGGS_TO_XML")) {
             CdrAggsToXml.main(new String[1]);
         }
 

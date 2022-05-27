@@ -174,9 +174,9 @@ public class CdrAggs {
             @XmlElement(required = true)
             protected long records;
             @XmlElement(required = true)
-            protected Double seizures;
+            protected Integer seizures;
             @XmlElement(required = true)
-            protected Double seizuresWithAnswer;
+            protected Integer seizuresWithAnswer;
             @XmlElement(required = true)
             protected Double active;
             @XmlElement(required = true)
@@ -200,19 +200,19 @@ public class CdrAggs {
                 this.records = records;
             }
 
-            public Double getSeizures() {
+            public Integer getSeizures() {
                 return seizures;
             }
 
-            public void setSeizures(Double seizures) {
+            public void setSeizures(Integer seizures) {
                 this.seizures = seizures;
             }
 
-            public Double getSeizuresWithAnswer() {
+            public Integer getSeizuresWithAnswer() {
                 return seizuresWithAnswer;
             }
 
-            public void setSeizuresWithAnswer(Double seizuresWithAnswer) {
+            public void setSeizuresWithAnswer(Integer seizuresWithAnswer) {
                 this.seizuresWithAnswer = seizuresWithAnswer;
             }
 
@@ -264,6 +264,14 @@ public class CdrAggs {
                 this.timeBeforeAnswer = timeBeforeAnswer;
             }
 
+            public Causes getCauses() {
+                return causes;
+            }
+
+            public void setCauses(Causes causes) {
+                this.causes = causes;
+            }
+
             @XmlAccessorType(XmlAccessType.FIELD)
             @XmlType(name = "", propOrder = {
                     "cause"
@@ -281,41 +289,41 @@ public class CdrAggs {
                     this.cause = cause;
                 }
 
-                @XmlAccessorType(XmlAccessType.FIELD)
-                @XmlType(name = "")
-                public static class Cause {
-
-                    @XmlAttribute(name = "id", required = true)
-                    protected String id;
-                    @XmlAttribute(name = "name", required = true)
-                    protected String name;
-                    @XmlElement(required = true)
-                    protected long value;
-
-                    public String getId() {
-                        return id;
-                    }
-
-                    public void setId(String id) {
-                        this.id = id;
-                    }
-
-                    public String getName() {
-                        return name;
-                    }
-
-                    public void setName(String name) {
-                        this.name = name;
-                    }
-
-                    public long getValue() {
-                        return value;
-                    }
-
-                    public void setValue(long value) {
-                        this.value = value;
-                    }
-                }
+//                @XmlAccessorType(XmlAccessType.FIELD)
+//                @XmlType(name = "")
+//                public static class Cause {
+//
+//                    @XmlAttribute(name = "id", required = true)
+//                    protected String id;
+//                    @XmlAttribute(name = "name", required = true)
+//                    protected String name;
+//                    @XmlElement(required = true)
+//                    protected long value;
+//
+//                    public String getId() {
+//                        return id;
+//                    }
+//
+//                    public void setId(String id) {
+//                        this.id = id;
+//                    }
+//
+//                    public String getName() {
+//                        return name;
+//                    }
+//
+//                    public void setName(String name) {
+//                        this.name = name;
+//                    }
+//
+//                    public long getValue() {
+//                        return value;
+//                    }
+//
+//                    public void setValue(long value) {
+//                        this.value = value;
+//                    }
+//                }
 
             }
 
