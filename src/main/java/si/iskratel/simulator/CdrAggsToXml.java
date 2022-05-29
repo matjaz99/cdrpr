@@ -7,8 +7,8 @@ import si.iskratel.cdr.parser.PpdrBean;
 import si.iskratel.cdrparser.CdrData;
 import si.iskratel.cdrparser.CdrParser;
 import si.iskratel.metricslib.*;
-import si.iskratel.simulator.model.xml.Cause;
 import si.iskratel.simulator.model.xml.CdrAggs;
+import si.iskratel.simulator.model.xml.XmlFormatter;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -155,8 +155,8 @@ public class CdrAggsToXml {
                                     increaseTrunkGroupSeriesValue(cdrBean, "trunkGroup.busy", 1);
                                     break;
                                 case 19:
-                                    mvts_cdr_statistics.incValue("node.noReply", 1);
-                                    increaseTrunkGroupSeriesValue(cdrBean, "trunkGroup.noReply", 1);
+                                    mvts_cdr_statistics.incValue("node.noResponse", 1);
+                                    increaseTrunkGroupSeriesValue(cdrBean, "trunkGroup.noResponse", 1);
                                     break;
                                 case 21:
                                     mvts_cdr_statistics.incValue("node.rejected", 1);
@@ -229,48 +229,78 @@ public class CdrAggsToXml {
 
                     // TODO convert to XML
                     CdrAggs cdrAggs = new CdrAggs();
-                    CdrAggs.Metadata metadata = new CdrAggs.Metadata();
+//                    CdrAggs.Metadata metadata = XmlFormatter.getMetadata(data, cdrFile.getName());
                     CdrAggs.Statistics statistics = new CdrAggs.Statistics();
                     CdrAggs.Statistics.Node node = new CdrAggs.Statistics.Node();
                     CdrAggs.Statistics.TrunkGroups trunkGroups = new CdrAggs.Statistics.TrunkGroups();
                     List<CdrAggs.Statistics.TrunkGroups.TrunkGroup> trunkGroupList = new ArrayList<>();
 
-                    // fill metadata
-                    GregorianCalendar cal = new GregorianCalendar();
-                    cal.setTime(new Date());
-                    metadata.setStartTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(cal));
-                    metadata.setEndTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(cal));
-                    metadata.setHostname(data.nodeName);
-                    metadata.setNodeId(data.nodeName);
-                    metadata.setFilename(cdrFile.getName());
-                    metadata.setProductCategory("IE");
 
                     CdrAggs.Statistics.CallStats nodeCallStats = new CdrAggs.Statistics.CallStats();
-                    nodeCallStats.setRecords(mvts_cdr_statistics.getValuesMap().getOrDefault("node.records", 0.0).intValue());
-                    nodeCallStats.setSeizures(mvts_cdr_statistics.getValuesMap().getOrDefault("node.seizures", 0.0).intValue());
-                    nodeCallStats.setSeizuresWithAnswer(mvts_cdr_statistics.getValuesMap().getOrDefault("node.seizuresWithAnswer", 0.0).intValue());
-                    nodeCallStats.setActive(mvts_cdr_statistics.getValuesMap().getOrDefault("node.activeCalls", 0.0));
-                    nodeCallStats.setDuration(mvts_cdr_statistics.getValuesMap().getOrDefault("node.duration", 0.0));
-                    nodeCallStats.setTrafficIntensity(mvts_cdr_statistics.getValuesMap().getOrDefault("node.trafficIntensity", 0.0));
-                    nodeCallStats.setTrafficVolume(mvts_cdr_statistics.getValuesMap().getOrDefault("node.trafficVolume", 0.0));
+
+                    CdrAggs.Statistics.CallStats.Counters counters = new CdrAggs.Statistics.CallStats.Counters();
+                    List<CdrAggs.Statistics.CallStats.Counters.Counter> counterList = new ArrayList<>();
+                    CdrAggs.Statistics.CallStats.Counters.Counter nodeRecords = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                    nodeRecords.setName("node.records");
+                    nodeRecords.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.records", 0.0).longValue());
+                    counterList.add(nodeRecords);
+                    CdrAggs.Statistics.CallStats.Counters.Counter nodeSeizures = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                    nodeSeizures.setName("node.seizures");
+                    nodeSeizures.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.seizures", 0.0).longValue());
+                    counterList.add(nodeSeizures);
+                    CdrAggs.Statistics.CallStats.Counters.Counter nodeSeizWAns = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                    nodeSeizWAns.setName("node.seizuresWithAnswer");
+                    nodeSeizWAns.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.seizuresWithAnswer", 0.0).longValue());
+                    counterList.add(nodeSeizWAns);
+                    CdrAggs.Statistics.CallStats.Counters.Counter nodeActive = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                    nodeActive.setName("node.activeCalls");
+                    nodeActive.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.activeCalls", 0.0).longValue());
+                    counterList.add(nodeActive);
+                    CdrAggs.Statistics.CallStats.Counters.Counter nodeDur = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                    nodeDur.setName("node.duration");
+                    nodeDur.setUnit("ms");
+                    nodeDur.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.duration", 0.0).longValue());
+                    counterList.add(nodeDur);
+                    CdrAggs.Statistics.CallStats.Counters.Counter nodeTrInt = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                    nodeTrInt.setName("node.trafficIntensity");
+                    nodeTrInt.setUnit("E");
+                    nodeTrInt.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.trafficIntensity", 0.0).longValue());
+                    counterList.add(nodeTrInt);
+                    CdrAggs.Statistics.CallStats.Counters.Counter nodeTrVol = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                    nodeTrVol.setName("node.trafficVolume");
+                    nodeTrVol.setUnit("Eh");
+                    nodeTrVol.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.trafficVolume", 0.0).longValue());
+                    counterList.add(nodeTrVol);
+
+                    counters.setCounter(counterList);
+                    nodeCallStats.setCounters(counters);
 
                     CdrAggs.Statistics.CallStats.Causes causes = new CdrAggs.Statistics.CallStats.Causes();
-                    List<Cause> causeList = new ArrayList<>();
-                    Cause causeAns = new Cause();
+                    List<CdrAggs.Statistics.CallStats.Causes.Cause> causeList = new ArrayList<>();
+                    CdrAggs.Statistics.CallStats.Causes.Cause causeAns = new CdrAggs.Statistics.CallStats.Causes.Cause();
                     causeAns.setId("16");
                     causeAns.setName("answered");
-                    causeAns.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.answered", 0.0).intValue());
+                    causeAns.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.answered", 0.0).longValue());
                     causeList.add(causeAns);
-                    Cause causeBusy = new Cause();
+                    CdrAggs.Statistics.CallStats.Causes.Cause causeBusy = new CdrAggs.Statistics.CallStats.Causes.Cause();
                     causeBusy.setId("17");
                     causeBusy.setName("busy");
-                    causeBusy.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.answered", 0.0).intValue());
+                    causeBusy.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.busy", 0.0).longValue());
                     causeList.add(causeBusy);
-                    Cause causeNoResponse = new Cause();
+                    CdrAggs.Statistics.CallStats.Causes.Cause causeNoResponse = new CdrAggs.Statistics.CallStats.Causes.Cause();
                     causeNoResponse.setId("17");
                     causeNoResponse.setName("noResponse");
-                    causeNoResponse.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.answered", 0.0).intValue());
-                    causeList.add(causeNoResponse);
+                    causeNoResponse.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.noResponse", 0.0).longValue());
+                    CdrAggs.Statistics.CallStats.Causes.Cause causeRejected = new CdrAggs.Statistics.CallStats.Causes.Cause();
+                    causeRejected.setId("21");
+                    causeRejected.setName("rejected");
+                    causeRejected.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.rejected", 0.0).longValue());
+                    causeList.add(causeRejected);
+                    CdrAggs.Statistics.CallStats.Causes.Cause causeOther = new CdrAggs.Statistics.CallStats.Causes.Cause();
+                    causeOther.setId("0");
+                    causeOther.setName("other");
+                    causeOther.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("node.other", 0.0).longValue());
+                    causeList.add(causeOther);
 
                     causes.setCause(causeList);
                     nodeCallStats.setCauses(causes);
@@ -280,13 +310,43 @@ public class CdrAggsToXml {
                         if (ts.getValuesMap().get("trunkGroup.seizures") != null) {
 
                             CdrAggs.Statistics.CallStats callStats = new CdrAggs.Statistics.CallStats();
-                            callStats.setRecords(ts.getValuesMap().getOrDefault("trunkGroup.records", 0.0).intValue());
-                            callStats.setSeizures(ts.getValuesMap().getOrDefault("trunkGroup.seizures", 0.0).intValue());
-                            callStats.setSeizuresWithAnswer(ts.getValuesMap().getOrDefault("trunkGroup.seizuresWithAnswer", 0.0).intValue());
-                            callStats.setActive(ts.getValuesMap().getOrDefault("trunkGroup.activeCalls", 0.0));
-                            callStats.setDuration(ts.getValuesMap().getOrDefault("trunkGroup.duration", 0.0));
-                            callStats.setTrafficIntensity(mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.trafficIntensity", 0.0));
-                            callStats.setTrafficVolume(mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.trafficVolume", 0.0));
+
+                            CdrAggs.Statistics.CallStats.Counters tgCounters = new CdrAggs.Statistics.CallStats.Counters();
+                            List<CdrAggs.Statistics.CallStats.Counters.Counter> tgCounterList = new ArrayList<>();
+                            CdrAggs.Statistics.CallStats.Counters.Counter tgRecords = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                            tgRecords.setName("trunkGroup.records");
+                            tgRecords.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.records", 0.0).longValue());
+                            tgCounterList.add(tgRecords);
+                            CdrAggs.Statistics.CallStats.Counters.Counter tgSeizures = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                            tgSeizures.setName("trunkGroup.seizures");
+                            tgSeizures.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.seizures", 0.0).longValue());
+                            tgCounterList.add(tgSeizures);
+                            CdrAggs.Statistics.CallStats.Counters.Counter tgSeizWAns = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                            tgSeizWAns.setName("trunkGroup.seizuresWithAnswer");
+                            tgSeizWAns.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.seizuresWithAnswer", 0.0).longValue());
+                            tgCounterList.add(tgSeizWAns);
+                            CdrAggs.Statistics.CallStats.Counters.Counter tgActive = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                            tgActive.setName("trunkGroup.activeCalls");
+                            tgActive.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.activeCalls", 0.0).longValue());
+                            tgCounterList.add(tgActive);
+                            CdrAggs.Statistics.CallStats.Counters.Counter tgDur = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                            tgDur.setName("trunkGroup.duration");
+                            tgDur.setUnit("ms");
+                            tgDur.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.duration", 0.0).longValue());
+                            tgCounterList.add(tgDur);
+                            CdrAggs.Statistics.CallStats.Counters.Counter tgTrInt = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                            tgTrInt.setName("trunkGroup.trafficIntensity");
+                            tgTrInt.setUnit("E");
+                            tgTrInt.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.trafficIntensity", 0.0).longValue());
+                            tgCounterList.add(tgTrInt);
+                            CdrAggs.Statistics.CallStats.Counters.Counter tgTrVol = new CdrAggs.Statistics.CallStats.Counters.Counter();
+                            tgTrVol.setName("trunkGroup.trafficVolume");
+                            tgTrVol.setUnit("Eh");
+                            tgTrVol.setValue(mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.trafficVolume", 0.0).longValue());
+                            tgCounterList.add(tgTrVol);
+
+                            counters.setCounter(tgCounterList);
+                            callStats.setCounters(tgCounters);
 
                             CdrAggs.Statistics.TrunkGroups.TrunkGroup tg = new CdrAggs.Statistics.TrunkGroups.TrunkGroup();
                             tg.setId(ts.getLabelsMap().getOrDefault("trunkGroup.id", "-"));
@@ -304,7 +364,7 @@ public class CdrAggsToXml {
                     node.setCallStats(nodeCallStats);
                     statistics.setNode(node);
                     statistics.setTrunkGroups(trunkGroups);
-                    cdrAggs.setMetadata(metadata);
+//                    cdrAggs.setMetadata(metadata);
                     cdrAggs.setStatistics(statistics);
 
                     File xmlOutFile = new File("./dump/" + cdrFile.getName().split(".si2")[0] + ".xml");

@@ -158,110 +158,28 @@ public class CdrAggs {
 
         @XmlAccessorType(XmlAccessType.FIELD)
         @XmlType(name = "", propOrder = {
-                "records",
-                "seizures",
-                "seizuresWithAnswer",
-                "active",
-                "duration",
-                "trafficIntensity",
-                "trafficVolume",
-                "timeBeforeRinging",
-                "timeBeforeAnswer",
+                "counters",
                 "causes"
         })
         public static class CallStats {
 
             @XmlElement(required = true)
-            protected long records;
-            @XmlElement(required = true)
-            protected Integer seizures;
-            @XmlElement(required = true)
-            protected Integer seizuresWithAnswer;
-            @XmlElement(required = true)
-            protected Double active;
-            @XmlElement(required = true)
-            protected Double duration;
-            @XmlElement(required = true)
-            protected double trafficIntensity;
-            @XmlElement(required = true)
-            protected double trafficVolume;
-            @XmlElement(required = true)
-            protected long timeBeforeRinging;
-            @XmlElement(required = true)
-            protected long timeBeforeAnswer;
+            protected Counters counters;
+
+//            @XmlElement(required = true)
+//            protected double trafficIntensity;
+//            @XmlElement(required = true)
+//            protected double trafficVolume;
+//            @XmlElement(required = true)
             @XmlElement(required = true)
             protected Causes causes;
 
-            public long getRecords() {
-                return records;
+            public Counters getCounters() {
+                return counters;
             }
 
-            public void setRecords(long records) {
-                this.records = records;
-            }
-
-            public Integer getSeizures() {
-                return seizures;
-            }
-
-            public void setSeizures(Integer seizures) {
-                this.seizures = seizures;
-            }
-
-            public Integer getSeizuresWithAnswer() {
-                return seizuresWithAnswer;
-            }
-
-            public void setSeizuresWithAnswer(Integer seizuresWithAnswer) {
-                this.seizuresWithAnswer = seizuresWithAnswer;
-            }
-
-            public Double getActive() {
-                return active;
-            }
-
-            public void setActive(Double active) {
-                this.active = active;
-            }
-
-            public Double getDuration() {
-                return duration;
-            }
-
-            public void setDuration(Double duration) {
-                this.duration = duration;
-            }
-
-            public double getTrafficIntensity() {
-                return trafficIntensity;
-            }
-
-            public void setTrafficIntensity(double trafficIntensity) {
-                this.trafficIntensity = trafficIntensity;
-            }
-
-            public double getTrafficVolume() {
-                return trafficVolume;
-            }
-
-            public void setTrafficVolume(double trafficVolume) {
-                this.trafficVolume = trafficVolume;
-            }
-
-            public long getTimeBeforeRinging() {
-                return timeBeforeRinging;
-            }
-
-            public void setTimeBeforeRinging(long timeBeforeRinging) {
-                this.timeBeforeRinging = timeBeforeRinging;
-            }
-
-            public long getTimeBeforeAnswer() {
-                return timeBeforeAnswer;
-            }
-
-            public void setTimeBeforeAnswer(long timeBeforeAnswer) {
-                this.timeBeforeAnswer = timeBeforeAnswer;
+            public void setCounters(Counters counters) {
+                this.counters = counters;
             }
 
             public Causes getCauses() {
@@ -270,6 +188,61 @@ public class CdrAggs {
 
             public void setCauses(Causes causes) {
                 this.causes = causes;
+            }
+
+            @XmlAccessorType(XmlAccessType.FIELD)
+            @XmlType(name = "", propOrder = {
+                    "counter"
+            })
+            public static class Counters {
+
+                @XmlElement(required = true, name="counter")
+                protected List<Counter> counter;
+
+                public List<Counter> getCounter() {
+                    return counter;
+                }
+
+                public void setCounter(List<Counter> counter) {
+                    this.counter = counter;
+                }
+
+                @XmlAccessorType(XmlAccessType.FIELD)
+                @XmlType(name = "")
+                public static class Counter {
+
+                    @XmlAttribute(required = true, name="name")
+                    protected String name;
+                    @XmlAttribute(required = false, name="unit")
+                    protected String unit;
+                    @XmlValue
+                    protected Long value;
+
+                    public String getName() {
+                        return name;
+                    }
+
+                    public void setName(String name) {
+                        this.name = name;
+                    }
+
+                    public String getUnit() {
+                        return unit;
+                    }
+
+                    public void setUnit(String unit) {
+                        this.unit = unit;
+                    }
+
+                    public Long getValue() {
+                        return value;
+                    }
+
+                    public void setValue(Long value) {
+                        this.value = value;
+                    }
+                }
+
             }
 
             @XmlAccessorType(XmlAccessType.FIELD)
@@ -289,41 +262,41 @@ public class CdrAggs {
                     this.cause = cause;
                 }
 
-//                @XmlAccessorType(XmlAccessType.FIELD)
-//                @XmlType(name = "")
-//                public static class Cause {
-//
-//                    @XmlAttribute(name = "id", required = true)
-//                    protected String id;
-//                    @XmlAttribute(name = "name", required = true)
-//                    protected String name;
-//                    @XmlElement(required = true)
-//                    protected long value;
-//
-//                    public String getId() {
-//                        return id;
-//                    }
-//
-//                    public void setId(String id) {
-//                        this.id = id;
-//                    }
-//
-//                    public String getName() {
-//                        return name;
-//                    }
-//
-//                    public void setName(String name) {
-//                        this.name = name;
-//                    }
-//
-//                    public long getValue() {
-//                        return value;
-//                    }
-//
-//                    public void setValue(long value) {
-//                        this.value = value;
-//                    }
-//                }
+                @XmlAccessorType(XmlAccessType.FIELD)
+                @XmlType(name = "")
+                public static class Cause {
+
+                    @XmlAttribute(name = "id", required = true)
+                    protected String id;
+                    @XmlAttribute(name = "name", required = true)
+                    protected String name;
+                    @XmlValue
+                    protected Long value;
+
+                    public String getId() {
+                        return id;
+                    }
+
+                    public void setId(String id) {
+                        this.id = id;
+                    }
+
+                    public String getName() {
+                        return name;
+                    }
+
+                    public void setName(String name) {
+                        this.name = name;
+                    }
+
+                    public Long getValue() {
+                        return value;
+                    }
+
+                    public void setValue(Long value) {
+                        this.value = value;
+                    }
+                }
 
             }
 
