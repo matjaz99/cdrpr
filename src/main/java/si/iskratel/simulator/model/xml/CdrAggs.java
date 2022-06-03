@@ -159,20 +159,17 @@ public class CdrAggs {
         @XmlAccessorType(XmlAccessType.FIELD)
         @XmlType(name = "", propOrder = {
                 "counters",
-                "causes"
+                "causes",
+                "kpis"
         })
         public static class CallStats {
 
             @XmlElement(required = true)
             protected Counters counters;
-
-//            @XmlElement(required = true)
-//            protected double trafficIntensity;
-//            @XmlElement(required = true)
-//            protected double trafficVolume;
-//            @XmlElement(required = true)
             @XmlElement(required = true)
             protected Causes causes;
+            @XmlElement(required = true)
+            protected Kpis kpis;
 
             public Counters getCounters() {
                 return counters;
@@ -188,6 +185,14 @@ public class CdrAggs {
 
             public void setCauses(Causes causes) {
                 this.causes = causes;
+            }
+
+            public Kpis getKpis() {
+                return kpis;
+            }
+
+            public void setKpis(Kpis kpis) {
+                this.kpis = kpis;
             }
 
             @XmlAccessorType(XmlAccessType.FIELD)
@@ -294,6 +299,61 @@ public class CdrAggs {
                     }
 
                     public void setValue(Long value) {
+                        this.value = value;
+                    }
+                }
+
+            }
+
+            @XmlAccessorType(XmlAccessType.FIELD)
+            @XmlType(name = "", propOrder = {
+                    "kpi"
+            })
+            public static class Kpis {
+
+                @XmlElement(required = true, name="kpi")
+                protected List<Kpi> kpi;
+
+                public List<Kpi> getKpi() {
+                    return kpi;
+                }
+
+                public void setKpi(List<Kpi> counter) {
+                    this.kpi = counter;
+                }
+
+                @XmlAccessorType(XmlAccessType.FIELD)
+                @XmlType(name = "")
+                public static class Kpi {
+
+                    @XmlAttribute(required = true, name="name")
+                    protected String name;
+                    @XmlAttribute(required = false, name="unit")
+                    protected String unit;
+                    @XmlValue
+                    protected Double value;
+
+                    public String getName() {
+                        return name;
+                    }
+
+                    public void setName(String name) {
+                        this.name = name;
+                    }
+
+                    public String getUnit() {
+                        return unit;
+                    }
+
+                    public void setUnit(String unit) {
+                        this.unit = unit;
+                    }
+
+                    public Double getValue() {
+                        return value;
+                    }
+
+                    public void setValue(Double value) {
                         this.value = value;
                     }
                 }
