@@ -21,13 +21,14 @@ public class XmlFormatter {
         CdrAggs.Statistics.CallStats nodeCallStats = new CdrAggs.Statistics.CallStats();
         nodeCallStats.setCounters(getNodeCounters(mv_metric));
         nodeCallStats.setCauses(getNodeCauses(mv_metric));
+        nodeCallStats.setKpis(getNodeKpis(mv_metric));
         node.setCallStats(nodeCallStats);
 
         CdrAggs.Statistics.TrunkGroups trunkGroups = new CdrAggs.Statistics.TrunkGroups();
         List<CdrAggs.Statistics.TrunkGroups.TrunkGroup> trunkGroupList = new ArrayList<>();
 
         for (PMultivalueTimeSeries ts : mv_metric.getMultivalueMetrics()) {
-            if (ts.getValuesMap().get("trunkGroup.records") != null) {
+            if (ts.getLabelsMap().get("metric").equals("tgStats")) {
 
                 CdrAggs.Statistics.TrunkGroups.TrunkGroup tg = new CdrAggs.Statistics.TrunkGroups.TrunkGroup();
                 tg.setId(ts.getLabelsMap().getOrDefault("trunkGroup.id", "-"));
@@ -37,6 +38,7 @@ public class XmlFormatter {
                 CdrAggs.Statistics.CallStats callStats = new CdrAggs.Statistics.CallStats();
                 callStats.setCounters(getTrunkGroupCounters(ts));
                 callStats.setCauses(getTrunkGroupCauses(ts));
+                callStats.setKpis(getTgKpis(ts));
 
                 tg.setCallStats(callStats);
                 trunkGroupList.add(tg);
@@ -81,7 +83,7 @@ public class XmlFormatter {
 
         for (PMultivalueTimeSeries ts : mv_metric.getMultivalueMetrics()) {
 
-            if (ts.getValuesMap().containsKey("node.records")) {
+            if (ts.getLabelsMap().get("metric").equals("nodeStats")) {
 
                 CdrAggs.Statistics.CallStats.Counters counters = new CdrAggs.Statistics.CallStats.Counters();
                 List<CdrAggs.Statistics.CallStats.Counters.Counter> counterList = new ArrayList<>();
@@ -112,18 +114,6 @@ public class XmlFormatter {
                 nodeDur.setValue(ts.getValuesMap().getOrDefault("node.duration", 0.0).longValue());
                 counterList.add(nodeDur);
 
-                CdrAggs.Statistics.CallStats.Counters.Counter nodeTrInt = new CdrAggs.Statistics.CallStats.Counters.Counter();
-                nodeTrInt.setName("node.trafficIntensity");
-                nodeTrInt.setUnit("E");
-                nodeTrInt.setValue(ts.getValuesMap().getOrDefault("node.trafficIntensity", 0.0).longValue());
-                counterList.add(nodeTrInt);
-
-                CdrAggs.Statistics.CallStats.Counters.Counter nodeTrVol = new CdrAggs.Statistics.CallStats.Counters.Counter();
-                nodeTrVol.setName("node.trafficVolume");
-                nodeTrVol.setUnit("Eh");
-                nodeTrVol.setValue(ts.getValuesMap().getOrDefault("node.trafficVolume", 0.0).longValue());
-                counterList.add(nodeTrVol);
-
                 counters.setCounter(counterList);
 
                 return counters;
@@ -137,44 +127,81 @@ public class XmlFormatter {
 
         for (PMultivalueTimeSeries ts : mv_metric.getMultivalueMetrics()) {
 
-            if (ts.getValuesMap().containsKey("node.answered")) {
+//            if (ts.getValuesMap().containsKey("cause.answered")) {
 
                 CdrAggs.Statistics.CallStats.Causes causes = new CdrAggs.Statistics.CallStats.Causes();
                 List<CdrAggs.Statistics.CallStats.Causes.Cause> causeList = new ArrayList<>();
 
                 CdrAggs.Statistics.CallStats.Causes.Cause causeAns = new CdrAggs.Statistics.CallStats.Causes.Cause();
                 causeAns.setId("16");
-                causeAns.setName("answered");
-                causeAns.setValue(ts.getValuesMap().getOrDefault("node.answered", 0.0).longValue());
+                causeAns.setName("cause.answered");
+                causeAns.setValue(ts.getValuesMap().getOrDefault("cause.answered", 0.0).longValue());
                 causeList.add(causeAns);
 
                 CdrAggs.Statistics.CallStats.Causes.Cause causeBusy = new CdrAggs.Statistics.CallStats.Causes.Cause();
                 causeBusy.setId("17");
-                causeBusy.setName("busy");
-                causeBusy.setValue(ts.getValuesMap().getOrDefault("node.busy", 0.0).longValue());
+                causeBusy.setName("cause.busy");
+                causeBusy.setValue(ts.getValuesMap().getOrDefault("cause.busy", 0.0).longValue());
                 causeList.add(causeBusy);
 
                 CdrAggs.Statistics.CallStats.Causes.Cause causeNoResponse = new CdrAggs.Statistics.CallStats.Causes.Cause();
                 causeNoResponse.setId("17");
-                causeNoResponse.setName("noResponse");
-                causeNoResponse.setValue(ts.getValuesMap().getOrDefault("node.noResponse", 0.0).longValue());
+                causeNoResponse.setName("cause.noResponse");
+                causeNoResponse.setValue(ts.getValuesMap().getOrDefault("cause.noResponse", 0.0).longValue());
                 causeList.add(causeNoResponse);
 
                 CdrAggs.Statistics.CallStats.Causes.Cause causeRejected = new CdrAggs.Statistics.CallStats.Causes.Cause();
                 causeRejected.setId("21");
-                causeRejected.setName("rejected");
-                causeRejected.setValue(ts.getValuesMap().getOrDefault("node.rejected", 0.0).longValue());
+                causeRejected.setName("cause.rejected");
+                causeRejected.setValue(ts.getValuesMap().getOrDefault("cause.rejected", 0.0).longValue());
                 causeList.add(causeRejected);
 
                 CdrAggs.Statistics.CallStats.Causes.Cause causeOther = new CdrAggs.Statistics.CallStats.Causes.Cause();
                 causeOther.setId("0");
-                causeOther.setName("other");
-                causeOther.setValue(ts.getValuesMap().getOrDefault("node.other", 0.0).longValue());
+                causeOther.setName("cause.other");
+                causeOther.setValue(ts.getValuesMap().getOrDefault("cause.other", 0.0).longValue());
                 causeList.add(causeOther);
 
                 causes.setCause(causeList);
 
                 return causes;
+
+//            }
+
+        }
+
+        return null;
+    }
+
+    private static CdrAggs.Statistics.CallStats.Kpis getNodeKpis(PMultiValueMetric mv_metric) {
+
+        for (PMultivalueTimeSeries ts : mv_metric.getMultivalueMetrics()) {
+
+            if (ts.getValuesMap().containsKey("kpi.trafficIntensity")) {
+
+                CdrAggs.Statistics.CallStats.Kpis kpis = new CdrAggs.Statistics.CallStats.Kpis();
+                List<CdrAggs.Statistics.CallStats.Kpis.Kpi> kpiList = new ArrayList<>();
+
+                CdrAggs.Statistics.CallStats.Kpis.Kpi trInt = new CdrAggs.Statistics.CallStats.Kpis.Kpi();
+                trInt.setName("kpi.trafficIntensity");
+                trInt.setUnit("E");
+                trInt.setValue(ts.getValuesMap().getOrDefault("kpi.trafficIntensity", 0.0));
+                kpiList.add(trInt);
+
+                CdrAggs.Statistics.CallStats.Kpis.Kpi trVol = new CdrAggs.Statistics.CallStats.Kpis.Kpi();
+                trVol.setName("kpi.trafficVolume");
+                trVol.setUnit("Eh");
+                trVol.setValue(ts.getValuesMap().getOrDefault("kpi.trafficVolume", 0.0));
+                kpiList.add(trVol);
+
+                CdrAggs.Statistics.CallStats.Kpis.Kpi asr = new CdrAggs.Statistics.CallStats.Kpis.Kpi();
+                asr.setName("kpi.asr");
+                asr.setValue(ts.getValuesMap().getOrDefault("kpi.asr", 0.0));
+                kpiList.add(asr);
+
+                kpis.setKpi(kpiList);
+
+                return kpis;
 
             }
 
@@ -214,18 +241,6 @@ public class XmlFormatter {
         tgDur.setValue(ts.getValuesMap().getOrDefault("trunkGroup.duration", 0.0).longValue());
         tgCounterList.add(tgDur);
 
-        CdrAggs.Statistics.CallStats.Counters.Counter tgTrInt = new CdrAggs.Statistics.CallStats.Counters.Counter();
-        tgTrInt.setName("trunkGroup.trafficIntensity");
-        tgTrInt.setUnit("E");
-        tgTrInt.setValue(ts.getValuesMap().getOrDefault("trunkGroup.trafficIntensity", 0.0).longValue());
-        tgCounterList.add(tgTrInt);
-
-        CdrAggs.Statistics.CallStats.Counters.Counter tgTrVol = new CdrAggs.Statistics.CallStats.Counters.Counter();
-        tgTrVol.setName("trunkGroup.trafficVolume");
-        tgTrVol.setUnit("Eh");
-        tgTrVol.setValue(ts.getValuesMap().getOrDefault("trunkGroup.trafficVolume", 0.0).longValue());
-        tgCounterList.add(tgTrVol);
-
         tgCounters.setCounter(tgCounterList);
 
         return tgCounters;
@@ -238,37 +253,70 @@ public class XmlFormatter {
 
         CdrAggs.Statistics.CallStats.Causes.Cause causeAns = new CdrAggs.Statistics.CallStats.Causes.Cause();
         causeAns.setId("16");
-        causeAns.setName("answered");
-        causeAns.setValue(ts.getValuesMap().getOrDefault("trunkGroup.answered", 0.0).longValue());
+        causeAns.setName("cause.answered");
+        causeAns.setValue(ts.getValuesMap().getOrDefault("cause.answered", 0.0).longValue());
         causeList.add(causeAns);
 
         CdrAggs.Statistics.CallStats.Causes.Cause causeBusy = new CdrAggs.Statistics.CallStats.Causes.Cause();
         causeBusy.setId("17");
-        causeBusy.setName("busy");
-        causeBusy.setValue(ts.getValuesMap().getOrDefault("trunkGroup.busy", 0.0).longValue());
+        causeBusy.setName("cause.busy");
+        causeBusy.setValue(ts.getValuesMap().getOrDefault("cause.busy", 0.0).longValue());
         causeList.add(causeBusy);
 
         CdrAggs.Statistics.CallStats.Causes.Cause causeNoResponse = new CdrAggs.Statistics.CallStats.Causes.Cause();
         causeNoResponse.setId("17");
-        causeNoResponse.setName("noResponse");
-        causeNoResponse.setValue(ts.getValuesMap().getOrDefault("trunkGroup.noResponse", 0.0).longValue());
+        causeNoResponse.setName("cause.noResponse");
+        causeNoResponse.setValue(ts.getValuesMap().getOrDefault("cause.noResponse", 0.0).longValue());
         causeList.add(causeNoResponse);
 
         CdrAggs.Statistics.CallStats.Causes.Cause causeRejected = new CdrAggs.Statistics.CallStats.Causes.Cause();
         causeRejected.setId("21");
-        causeRejected.setName("rejected");
-        causeRejected.setValue(ts.getValuesMap().getOrDefault("trunkGroup.rejected", 0.0).longValue());
+        causeRejected.setName("cause.rejected");
+        causeRejected.setValue(ts.getValuesMap().getOrDefault("cause.rejected", 0.0).longValue());
         causeList.add(causeRejected);
 
         CdrAggs.Statistics.CallStats.Causes.Cause causeOther = new CdrAggs.Statistics.CallStats.Causes.Cause();
         causeOther.setId("0");
-        causeOther.setName("other");
-        causeOther.setValue(ts.getValuesMap().getOrDefault("trunkGroup.other", 0.0).longValue());
+        causeOther.setName("cause.other");
+        causeOther.setValue(ts.getValuesMap().getOrDefault("cause.other", 0.0).longValue());
         causeList.add(causeOther);
 
         causes.setCause(causeList);
 
         return causes;
+    }
+
+    private static CdrAggs.Statistics.CallStats.Kpis getTgKpis(PMultivalueTimeSeries ts) {
+
+        if (ts.getValuesMap().containsKey("trunkGroup.duration")) {
+
+            CdrAggs.Statistics.CallStats.Kpis kpis = new CdrAggs.Statistics.CallStats.Kpis();
+            List<CdrAggs.Statistics.CallStats.Kpis.Kpi> kpiList = new ArrayList<>();
+
+            CdrAggs.Statistics.CallStats.Kpis.Kpi trInt = new CdrAggs.Statistics.CallStats.Kpis.Kpi();
+            trInt.setName("kpi.trafficIntensity");
+            trInt.setUnit("E");
+            trInt.setValue(ts.getValuesMap().getOrDefault("kpi.trafficIntensity", 0.0));
+            kpiList.add(trInt);
+
+            CdrAggs.Statistics.CallStats.Kpis.Kpi trVol = new CdrAggs.Statistics.CallStats.Kpis.Kpi();
+            trVol.setName("kpi.trafficVolume");
+            trVol.setUnit("Eh");
+            trVol.setValue(ts.getValuesMap().getOrDefault("kpi.trafficVolume", 0.0));
+            kpiList.add(trVol);
+
+            CdrAggs.Statistics.CallStats.Kpis.Kpi asr = new CdrAggs.Statistics.CallStats.Kpis.Kpi();
+            asr.setName("kpi.asr");
+            asr.setValue(ts.getValuesMap().getOrDefault("kpi.asr", 0.0));
+            kpiList.add(asr);
+
+            kpis.setKpi(kpiList);
+
+            return kpis;
+
+        }
+
+        return null;
     }
 
 }

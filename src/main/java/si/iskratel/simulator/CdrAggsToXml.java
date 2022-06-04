@@ -112,7 +112,8 @@ public class CdrAggsToXml {
                     PMultivalueTimeSeries mvts_cdr_statistics = new PMultivalueTimeSeries();
                     mvts_cdr_statistics
                             .addLabel("node.name", data.nodeName)
-                            .addLabel("node.id", data.nodeName);
+                            .addLabel("node.id", data.nodeName)
+                            .addLabel("metric", "nodeStats");
 
                     // analyze each record - start counting
                     for (int i = 0; i < data.cdrList.size(); i++) {
@@ -147,24 +148,24 @@ public class CdrAggsToXml {
 
                             switch (cdrBean.getCause()) {
                                 case 16:
-                                    mvts_cdr_statistics.incValue("node.answered", 1);
-                                    increaseTrunkGroupSeriesValue(cdrBean, "trunkGroup.answered", 1);
+                                    mvts_cdr_statistics.incValue("cause.answered", 1);
+                                    increaseTrunkGroupSeriesValue(cdrBean, "cause.answered", 1);
                                     break;
                                 case 17:
-                                    mvts_cdr_statistics.incValue("node.busy", 1);
-                                    increaseTrunkGroupSeriesValue(cdrBean, "trunkGroup.busy", 1);
+                                    mvts_cdr_statistics.incValue("cause.busy", 1);
+                                    increaseTrunkGroupSeriesValue(cdrBean, "cause.busy", 1);
                                     break;
                                 case 19:
-                                    mvts_cdr_statistics.incValue("node.noResponse", 1);
-                                    increaseTrunkGroupSeriesValue(cdrBean, "trunkGroup.noResponse", 1);
+                                    mvts_cdr_statistics.incValue("cause.noResponse", 1);
+                                    increaseTrunkGroupSeriesValue(cdrBean, "cause.noResponse", 1);
                                     break;
                                 case 21:
-                                    mvts_cdr_statistics.incValue("node.rejected", 1);
-                                    increaseTrunkGroupSeriesValue(cdrBean, "trunkGroup.rejected", 1);
+                                    mvts_cdr_statistics.incValue("cause.rejected", 1);
+                                    increaseTrunkGroupSeriesValue(cdrBean, "cause.rejected", 1);
                                     break;
                                 default:
-                                    mvts_cdr_statistics.incValue("node.other", 1);
-                                    increaseTrunkGroupSeriesValue(cdrBean, "trunkGroup.other", 1);
+                                    mvts_cdr_statistics.incValue("cause.other", 1);
+                                    increaseTrunkGroupSeriesValue(cdrBean, "cause.other", 1);
                             }
 
                             // increaseReleaseCausesSeriesValue(cdrBean); // what does this do?
@@ -192,17 +193,46 @@ public class CdrAggsToXml {
                     } // END analyze each record (foreach cdr bean)
 
                     // calculate traffic intensity and traffic volume
-                    double d = mvts_cdr_statistics.getValuesMap().getOrDefault("node.duration", -1.0);
-                    if (d != -1.0) {
-                        d = d / 1000; // to seconds
-                        double trInt = d / 900; // trInt: total duration in sec / interval
+                    double dur = mvts_cdr_statistics.getValuesMap().getOrDefault("node.duration", -1.0);
+                    if (dur != -1.0) {
+                        dur = dur / 1000; // to seconds
+                        double trInt = dur / 900; // trInt: total duration in sec / interval
                         double trVol = trInt * 0.25; // trVol: trInt * interval (h)
-                        System.out.println("dur: " + d + " [sec], trInt: " + trInt + " [E], trVol: " + trVol + " [Eh]");
-                        mvts_cdr_statistics.incValue("node.trafficIntensity", trInt);
-                        mvts_cdr_statistics.incValue("node.trafficVolume", trVol);
+                        System.out.println("dur: " + dur + " [sec], trInt: " + trInt + " [E], trVol: " + trVol + " [Eh]");
+                        mvts_cdr_statistics.incValue("kpi.trafficIntensity", trInt);
+                        mvts_cdr_statistics.incValue("kpi.trafficVolume", trVol);
                     }
 
-                    // TODO do the same for trunks groups
+                    // calculate ASR
+                    double seiz = mvts_cdr_statistics.getValuesMap().getOrDefault("node.seizures", 0.0);
+                    double seizAns = mvts_cdr_statistics.getValuesMap().getOrDefault("node.seizuresWithAnswer", 0.0);
+                    if (seiz > 0.0) {
+                        mvts_cdr_statistics.incValue("kpi.asr", seizAns/seiz * 1.0);
+                    }
+
+                    // do the same for trunk groups
+                    for (PMultivalueTimeSeries ts : tgMvSeriesMap.values()) {
+                        if (ts.getValuesMap().containsKey("trunkGroup.duration")) {
+                            // calculate traffic intensity and traffic volume for each trunk group
+                            double tgDur = ts.getValuesMap().getOrDefault("trunkGroup.duration", -1.0);
+                            if (tgDur != -1.0) {
+                                tgDur = tgDur / 1000; // to seconds
+                                double trInt = tgDur / 900; // trInt: total duration in sec / interval
+                                double trVol = trInt * 0.25; // trVol: trInt * interval (h)
+                                System.out.println("dur: " + tgDur + " [sec], trInt: " + trInt + " [E], trVol: " + trVol + " [Eh]");
+                                ts.incValue("kpi.trafficIntensity", trInt);
+                                ts.incValue("kpi.trafficVolume", trVol);
+                            }
+                        }
+                        if (ts.getValuesMap().containsKey("trunkGroup.seizures")) {
+                            // calculate ASR
+                            double tgSeiz = mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.seizures", 0.0);
+                            double tgSeizAns = mvts_cdr_statistics.getValuesMap().getOrDefault("trunkGroup.seizuresWithAnswer", 0.0);
+                            if (tgSeiz > 0.0) {
+                                ts.incValue("kpi.asr", tgSeizAns/tgSeiz);
+                            }
+                        }
+                    }
 
                     // collect number of channels/trunks from ppdr records
                     for (int i = 0; i < data.ppdrList.size(); i++) {
@@ -212,6 +242,7 @@ public class CdrAggsToXml {
                                 .addLabel("node.id", nodeId)
                                 .addLabel("trunkGroup.name", ppdrBean.getTrunkGroupName())
                                 .addLabel("trunkGroup.id", Integer.toString(ppdrBean.getTrunkGroupId()))
+                                .addLabel("metric", "tgChannels")
                                 .incValue("trunkGroup.allChannels", ppdrBean.getNumberOfAllTrunks())
                                 .incValue("trunkGroup.outOfServiceChannels", ppdrBean.getNumberOfOutOfServiceTrunks());
                         tgMvSeriesMap.put(ppdrBean.getTrunkGroupName(), channels);
@@ -227,19 +258,13 @@ public class CdrAggsToXml {
 
                     System.out.println(mv_cdr_statistics.toStringDetail());
 
-                    // TODO convert to XML
+                    // convert to XML
                     CdrAggs cdrAggs = XmlFormatter.getCdrAggsRootElement(data, cdrFile.getName(), mv_cdr_statistics);
 
                     File xmlOutFile = new File("./dump/" + cdrFile.getName().split(".si2")[0] + ".xml");
                     JAXBContext jaxbContext = JAXBContext.newInstance(CdrAggs.class);
                     Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
                     jaxbMarshaller.marshal(cdrAggs, xmlOutFile);
-
-//                    System.out.println(PMetricFormatter.toEsNdJsonString(mv_cdr_statistics));
-
-//                    PMetricRegistry.getRegistry(INDEX_CDRMETRICS).setTimestamp(timestamp);
-//                    es.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDRMETRICS));
-
 
                     // handle processed file
                     if (Props.HANDLE_FILES_WHEN_PROCESSED.equalsIgnoreCase("move")) {
@@ -322,6 +347,7 @@ public class CdrAggsToXml {
                     .addLabel("trunkGroup.name", cdrBean.getInTrunkGroupNameIE144())
                     .addLabel("trunkGroup.id", Integer.toString(cdrBean.getInTrunkGroupId()))
                     .addLabel("trunkGroup.direction", "inc")
+                    .addLabel("metric", "tgStats")
                     .incValue(label, value);
             tgMvSeriesMap.put("inc" + cdrBean.getInTrunkGroupNameIE144(), m2);
         }
@@ -333,6 +359,7 @@ public class CdrAggsToXml {
                     .addLabel("trunkGroup.name", cdrBean.getOutTrunkGroupNameIE145())
                     .addLabel("trunkGroup.id", Integer.toString(cdrBean.getOutTrunkGroupId()))
                     .addLabel("trunkGroup.direction", "out")
+                    .addLabel("metric", "tgStats")
                     .incValue(label, value);
             tgMvSeriesMap.put("out" + cdrBean.getOutTrunkGroupNameIE145(), m3);
         }
