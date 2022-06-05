@@ -53,8 +53,8 @@ public class CdrAggsToXml {
 
     public static void main(String[] args) throws Exception {
 
-        Props.SIMULATOR_EXIT_WHEN_DONE = true;
-        Props.HANDLE_FILES_WHEN_PROCESSED = "nothing";
+//        Props.SIMULATOR_EXIT_WHEN_DONE = true;
+//        Props.HANDLE_FILES_WHEN_PROCESSED = "nothing";
 
         logger.info("CdrAggsToXml instantiated");
 
