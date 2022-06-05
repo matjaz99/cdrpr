@@ -34,7 +34,6 @@ public class CdrAggsToXml {
     public static String CDR_OUTPUT_DIR = "cdr_output_dir";
 
     public static final String INDEX_CDRSTATS = "cdrstats";
-    public static final String INDEX_CDRMETRICS = "cdrmetrics";
 
     public static PMetric cdr_files_total = PMetric.build()
             .setName("cdrparser_processed_files_total")
