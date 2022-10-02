@@ -20,7 +20,7 @@ services:
       # select: nothing, move, delete
       - CDRPR_HANDLE_FILES_WHEN_PROCESSED=move
       - CDRPR_ES_SCHEMA=http
-      - CDRPR_ES_HOST=192.168.0.123
+      - CDRPR_ES_HOST=192.168.0.170
       - CDRPR_ES_PORT=9200
       # if true, create ILM (pmon_ilm_policy) manually before running simulator!
       # if false, create mapping manually before running simulator (if you want to use timestamp)!

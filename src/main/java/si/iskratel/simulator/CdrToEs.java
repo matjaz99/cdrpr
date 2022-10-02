@@ -114,21 +114,29 @@ public class CdrToEs {
 
                     }
 
-                    // create new output node dir
-                    String nodeOutDir = nodeDir.getAbsolutePath();
-                    nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
-                    File nodeOutDirFile = new File(nodeOutDir);
-                    if (!nodeOutDirFile.exists()) {
-                        logger.info("Creating new output directory: " + nodeOutDir);
-                        Path outDir = Paths.get(nodeOutDir);
-                        Files.createDirectories(outDir);
-                    }
+                    // handle processed file
+                    if (Props.HANDLE_FILES_WHEN_PROCESSED.equalsIgnoreCase("move")) {
+                        // create new output node dir
+                        String nodeOutDir = nodeDir.getAbsolutePath();
+                        nodeOutDir = nodeOutDir.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+                        File nodeOutDirFile = new File(nodeOutDir);
+                        if (!nodeOutDirFile.exists()) {
+                            logger.info("Creating new output directory: " + nodeOutDir);
+                            Path outDir = Paths.get(nodeOutDir);
+                            Files.createDirectories(outDir);
+                        }
 
-                    // move processed file
-                    String absPath = f.getAbsolutePath();
-                    absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
-                    logger.info("Moving file to new location: " + absPath);
-                    Files.move(Paths.get(f.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
+                        // move processed file
+                        String absPath = f.getAbsolutePath();
+                        absPath = absPath.replace(CDR_INPUT_DIR, CDR_OUTPUT_DIR);
+                        logger.info("Moving file to new location: " + absPath);
+                        Files.move(Paths.get(f.getAbsolutePath()), Paths.get(absPath), StandardCopyOption.REPLACE_EXISTING);
+                    } else if (Props.HANDLE_FILES_WHEN_PROCESSED.equalsIgnoreCase("delete")) {
+                        f.delete();
+                        logger.info("File deleted: " + f.getAbsolutePath());
+                    } else {
+                        // do nothing
+                    }
 
 
                 } // END foreach file
