@@ -66,7 +66,7 @@ public class Props {
                 "London, Zurich, Minsk, Manchester, Frankfurt, Grenoble, Madrid, Moscow");
 
         // possible values:
-        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "CDR_AGGS_TO_XML");
+        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "CDR_TO_CSV");
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
         SIMULATOR_EXIT_WHEN_DONE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT_WHEN_DONE", "true"));
