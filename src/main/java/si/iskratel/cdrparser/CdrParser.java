@@ -58,7 +58,7 @@ public class CdrParser {
                 cdrBean.setCauseString((String) releaseCausesProps.getOrDefault(cdrBean.getCause() + "", "unknown"));
                 cdrData.cdrList.add(cdrBean);
                 cdr_records_total.setLabelValues("CDR").inc();
-                logger.debug(cdrBean.toString());
+//                logger.debug(cdrBean.toString());
 //                System.out.println(cdrBean.toString());
             } catch (BadCdrRecordException e) {
 //                System.out.println("====== BCRException: " + e.getMessage());

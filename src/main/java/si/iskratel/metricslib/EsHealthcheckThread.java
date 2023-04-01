@@ -31,7 +31,7 @@ public class EsHealthcheckThread implements Runnable {
         EsClient es = new EsClient(MetricsLib.ES_DEFAULT_SCHEMA, MetricsLib.ES_DEFAULT_HOST, MetricsLib.ES_DEFAULT_PORT);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("{\"name\":\"metricslib\",\"api_version\":\"").append(MetricsLib.METRICSLIB_API_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}");
+        sb.append("{\"name\":\"metricslib\",\"api_version\":\"").append(MetricsLib.METRICSLIB_API_VERSION).append("\",").append("\"date\":\"").append(new Date().toString()).append("\"}\n");
 
         boolean succ = false;
         while (!succ) {
@@ -45,7 +45,9 @@ public class EsHealthcheckThread implements Runnable {
             }
         }
 
-        while (true) {
+        if (!MetricsLib.ES_AUTO_CREATE_INDEX) EsClient.ES_IS_READY = true;
+
+        while (true && MetricsLib.ES_AUTO_CREATE_INDEX) {
 
             succ = false;
             int failCount = 0;

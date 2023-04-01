@@ -127,6 +127,8 @@ public class MetricsLib {
         ES_DEFAULT_SCHEMA = (String) props.getOrDefault("metricslib.elasticsearch.default.schema", "http");
         ES_DEFAULT_HOST = (String) props.getOrDefault("metricslib.elasticsearch.default.host", null);
         ES_DEFAULT_PORT = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.default.port", "0"));
+        ES_BASIC_USER = (String) props.getOrDefault("metricslib.elasticsearch.default.user", null);
+        ES_BASIC_PASS = (String) props.getOrDefault("metricslib.elasticsearch.default.pass", null);
         ES_HEALTHCHECK_INTERVAL = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.healthcheck.interval.seconds", "3000"));
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean((String) props.getOrDefault("metricslib.elasticsearch.createIndexOnStart", "true"));
         ES_NUMBER_OF_SHARDS = Integer.parseInt((String) props.getOrDefault("metricslib.elasticsearch.numberOfShards", "1"));

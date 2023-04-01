@@ -66,23 +66,23 @@ public class Props {
                 "London, Zurich, Minsk, Manchester, Frankfurt, Grenoble, Madrid, Moscow");
 
         // possible values:
-        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "CDR_AGGS_TO_XML");
+        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "CDR_AGGS_TO_ES");
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
         SIMULATOR_EXIT_WHEN_DONE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT_WHEN_DONE", "true"));
         HANDLE_FILES_WHEN_PROCESSED = getenv.getOrDefault("CDRPR_HANDLE_FILES_WHEN_PROCESSED", "nothing");
 
-        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "50000"));
-        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "900"));
+        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "10000"));
+        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "300"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "0"));
-        CLIENT_WAIT_UNTIL_READY = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_CLIENT_WAIT_UNTIL_READY", "true"));
-        ES_SCHEMA = getenv.getOrDefault("CDRPR_ES_SCHEMA", "http");
+        CLIENT_WAIT_UNTIL_READY = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_CLIENT_WAIT_UNTIL_READY", "false"));
+        ES_SCHEMA = getenv.getOrDefault("CDRPR_ES_SCHEMA", "https");
         ES_BASIC_USER = getenv.getOrDefault("CDRPR_ES_BASIC_USER", "admin");
         ES_BASIC_PASS = getenv.getOrDefault("CDRPR_ES_BASIC_PASS", "admin");
-        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "elasticvm");
+        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "lionvm");
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
-        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "true"));
+        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "false"));
         ES_INDEX_PREFIX = getenv.getOrDefault("CDRPR_ES_INDEX_PREFIX", "");
         ES_NUMBER_OF_SHARDS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_SHARDS", "1"));
         ES_NUMBER_OF_REPLICAS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_REPLICAS", "0"));
@@ -91,7 +91,7 @@ public class Props {
         PG_PASS = getenv.getOrDefault("CDRPR_PG_PASS", "object00");
         PG_CREATE_TABLES_ON_START = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_PG_CREATE_TABLES_ON_START", "false"));
         PROMETHEUS_ENABLE_METRICS = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ENABLE_PROMETHEUS_METRICS", "false"));
-        ENABLE_DUMP_TO_FILE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DUMP_TO_FILE", "false"));
+        ENABLE_DUMP_TO_FILE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DUMP_TO_FILE", "true"));
         ALARM_DESTINATION = getenv.getOrDefault("CDRPR_ALARM_DESTINATION", "http://172.29.100.32:9070/webhook");
         KAFKA_BOOTSTRAP_SERVER = getenv.getOrDefault("CDRPR_KAFKA_BOOTSTRAP_SERVER", "localhost:9092");
 
