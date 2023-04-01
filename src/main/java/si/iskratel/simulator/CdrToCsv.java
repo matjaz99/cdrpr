@@ -25,7 +25,7 @@ public class CdrToCsv {
         File[] files = inputDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                return pathname.isFile() && pathname.getAbsolutePath().endsWith(".si2");
+                return pathname.isFile();
             }
         });
 
