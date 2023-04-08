@@ -1,5 +1,7 @@
 package si.iskratel.simulator;
 
+import si.iskratel.simulator.generator.CdrGeneratorThread;
+
 public class TheShutdownHook extends Thread {
 	
 	@Override

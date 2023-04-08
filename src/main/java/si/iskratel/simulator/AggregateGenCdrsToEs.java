@@ -2,6 +2,7 @@ package si.iskratel.simulator;
 
 import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.metricslib.*;
+import si.iskratel.simulator.generator.StorageThread;
 
 import java.sql.SQLException;
 

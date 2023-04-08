@@ -50,7 +50,7 @@ public class Props {
     public static void initialize() {
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "1"));
+        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "32"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "3000"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
@@ -66,14 +66,14 @@ public class Props {
                 "London, Zurich, Minsk, Manchester, Frankfurt, Grenoble, Madrid, Moscow");
 
         // possible values:
-        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "CDR_AGGS_TO_ES");
+        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES");
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
         SIMULATOR_EXIT_WHEN_DONE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT_WHEN_DONE", "true"));
         HANDLE_FILES_WHEN_PROCESSED = getenv.getOrDefault("CDRPR_HANDLE_FILES_WHEN_PROCESSED", "nothing");
 
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "10000"));
-        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "300"));
+        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "0"));
         CLIENT_WAIT_UNTIL_READY = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_CLIENT_WAIT_UNTIL_READY", "false"));

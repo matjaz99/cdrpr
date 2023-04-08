@@ -3,9 +3,10 @@ package si.iskratel.simulator;
 import okhttp3.*;
 import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.metricslib.EsClient;
+import si.iskratel.metricslib.MetricsLib;
 import si.iskratel.metricslib.PromExporter;
 
-public class AllGenCdrsToEs implements Runnable {
+public class AllGenCdrsToEs2 implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
@@ -15,15 +16,14 @@ public class AllGenCdrsToEs implements Runnable {
 
     private StringBuilder sb = new StringBuilder();
 
-    EsClient esClient = new EsClient(Props.ES_SCHEMA, Props.ES_HOST, Props.ES_PORT); // TODO use this!
-
-    private OkHttpClient httpClient = new OkHttpClient();
+    private OkHttpClient httpClient;
     private MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
 
     private int dynamicBulkSize = Props.BULK_SIZE;
 
-    public AllGenCdrsToEs(int id) {
+    public AllGenCdrsToEs2(int id) {
         this.threadId = id;
+        httpClient = MetricsLib.instantiateHttpClient();
         url = Props.ES_SCHEMA + "://" + Props.ES_HOST + ":" + Props.ES_PORT + "/calls/_bulk";
     }
 
@@ -89,7 +89,7 @@ public class AllGenCdrsToEs implements Runnable {
 
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", "OkHttp Bot")
+                .addHeader("User-Agent", "OkHttp")
 //                .addHeader("Content-Type", "application/json")
                 .post(RequestBody.create(sb.toString(), MEDIA_TYPE_JSON))
                 .build();
@@ -132,7 +132,7 @@ public class AllGenCdrsToEs implements Runnable {
         sb.append("\"duration\":").append(cdrBean.getDuration()).append(",");
         sb.append("\"cause\":").append(cdrBean.getCause()).append(",");
         sb.append("\"nodeId\":\"").append(cdrBean.getNodeId()).append("\",");
-        sb.append("\"timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
+        sb.append("\"@timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
     }
 
     private void putToStringBuilder(CdrBean cdrBean) {
@@ -179,7 +179,7 @@ public class AllGenCdrsToEs implements Runnable {
         sb.append("\"bgidOrig\":\"").append(cdrBean.getBgidOrig()).append("\",");
         sb.append("\"bgidTerm\":\"").append(cdrBean.getBgidTerm()).append("\",");
         sb.append("\"nodeId\":\"").append(cdrBean.getNodeId()).append("\",");
-        sb.append("\"timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
+        sb.append("\"@timestamp\":").append(cdrBean.getStartTime().getTime()).append("}\n");
     }
 
 }

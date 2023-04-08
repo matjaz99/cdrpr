@@ -1,6 +1,9 @@
-package si.iskratel.simulator;
+package si.iskratel.simulator.generator;
 
 import si.iskratel.cdr.parser.*;
+import si.iskratel.simulator.Props;
+import si.iskratel.simulator.SimulatorMetrics;
+import si.iskratel.simulator.Start;
 
 import java.util.*;
 

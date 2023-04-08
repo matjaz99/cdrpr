@@ -1,8 +1,10 @@
-package si.iskratel.simulator;
+package si.iskratel.simulator.generator;
 
 import si.iskratel.metricslib.*;
 import si.iskratel.metricslib.alarm.Alarm;
 import si.iskratel.metricslib.alarm.AlarmManager;
+import si.iskratel.simulator.Props;
+import si.iskratel.simulator.Start;
 
 import java.util.HashMap;
 import java.util.Map;

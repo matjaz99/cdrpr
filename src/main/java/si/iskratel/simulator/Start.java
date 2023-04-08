@@ -3,6 +3,9 @@ package si.iskratel.simulator;
 
 import si.iskratel.cdr.parser.*;
 import si.iskratel.metricslib.MetricsLib;
+import si.iskratel.simulator.generator.CdrGeneratorThread;
+import si.iskratel.simulator.generator.StorageThread;
+import si.iskratel.simulator.generator.XmlSimulatorThread;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,7 +41,7 @@ public class Start {
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AND_STORE_ALL_TO_ES")) {
             initMetricsLib();
             startCdrGenerators();
-            Thread t = new Thread(new AllGenCdrsToEs(1));
+            Thread t = new Thread(new AllGenCdrsToEs2(1));
             t.setName("aggregator");
             t.start();
         }
@@ -90,7 +93,7 @@ public class Start {
     public static void startCdrGenerators() {
 
         // this is the generator, which generates CdrBean objects
-        // and adds them to Start#queue
+        // and adds them to storage
         for (int i = 1; i < Props.SIMULATOR_NUM_OF_THREADS + 1; i++) {
             CdrGeneratorThread t = new CdrGeneratorThread(i);
             t.setName("CdrSimulatorThread");
