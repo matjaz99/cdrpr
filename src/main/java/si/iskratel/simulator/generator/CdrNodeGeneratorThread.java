@@ -1,16 +1,17 @@
 package si.iskratel.simulator.generator;
 
-import si.iskratel.cdr.parser.*;
+import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.simulator.Props;
 import si.iskratel.simulator.SimulatorMetrics;
 import si.iskratel.simulator.Start;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Random;
 
 /**
  * This thread generates CdrBeans with random data.
  */
-public class CdrGeneratorThread extends Thread {
+public class CdrNodeGeneratorThread extends Thread {
 
     private boolean running = true;
     private int threadId = 0;
@@ -18,9 +19,9 @@ public class CdrGeneratorThread extends Thread {
     private int randomFactor = getRandomInRange(200, 1200);
     private static String nodeId;
 
-    public CdrGeneratorThread(int id) {
+    public CdrNodeGeneratorThread(int id, String nodeId) {
         threadId = id;
-        nodeId = Start.getRandomNodeId();
+        this.nodeId = nodeId;
     }
 
 

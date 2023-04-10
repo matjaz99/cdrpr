@@ -13,7 +13,7 @@ public class Props {
     public static String HOSTNAME = "localhost0";
     public static int BULK_SIZE = 100;
     public static int SEND_INTERVAL_SEC = 60;
-    public static int SIMULATOR_NUM_OF_THREADS = 1;
+    public static int SIMULATOR_SIMULATOR_THREADS = 1;
     public static boolean DEBUG_ENABLED = false;
     public static int RETRIES = 3;
     public static boolean CLIENT_WAIT_UNTIL_READY = true;
@@ -50,7 +50,7 @@ public class Props {
     public static void initialize() {
 
         Map<String, String> getenv = System.getenv();
-        SIMULATOR_NUM_OF_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_THREADS", "32"));
+        SIMULATOR_SIMULATOR_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_THREADS", "16"));
         SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "3000"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
@@ -58,12 +58,15 @@ public class Props {
         SIMULATOR_BNUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_START", "800000000"));
         SIMULATOR_BNUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_RANGE", "99999999"));
         SIMULATOR_MINIMUM_DATA = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_SIMULATOR_MINIMUM_DATA", "false"));
+//        SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "" +
+//                "Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, " +
+//                "Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, " +
+//                "Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris," +
+//                "Moscow, Oslo, Helsinki, Dublin, Sarajevo, Skopje, Minsk, Barcelona, Lyon, Copenhagen, Stockholm, Moscow," +
+//                "London, Zurich, Minsk, Manchester, Frankfurt, Grenoble, Madrid, Moscow");
         SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "" +
-                "Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, " +
-                "Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, " +
-                "Vienna, London, Paris, Budapest, Zagreb, Belgrade, Kiev, Moscow, Amsterdam, Brussels, London, Paris," +
-                "Moscow, Oslo, Helsinki, Dublin, Sarajevo, Skopje, Minsk, Barcelona, Lyon, Copenhagen, Stockholm, Moscow," +
-                "London, Zurich, Minsk, Manchester, Frankfurt, Grenoble, Madrid, Moscow");
+                "Moscow, Ljubljana, Berlin, London, Paris, Amsterdam, Belgrade, Madrid, " +
+                "Copenhagen, Rome, Zurich, Lisbon, Warsaw, Kiev");
 
         // possible values:
         SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES");
@@ -103,7 +106,7 @@ public class Props {
         logger.info("- HOSTNAME: " + HOSTNAME);
         logger.info("- CURRENT_DIR: " + System.getProperty("user.dir"));
         logger.info("- SIMULATOR_MODE: " + SIMULATOR_MODE);
-        logger.info("- NUM_OF_THREADS: " + SIMULATOR_NUM_OF_THREADS);
+        logger.info("- SIMULATOR_SIMULATOR_THREADS: " + SIMULATOR_SIMULATOR_THREADS);
         logger.info("- SIMULATOR_CALL_REASON: " + SIMULATOR_CALL_REASON);
         logger.info("- SIMULATOR_DELAY: " + SIMULATOR_CALL_DELAY);
         logger.info("- SEND_INTERVAL_SEC: " + SEND_INTERVAL_SEC);

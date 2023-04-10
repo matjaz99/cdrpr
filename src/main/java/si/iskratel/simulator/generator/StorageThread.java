@@ -1,13 +1,18 @@
 package si.iskratel.simulator.generator;
 
+import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.simulator.SimulatorMetrics;
 import si.iskratel.simulator.Start;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class StorageThread extends Thread {
+
+    /** Main list which contains generated CDRs (CdrBeans) */
+    private static LinkedBlockingQueue<CdrBean> queue = new LinkedBlockingQueue();
 
     private static Map<String, Long> callsInProgress = new HashMap<>();
 
@@ -15,7 +20,7 @@ public class StorageThread extends Thread {
 
         while (true) {
 
-            SimulatorMetrics.queueSize.set(Start.getQueueSize());
+            SimulatorMetrics.queueSize.set(queue.size());
             clearMap();
 
             try {
@@ -26,6 +31,20 @@ public class StorageThread extends Thread {
         }
 
     }
+
+
+    public static synchronized void addCdr(CdrBean cdrBean) {
+        queue.add(cdrBean);
+    }
+
+    public static int getQueueSize() {
+        return queue.size();
+    }
+
+    public static synchronized CdrBean pollCdr() {
+        return queue.poll();
+    }
+
 
     public static synchronized void addCall(String aNum, long endTime) {
         callsInProgress.put(aNum, endTime);

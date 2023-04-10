@@ -136,9 +136,9 @@ public class AggregateGenCdrsToEs implements Runnable {
             PMetricRegistry.getRegistry(INDEX_CDR_TRUNK).resetMetrics();
             PMetricRegistry.getRegistry(INDEX_CDR_TRUNK_DURATION).resetMetrics();
 
-            while (Start.getQueueSize() > 0) {
+            while (StorageThread.getQueueSize() > 0) {
 
-                CdrBean cdr = Start.pollCdr();
+                CdrBean cdr = StorageThread.pollCdr();
                 if (cdr != null) {
                     // fill metrics
                     pmon_cdr_calls_by_trunkgroup.setLabelValues(cdr.getNodeId(), Utils.toCauseString(cdr.getCause()), cdr.getInTrunkGroupId() + "", cdr.getOutTrunkGroupId() + "").inc();

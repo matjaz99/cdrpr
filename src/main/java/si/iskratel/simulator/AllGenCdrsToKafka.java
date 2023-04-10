@@ -2,6 +2,7 @@ package si.iskratel.simulator;
 
 import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.metricslib.KafkaClient;
+import si.iskratel.simulator.generator.StorageThread;
 
 public class AllGenCdrsToKafka implements Runnable {
 
@@ -29,9 +30,9 @@ public class AllGenCdrsToKafka implements Runnable {
             } catch (InterruptedException e) {
             }
 
-            while (Start.getQueueSize() > 0) {
+            while (StorageThread.getQueueSize() > 0) {
 
-                CdrBean c = Start.pollCdr();
+                CdrBean c = StorageThread.pollCdr();
                 if (c != null) {
                     String call = toJson(c);
                     kafkaClient.sendMsg(TOPIC_NAME, call);

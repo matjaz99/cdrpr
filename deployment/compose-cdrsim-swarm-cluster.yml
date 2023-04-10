@@ -13,7 +13,7 @@ services:
     ports:
       - 9099:9099
     environment:
-      - CDRPR_THREADS=24
+      - CDRPR_SIMULATOR_THREADS=24
       - CDRPR_SIMULATOR_DELAY=50
       - CDRPR_SEND_INTERVAL_SEC=900
       - CDRPR_ES_HOST=data1

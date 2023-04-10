@@ -5,6 +5,7 @@ import si.iskratel.cdr.parser.CdrBean;
 import si.iskratel.metricslib.EsClient;
 import si.iskratel.metricslib.MetricsLib;
 import si.iskratel.metricslib.PromExporter;
+import si.iskratel.simulator.generator.StorageThread;
 
 public class AllGenCdrsToEs2 implements Runnable {
 
@@ -38,9 +39,9 @@ public class AllGenCdrsToEs2 implements Runnable {
             } catch (InterruptedException e) {
             }
 
-            while (Start.getQueueSize() > 0 && bulkCount < dynamicBulkSize) {
+            while (StorageThread.getQueueSize() > 0 && bulkCount < dynamicBulkSize) {
 
-                CdrBean c = Start.pollCdr();
+                CdrBean c = StorageThread.pollCdr();
                 if (c != null) {
                     putToStringBuilder(c);
                     bulkCount++;
@@ -50,15 +51,15 @@ public class AllGenCdrsToEs2 implements Runnable {
 
             }
 
-            if (Start.getQueueSize() > 3 * Props.BULK_SIZE) {
+            if (StorageThread.getQueueSize() > 3 * Props.BULK_SIZE) {
                 sendInterval = sendInterval - 10;
                 if (sendInterval < 1) sendInterval = 1;
             }
-            if (Start.getQueueSize() > 5 * Props.BULK_SIZE) {
+            if (StorageThread.getQueueSize() > 5 * Props.BULK_SIZE) {
                 dynamicBulkSize = dynamicBulkSize + 100;
                 if (dynamicBulkSize > 100000) dynamicBulkSize = 100000;
             }
-            if (Start.getQueueSize() < Props.BULK_SIZE) {
+            if (StorageThread.getQueueSize() < Props.BULK_SIZE) {
                 sendInterval = Props.SEND_INTERVAL_SEC * 1000;
                 dynamicBulkSize = Props.BULK_SIZE;
             }

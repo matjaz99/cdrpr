@@ -4,6 +4,7 @@ package si.iskratel.simulator;
 import si.iskratel.cdr.parser.*;
 import si.iskratel.metricslib.MetricsLib;
 import si.iskratel.simulator.generator.CdrGeneratorThread;
+import si.iskratel.simulator.generator.CdrNodeGeneratorThread;
 import si.iskratel.simulator.generator.StorageThread;
 import si.iskratel.simulator.generator.XmlSimulatorThread;
 
@@ -14,11 +15,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Start {
 
-    /** Main list which contains generated CDRs (CdrBeans) */
-    private static LinkedBlockingQueue<CdrBean> queue = new LinkedBlockingQueue();
+
     public static boolean running = true;
 
     public static List<CdrGeneratorThread> simulatorThreads = new ArrayList<>();
+    public static List<CdrNodeGeneratorThread> nodeSimulatorThreads = new ArrayList<>();
 
     public static Properties releaseCausesProps;
 
@@ -40,7 +41,7 @@ public class Start {
         // config via env vars
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AND_STORE_ALL_TO_ES")) {
             initMetricsLib();
-            startCdrGenerators();
+            startCdrNodeGenerators();
             Thread t = new Thread(new AllGenCdrsToEs2(1));
             t.setName("aggregator");
             t.start();
@@ -70,6 +71,7 @@ public class Start {
 
         // parse cdr
         // convert to csv
+        // config with properties file
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("CDR_TO_CSV")) {
             CdrToCsv.main(null);
         }
@@ -94,12 +96,32 @@ public class Start {
 
         // this is the generator, which generates CdrBean objects
         // and adds them to storage
-        for (int i = 1; i < Props.SIMULATOR_NUM_OF_THREADS + 1; i++) {
+        for (int i = 1; i < Props.SIMULATOR_SIMULATOR_THREADS + 1; i++) {
             CdrGeneratorThread t = new CdrGeneratorThread(i);
             t.setName("CdrSimulatorThread");
             t.start();
             simulatorThreads.add(t);
             System.out.println("Simulator thread created: " + t.getThreadId());
+        }
+
+        StorageThread ct = new StorageThread();
+        ct.setName("Storage");
+        ct.start();
+
+        XmlSimulatorThread xst = new XmlSimulatorThread();
+        xst.setName("XmlSimulatorThread");
+        xst.start();
+    }
+
+    public static void startCdrNodeGenerators() {
+
+        String[] nodeArray = Props.SIMULATOR_NODEID.split(",");
+        for (int i = 0; i < nodeArray.length; i++) {
+            CdrNodeGeneratorThread t = new CdrNodeGeneratorThread(i, nodeArray[i].trim());
+            t.setName("CdrNodeGeneratorThread");
+            t.start();
+            nodeSimulatorThreads.add(t);
+            System.out.println("Simulator thread created: " + nodeArray[i].trim());
         }
 
         StorageThread ct = new StorageThread();
@@ -129,18 +151,6 @@ public class Start {
     }
 
 
-
-    public static synchronized void addCdr(CdrBean cdrBean) {
-        queue.add(cdrBean);
-    }
-
-    public static int getQueueSize() {
-        return queue.size();
-    }
-
-    public static synchronized CdrBean pollCdr() {
-        return queue.poll();
-    }
 
     public static String getRandomNodeId() {
         String[] a = Props.SIMULATOR_NODEID.split(",");
