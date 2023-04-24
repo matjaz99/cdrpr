@@ -235,7 +235,7 @@ public class EsClient {
         String idx = ndJson.split("\n")[0];
         idx = idx.substring(20, idx.length() - 3);
 
-        if (!mappingCreated.containsKey(idx)) {
+        if (!mappingCreated.containsKey(idx) && MetricsLib.ES_AUTO_CREATE_INDEX) {
             boolean b = createIndex(idx);
             if (b != true) {
                 // FIXME where to put setMapping=true? on registry?

@@ -51,7 +51,7 @@ public class Props {
 
         Map<String, String> getenv = System.getenv();
         SIMULATOR_SIMULATOR_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_THREADS", "16"));
-        SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "3000"));
+        SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "200"));
         SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
         SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
         SIMULATOR_ANUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_RANGE", "99999999"));
@@ -65,8 +65,14 @@ public class Props {
 //                "Moscow, Oslo, Helsinki, Dublin, Sarajevo, Skopje, Minsk, Barcelona, Lyon, Copenhagen, Stockholm, Moscow," +
 //                "London, Zurich, Minsk, Manchester, Frankfurt, Grenoble, Madrid, Moscow");
         SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "" +
-                "Moscow, Ljubljana, Berlin, London, Paris, Amsterdam, Belgrade, Madrid, " +
-                "Copenhagen, Rome, Zurich, Lisbon, Warsaw, Kiev");
+                "Moscow, Ljubljana, Ljubljana, Berlin, London, Paris, " +
+                "Amsterdam, Belgrade, Madrid, Copenhagen, Rome, " +
+                "Zurich, Lisbon, Warsaw, Kiev, Leipzig, " +
+                "Frankfurt, Aachen, Lyon, Geneva, Salzburg, " +
+                "Prague, Warsaw, Budapest, Athens, Ankara, " +
+                "Vienna, Sofia, Skopje, Tirana, Bucurest, " +
+                "Linz, Graz, Munchen, Milano, Luxemburg, " +
+                "Strassburg, Nurnberg, Zagreb, Bonn, Prague");
 
         // possible values:
         SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES");
@@ -74,16 +80,22 @@ public class Props {
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
         SIMULATOR_EXIT_WHEN_DONE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT_WHEN_DONE", "true"));
         HANDLE_FILES_WHEN_PROCESSED = getenv.getOrDefault("CDRPR_HANDLE_FILES_WHEN_PROCESSED", "nothing");
-
         BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "10000"));
         SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
         DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
         RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "0"));
         CLIENT_WAIT_UNTIL_READY = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_CLIENT_WAIT_UNTIL_READY", "false"));
+
         ES_SCHEMA = getenv.getOrDefault("CDRPR_ES_SCHEMA", "https");
         ES_BASIC_USER = getenv.getOrDefault("CDRPR_ES_BASIC_USER", "admin");
         ES_BASIC_PASS = getenv.getOrDefault("CDRPR_ES_BASIC_PASS", "admin");
         ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "lionvm");
+
+//        ES_SCHEMA = getenv.getOrDefault("CDRPR_ES_SCHEMA", "http");
+//        ES_BASIC_USER = getenv.getOrDefault("CDRPR_ES_BASIC_USER", null);
+//        ES_BASIC_PASS = getenv.getOrDefault("CDRPR_ES_BASIC_PASS", null);
+//        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "swarm1");
+
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "false"));
         ES_INDEX_PREFIX = getenv.getOrDefault("CDRPR_ES_INDEX_PREFIX", "");

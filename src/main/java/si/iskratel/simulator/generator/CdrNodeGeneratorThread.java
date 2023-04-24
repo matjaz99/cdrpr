@@ -16,21 +16,17 @@ public class CdrNodeGeneratorThread extends Thread {
     private boolean running = true;
     private int threadId = 0;
     private long totalCount = 0;
-    private int randomFactor = getRandomInRange(200, 1200);
+    private int randomFactor = 1;
     private static String nodeId;
 
     public CdrNodeGeneratorThread(int id, String nodeId) {
         threadId = id;
         this.nodeId = nodeId;
+        randomFactor = getRandomInRange(2, 12);
     }
 
 
     public void run() {
-
-        try {
-            Thread.sleep(getRandomInRange(5000, 20000));
-        } catch (InterruptedException e) {
-        }
 
 //        int delay = getRandomGaussian(Start.SIMULATOR_CALL_DELAY, Start.SIMULATOR_CALL_DELAY / 4);
         long delay = Props.SIMULATOR_CALL_DELAY;
@@ -40,7 +36,7 @@ public class CdrNodeGeneratorThread extends Thread {
             try {
 //                double cosFact = Math.abs(getCosFactor(randomFactor * 3600));
 //                System.out.println("cosFact[" + threadId + "]: " + cosFact);
-                delay = (long) (delay * Math.abs(getCosFactor(randomFactor * 3600))) + 1000;
+                delay = (long) (delay * Math.abs(getCosFactor(randomFactor * 3600))) + getRandomInRange(10, 400);
 //                System.out.println("delay[" + threadId + "]: " + delay);
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
@@ -73,20 +69,21 @@ public class CdrNodeGeneratorThread extends Thread {
         cdrBean.setCdrRingingTimeBeforeAnsw((int) (getRandomGaussian(25000, 1000)));
 
         cdrBean.setCause(Props.SIMULATOR_CALL_REASON);
+        int rnd = getRandomInRange(1, 100);
         if (Props.SIMULATOR_CALL_REASON == 0) {
-            if (totalCount % 2 == 0) {
+            if (rnd % 2 == 0) {
                 cdrBean.setCause(16);
-            } else if (totalCount % 3 == 0) {
+            } else if (rnd % 3 == 0 && rnd % 2 == 0) {
                 cdrBean.setCause(17);
-            } else if (totalCount % 5 == 0) {
+            } else if (rnd % 5 == 0 && rnd % 2 == 0) {
                 cdrBean.setCause(19);
-            } else if (totalCount % 7 == 0) {
+            } else if (rnd % 7 == 0 && rnd % 2 == 0) {
                 cdrBean.setCause(21);
-            } else if (totalCount % 9 == 0) {
+            } else if (rnd % 9 == 0 && rnd % 2 == 0) {
                 cdrBean.setCause(38);
-            } else if (totalCount % 11 == 0) {
+            } else if (rnd % 11 == 0) {
                 cdrBean.setCause(3);
-            } else if (totalCount % 13 == 0) {
+            } else if (rnd % 13 == 0) {
                 cdrBean.setCause(6);
             } else {
                 cdrBean.setCause(getRandomInRange(1, 127));
@@ -112,7 +109,7 @@ public class CdrNodeGeneratorThread extends Thread {
             }
             cdrBean.setCdrRingingTimeBeforeAnsw(getRandomGaussian(15000, 5000));
         }
-        duration = (int) (duration * Math.abs(getCosFactor(randomFactor))) + 60;
+        duration = (int) (duration * Math.abs(getCosFactor(randomFactor))) + 30;
         duration = duration * 1000; // to millis
         cdrBean.setDuration(duration);
 
