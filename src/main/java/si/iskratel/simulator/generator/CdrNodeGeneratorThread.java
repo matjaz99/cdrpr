@@ -36,7 +36,7 @@ public class CdrNodeGeneratorThread extends Thread {
             try {
 //                double cosFact = Math.abs(getCosFactor(randomFactor * 3600));
 //                System.out.println("cosFact[" + threadId + "]: " + cosFact);
-                delay = (long) (delay * Math.abs(getCosFactor(randomFactor * 3600))) + getRandomInRange(10, 400);
+                delay = (long) (delay * Math.abs(getCosFactor(randomFactor * 3600))) + Math.abs(getRandomGaussian(randomFactor * 4, 100));
 //                System.out.println("delay[" + threadId + "]: " + delay);
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
