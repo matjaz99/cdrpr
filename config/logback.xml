@@ -63,5 +63,5 @@
   </root>
 
   <logger name="org.apache" level="WARN" />
-  <logger name="si.iskratel" level="INFO" />
+  <logger name="si.matjazcerkvenik" level="INFO" />
 </configuration>

@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>cdrpr</artifactId>
     <groupId>si.iskratel.cdr</groupId>
-    <version>3.0</version>
+    <version>3.1</version>
 
     <build>
         <plugins>
@@ -24,7 +24,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>si.iskratel.simulator.Start</mainClass>
+                            <mainClass>si.matjazcerkvenik.datasims.Start</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -46,7 +46,7 @@
 
     <dependencies>
         <!--<dependency>-->
-            <!--<groupId>si.iskratel</groupId>-->
+            <!--<groupId>si.matjazcerkvenik</groupId>-->
             <!--<artifactId>cdr-parser</artifactId>-->
             <!--<version>1.0.22</version>-->
         <!--</dependency>-->
@@ -76,17 +76,17 @@
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient</artifactId>
-            <version>0.8.0</version>
+            <version>0.16.0</version>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_hotspot</artifactId>
-            <version>0.8.0</version>
+            <version>0.16.0</version>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_servlet</artifactId>
-            <version>0.8.0</version>
+            <version>0.16.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>

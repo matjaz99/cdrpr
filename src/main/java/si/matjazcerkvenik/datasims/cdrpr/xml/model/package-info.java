@@ -1,0 +1,2 @@
+@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.3gpp.org/ftp/specs/archive/32_series/32.435#measCollec", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+package si.matjazcerkvenik.datasims.cdrpr.xml.model;

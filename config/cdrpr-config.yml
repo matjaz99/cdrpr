@@ -1,0 +1,14 @@
+cdrpr:
+  enable:
+    - cdr_aggs_to_es: true
+    - cdr_aggs_to_xml: false
+  simulators:
+    - name: cdr_aggs_to_es
+      clientName: postgres_client
+  clients:
+    - name: postgres_client
+      type: postgres
+      host: localhost
+      port: 5432
+    - name: ES
+      type: opensearch
