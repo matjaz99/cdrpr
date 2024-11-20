@@ -155,7 +155,7 @@ public class AllGenCdrsToEs2 implements Runnable {
         sb.append("\"cdrRingingTimeBeforeAnsw\":").append(cdrBean.getCdrRingingTimeBeforeAnsw()).append(",");
         sb.append("\"duration\":").append(cdrBean.getDuration()).append(",");
         sb.append("\"cause\":").append(cdrBean.getCause()).append(",");
-        sb.append("\"causeString\":\"").append(Start.releaseCausesProps.getOrDefault(cdrBean.getCause() + "", "unknown")).append("\",");
+        sb.append("\"causeString\":\"").append(Props.releaseCausesProps.getOrDefault(cdrBean.getCause() + "", "unknown")).append("\",");
         sb.append("\"callReleasingSide\":\"").append(cdrBean.getCallReleasingSide()).append("\",");
         sb.append("\"startTime\":\"").append(Utils.toDateString(cdrBean.getStartTime())).append("\",");
         sb.append("\"endTime\":\"").append(Utils.toDateString(cdrBean.getEndTime())).append("\",");

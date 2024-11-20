@@ -3,8 +3,11 @@ package si.matjazcerkvenik.datasims.cdrpr.simulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Map;
+import java.util.Properties;
 
 public class Props {
 
@@ -47,17 +50,27 @@ public class Props {
     public static String ALARM_DESTINATION = "http://localhost:9097/webhook";
     public static String KAFKA_BOOTSTRAP_SERVER = "centosvm:9092";
 
+    public static Properties releaseCausesProps;
+
     public static void initialize() {
 
-        Map<String, String> getenv = System.getenv();
-        SIMULATOR_SIMULATOR_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_THREADS", "16"));
-        SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "100"));
-        SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0"));
-        SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000"));
-        SIMULATOR_ANUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_RANGE", "99999999"));
-        SIMULATOR_BNUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_START", "800000000"));
-        SIMULATOR_BNUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_RANGE", "99999999"));
-        SIMULATOR_MINIMUM_DATA = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_SIMULATOR_MINIMUM_DATA", "false"));
+        Properties getenv = new Properties();
+        try {
+            getenv.load(new FileInputStream("config/cdrpr.properties"));
+        } catch (IOException e) {
+            System.err.println("IOException: " + e.getMessage());
+        }
+
+//        Map<String, String> getenv = System.getenv();
+
+        SIMULATOR_SIMULATOR_THREADS = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_THREADS", "16").toString());
+        SIMULATOR_CALL_DELAY = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_DELAY", "100").toString());
+        SIMULATOR_CALL_REASON = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_CALL_REASON", "0").toString());
+        SIMULATOR_ANUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_START", "100000000").toString());
+        SIMULATOR_ANUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_ANUM_RANGE", "99999999").toString());
+        SIMULATOR_BNUM_START = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_START", "800000000").toString());
+        SIMULATOR_BNUM_RANGE = Integer.parseInt(getenv.getOrDefault("CDRPR_SIMULATOR_BNUM_RANGE", "99999999").toString());
+        SIMULATOR_MINIMUM_DATA = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_SIMULATOR_MINIMUM_DATA", "false").toString());
 //        SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "" +
 //                "Moscow, Ljubljana, Berlin, London, Paris, Moscow, Amsterdam, Belgrade, Madrid, " +
 //                "Paris, Berlin, Copenhagen, Madrid, Moscow, Rome, Zurich, Lisbon, Warsaw, Berlin, Helsinki, Prague, " +
@@ -72,49 +85,43 @@ public class Props {
                 "Prague, Warsaw, Budapest, Athens, Ankara, " +
                 "Vienna, Sofia, Skopje, Tirana, Bucurest, " +
                 "Linz, Graz, Munchen, Milano, Luxemburg, " +
-                "Strassburg, Nurnberg, Zagreb, Bonn, Prague");
+                "Strassburg, Nurnberg, Zagreb, Bonn, Prague").toString();
 
         // possible values:
-        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES");
+        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES").toString();
         // possible values: ELASTICSEARCH, POSTGRES
-        SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH");
-        SIMULATOR_EXIT_WHEN_DONE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT_WHEN_DONE", "true"));
-        HANDLE_FILES_WHEN_PROCESSED = getenv.getOrDefault("CDRPR_HANDLE_FILES_WHEN_PROCESSED", "nothing");
-        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "10000"));
-        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60"));
-        DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false"));
-        RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "0"));
-        CLIENT_WAIT_UNTIL_READY = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_CLIENT_WAIT_UNTIL_READY", "false"));
+        SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH").toString();
+        SIMULATOR_EXIT_WHEN_DONE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT_WHEN_DONE", "true").toString());
+        HANDLE_FILES_WHEN_PROCESSED = getenv.getOrDefault("CDRPR_HANDLE_FILES_WHEN_PROCESSED", "nothing").toString();
+        BULK_SIZE = Integer.parseInt(getenv.getOrDefault("CDRPR_BULK_SIZE", "10000").toString());
+        SEND_INTERVAL_SEC = Integer.parseInt(getenv.getOrDefault("CDRPR_SEND_INTERVAL_SEC", "60").toString());
+        DEBUG_ENABLED = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DEBUG_ENABLED", "false").toString());
+        RETRIES = Integer.parseInt(getenv.getOrDefault("CDRPR_RETRIES", "0").toString());
+        CLIENT_WAIT_UNTIL_READY = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_CLIENT_WAIT_UNTIL_READY", "false").toString());
 
-        ES_SCHEMA = getenv.getOrDefault("CDRPR_ES_SCHEMA", "https");
-        ES_BASIC_USER = getenv.getOrDefault("CDRPR_ES_BASIC_USER", "admin");
-        ES_BASIC_PASS = getenv.getOrDefault("CDRPR_ES_BASIC_PASS", "Administrator_#123");
-        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "ubuntu-vm");
-
-//        ES_SCHEMA = getenv.getOrDefault("CDRPR_ES_SCHEMA", "http");
-//        ES_BASIC_USER = getenv.getOrDefault("CDRPR_ES_BASIC_USER", null);
-//        ES_BASIC_PASS = getenv.getOrDefault("CDRPR_ES_BASIC_PASS", null);
-//        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "swarm1");
-
-        ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200"));
-        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "false"));
-        ES_INDEX_PREFIX = getenv.getOrDefault("CDRPR_ES_INDEX_PREFIX", "");
-        ES_NUMBER_OF_SHARDS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_SHARDS", "1"));
-        ES_NUMBER_OF_REPLICAS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_REPLICAS", "0"));
-        PG_URL = getenv.getOrDefault("CDRPR_PG_URL", "jdbc:postgresql://elasticvm:5432/cdraggs");
-        PG_USER = getenv.getOrDefault("CDRPR_PG_USER", "postgres");
-        PG_PASS = getenv.getOrDefault("CDRPR_PG_PASS", "object00");
-        PG_CREATE_TABLES_ON_START = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_PG_CREATE_TABLES_ON_START", "false"));
-        PROMETHEUS_ENABLE_METRICS = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ENABLE_PROMETHEUS_METRICS", "false"));
-        ENABLE_DUMP_TO_FILE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DUMP_TO_FILE", "true"));
-        ALARM_DESTINATION = getenv.getOrDefault("CDRPR_ALARM_DESTINATION", "http://172.29.100.32:9070/webhook");
-        KAFKA_BOOTSTRAP_SERVER = getenv.getOrDefault("CDRPR_KAFKA_BOOTSTRAP_SERVER", "localhost:9092");
+        ES_SCHEMA = getenv.getOrDefault("CDRPR_ES_SCHEMA", "https").toString();
+        ES_BASIC_USER = getenv.getOrDefault("CDRPR_ES_BASIC_USER", "admin").toString();
+        ES_BASIC_PASS = getenv.getOrDefault("CDRPR_ES_BASIC_PASS", "Administrator_#123").toString();
+        ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "ubuntu-vm").toString();
+        ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200").toString());
+        ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "false").toString());
+        ES_INDEX_PREFIX = getenv.getOrDefault("CDRPR_ES_INDEX_PREFIX", "").toString();
+        ES_NUMBER_OF_SHARDS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_SHARDS", "1").toString());
+        ES_NUMBER_OF_REPLICAS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_REPLICAS", "0").toString());
+        PG_URL = getenv.getOrDefault("CDRPR_PG_URL", "jdbc:postgresql://elasticvm:5432/cdraggs").toString();
+        PG_USER = getenv.getOrDefault("CDRPR_PG_USER", "postgres").toString();
+        PG_PASS = getenv.getOrDefault("CDRPR_PG_PASS", "object00").toString();
+        PG_CREATE_TABLES_ON_START = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_PG_CREATE_TABLES_ON_START", "false").toString());
+        PROMETHEUS_ENABLE_METRICS = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ENABLE_PROMETHEUS_METRICS", "false").toString());
+        ENABLE_DUMP_TO_FILE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_DUMP_TO_FILE", "true").toString());
+        ALARM_DESTINATION = getenv.getOrDefault("CDRPR_ALARM_DESTINATION", "http://172.29.100.32:9070/webhook").toString();
+        KAFKA_BOOTSTRAP_SERVER = getenv.getOrDefault("CDRPR_KAFKA_BOOTSTRAP_SERVER", "localhost:9092").toString();
 
         try {
             HOSTNAME = InetAddress.getLocalHost().getHostName();
         } catch (Exception e) {}
 
-        logger.info("Environment variables:");
+        logger.info("CONFIGURATION:");
         logger.info("- HOSTNAME: " + HOSTNAME);
         logger.info("- CURRENT_DIR: " + System.getProperty("user.dir"));
         logger.info("- SIMULATOR_MODE: " + SIMULATOR_MODE);
@@ -139,6 +146,16 @@ public class Props {
         SimulatorMetrics.defaultBulkSize.set(BULK_SIZE);
         SimulatorMetrics.maxQueueSize.set(200 * BULK_SIZE);
 
+    }
+
+
+    public static void loadReleaseCauses() {
+        try {
+            releaseCausesProps = new Properties();
+            releaseCausesProps.load(new FileInputStream("config/call_release_causes.properties"));
+        } catch (IOException e) {
+            System.err.println("IOException: " + e.getMessage());
+        }
     }
 
 }

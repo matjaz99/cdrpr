@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>cdrpr</artifactId>
     <groupId>si.iskratel.cdr</groupId>
-    <version>3.1</version>
+    <version>4.0</version>
 
     <build>
         <plugins>

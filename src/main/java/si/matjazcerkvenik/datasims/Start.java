@@ -8,6 +8,8 @@ import si.matjazcerkvenik.datasims.cdrpr.simulator.generator.CdrNodeGeneratorThr
 import si.matjazcerkvenik.datasims.cdrpr.simulator.generator.StorageThread;
 import si.matjazcerkvenik.datasims.cdrpr.simulator.generator.XmlSimulatorThread;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
@@ -20,20 +22,28 @@ public class Start {
     public static List<CdrGeneratorThread> simulatorThreads = new ArrayList<>();
     public static List<CdrNodeGeneratorThread> nodeSimulatorThreads = new ArrayList<>();
 
-    public static Properties releaseCausesProps;
+
 
     public static void main(String[] args) throws Exception {
 
         Runtime.getRuntime().addShutdownHook(new TheShutdownHook());
 
-        Props.initialize();
+//        File datasimsDirectory = new File("config/datasims");
+//        File[] datasimsDirs = datasimsDirectory.listFiles(new FileFilter() {
+//            @Override
+//            public boolean accept(File pathname) {
+//                return pathname.isDirectory();
+//            }
+//        });
+//
+//        for (File f : datasimsDirs) {
+//            Properties p = new Properties();
+//            p.load(new FileInputStream(f.getAbsolutePath() + "/datasim.properties"));
+//        }
 
-        releaseCausesProps = new Properties();
-        try {
-            releaseCausesProps.load(new FileInputStream("config/call_release_causes.properties"));
-        } catch (IOException e) {
-            System.err.println("IOException: " + e.getMessage());
-        }
+
+        Props.initialize();
+        Props.loadReleaseCauses();
 
         // start generator
         // store each record into ES
