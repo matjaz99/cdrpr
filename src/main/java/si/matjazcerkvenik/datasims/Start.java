@@ -28,20 +28,6 @@ public class Start {
 
         Runtime.getRuntime().addShutdownHook(new TheShutdownHook());
 
-//        File datasimsDirectory = new File("config/datasims");
-//        File[] datasimsDirs = datasimsDirectory.listFiles(new FileFilter() {
-//            @Override
-//            public boolean accept(File pathname) {
-//                return pathname.isDirectory();
-//            }
-//        });
-//
-//        for (File f : datasimsDirs) {
-//            Properties p = new Properties();
-//            p.load(new FileInputStream(f.getAbsolutePath() + "/datasim.properties"));
-//        }
-
-
         Props.initialize();
         Props.loadReleaseCauses();
 

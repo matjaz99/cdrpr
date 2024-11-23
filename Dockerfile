@@ -8,6 +8,7 @@ RUN mkdir -p /opt/cdr
 RUN mkdir -p /opt/dump
 RUN mkdir -p /opt/config
 COPY --from=build /usr/src/app/target/cdrpr-3.0-jar-with-dependencies.jar /opt/cdrpr-3.0-jar-with-dependencies.jar
+COPY config/cdrpr.properties /opt/config/cdrpr.properties
 COPY config/call_release_causes.properties /opt/config/call_release_causes.properties
 COPY config/severities.properties /opt/config/severities.properties
 COPY config/logback.xml /opt/config/logback.xml

@@ -25,7 +25,7 @@ public class AllGenCdrsToEs2 implements Runnable {
     public AllGenCdrsToEs2(int id) {
         this.threadId = id;
         httpClient = MetricsLib.instantiateHttpClient();
-        url = Props.ES_SCHEMA + "://" + Props.ES_HOST + ":" + Props.ES_PORT + "/calls/_bulk";
+        url = Props.ES_SCHEMA + "://" + Props.ES_HOST + ":" + Props.ES_PORT + "/" + Props.CDRPR_ES_INDEX_NAME + "/_bulk";
     }
 
 

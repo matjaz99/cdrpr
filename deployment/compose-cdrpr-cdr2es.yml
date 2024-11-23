@@ -7,7 +7,7 @@ networks:
 
 services:
   cdrsim:
-    image: matjaz99/cdrpr:3.0
+    image: matjaz99/cdrpr:4.0
     networks:
       - net
     ports:

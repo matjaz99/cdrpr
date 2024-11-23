@@ -71,19 +71,19 @@ public class CdrNodeGeneratorThread extends Thread {
         cdrBean.setCause(Props.SIMULATOR_CALL_REASON);
         int rnd = getRandomInRange(1, 100);
         if (Props.SIMULATOR_CALL_REASON == 0) {
-            if (rnd % 2 == 0) {
+            if (rnd % 2 == 0 || rnd % 5 == 0) {
                 cdrBean.setCause(16);
             } else if (rnd % 3 == 0 && rnd % 2 == 0) {
                 cdrBean.setCause(17);
-            } else if (rnd % 5 == 0 && rnd % 2 == 0) {
+            } else if (rnd % 7 == 0) {
                 cdrBean.setCause(19);
-            } else if (rnd % 7 == 0 && rnd % 2 == 0) {
+            } else if (rnd % 9 == 0) {
                 cdrBean.setCause(21);
-            } else if (rnd % 9 == 0 && rnd % 2 == 0) {
-                cdrBean.setCause(38);
             } else if (rnd % 11 == 0) {
-                cdrBean.setCause(3);
+                cdrBean.setCause(38);
             } else if (rnd % 13 == 0) {
+                cdrBean.setCause(3);
+            } else if (rnd % 17 == 0) {
                 cdrBean.setCause(6);
             } else {
                 cdrBean.setCause(getRandomInRange(1, 127));

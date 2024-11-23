@@ -12,7 +12,6 @@ import java.util.Properties;
 public class Props {
 
     private static Logger logger = LoggerFactory.getLogger(Props.class);
-
     public static String HOSTNAME = "localhost0";
     public static int BULK_SIZE = 100;
     public static int SEND_INTERVAL_SEC = 60;
@@ -25,6 +24,7 @@ public class Props {
     public static String ES_BASIC_PASS;
     public static String ES_HOST;
     public static int ES_PORT;
+    public static String CDRPR_ES_INDEX_NAME;
     public static boolean ES_AUTO_CREATE_INDEX;
     public static int ES_NUMBER_OF_SHARDS = 1;
     public static int ES_NUMBER_OF_REPLICAS = 0;
@@ -78,14 +78,14 @@ public class Props {
 //                "Moscow, Oslo, Helsinki, Dublin, Sarajevo, Skopje, Minsk, Barcelona, Lyon, Copenhagen, Stockholm, Moscow," +
 //                "London, Zurich, Minsk, Manchester, Frankfurt, Grenoble, Madrid, Moscow");
         SIMULATOR_NODEID = getenv.getOrDefault("CDRPR_SIMULATOR_NODEID", "" +
-                "Moscow, Ljubljana, Ljubljana, Berlin, London, Paris, " +
-                "Amsterdam, Belgrade, Madrid, Copenhagen, Rome, " +
-                "Zurich, Lisbon, Warsaw, Kiev, Leipzig, " +
-                "Frankfurt, Aachen, Lyon, Geneva, Salzburg, " +
-                "Prague, Warsaw, Budapest, Athens, Ankara, " +
-                "Vienna, Sofia, Skopje, Tirana, Bucurest, " +
-                "Linz, Graz, Munchen, Milano, Luxemburg, " +
-                "Strassburg, Nurnberg, Zagreb, Bonn, Prague").toString();
+                "Moscow, Ljubljana, London, Berlin, London, Paris, " +
+//                "Amsterdam, Belgrade, Madrid, Copenhagen, Rome, " +
+//                "Zurich, Lisbon, Warsaw, Kiev, Leipzig, " +
+//                "Frankfurt, Aachen, Lyon, Geneva, Salzburg, " +
+//                "Prague, Warsaw, Budapest, Athens, Ankara, " +
+//                "Vienna, Sofia, Skopje, Tirana, Bucurest, " +
+//                "Linz, Graz, Munchen, Milano, Luxemburg, " +
+                "London, Moscow, Zagreb, Bonn, Prague").toString();
 
         // possible values:
         SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES").toString();
@@ -104,6 +104,7 @@ public class Props {
         ES_BASIC_PASS = getenv.getOrDefault("CDRPR_ES_BASIC_PASS", "Administrator_#123").toString();
         ES_HOST = getenv.getOrDefault("CDRPR_ES_HOST", "ubuntu-vm").toString();
         ES_PORT = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_PORT", "9200").toString());
+        CDRPR_ES_INDEX_NAME = getenv.getOrDefault("CDRPR_ES_INDEX_NAME", "cdrpr").toString();
         ES_AUTO_CREATE_INDEX = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_ES_AUTO_CREATE_INDEX", "false").toString());
         ES_INDEX_PREFIX = getenv.getOrDefault("CDRPR_ES_INDEX_PREFIX", "").toString();
         ES_NUMBER_OF_SHARDS = Integer.parseInt(getenv.getOrDefault("CDRPR_ES_NUMBER_OF_SHARDS", "1").toString());
