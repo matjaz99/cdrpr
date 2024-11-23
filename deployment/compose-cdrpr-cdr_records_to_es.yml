@@ -17,7 +17,7 @@ services:
     volumes:
       - /var/log:/opt/log
       #- ./dump:/opt/dump
-      - ./config/cdrpr.properties:/opt/config/cdrpr.properties
+      - ../config/cdrpr.properties:/opt/config/cdrpr.properties
     deploy:
       mode: replicated
       replicas: 1
