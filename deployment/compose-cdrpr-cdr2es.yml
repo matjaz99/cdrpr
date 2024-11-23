@@ -34,6 +34,7 @@ services:
       #- /home/pmon/cdr_storage_1:/opt/cdr_input_dir
       #- /home/pmon/cdr_storage_2:/opt/cdr_output_dir
       - ./dump:/opt/dump
+      - ./config/cdrpr.properties:/opt/config/cdrpr.properties
       - ./cdr_parser/cdr_parser.properties:/opt/cdr_parser/cdr_parser.properties
     deploy:
       mode: replicated

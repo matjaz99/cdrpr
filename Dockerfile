@@ -7,7 +7,7 @@ FROM openjdk:8-jre
 RUN mkdir -p /opt/cdr
 RUN mkdir -p /opt/dump
 RUN mkdir -p /opt/config
-COPY --from=build /usr/src/app/target/cdrpr-3.0-jar-with-dependencies.jar /opt/cdrpr-3.0-jar-with-dependencies.jar
+COPY --from=build /usr/src/app/target/cdrpr-4.0-jar-with-dependencies.jar /opt/cdrpr-4.0-jar-with-dependencies.jar
 COPY config/cdrpr.properties /opt/config/cdrpr.properties
 COPY config/call_release_causes.properties /opt/config/call_release_causes.properties
 COPY config/severities.properties /opt/config/severities.properties
@@ -20,5 +20,5 @@ WORKDIR /opt
 
 EXPOSE 9099
 
-CMD java -jar -Dlogback.configurationFile=config/logback.xml cdrpr-3.0-jar-with-dependencies.jar
+CMD java -jar -Dlogback.configurationFile=config/logback.xml cdrpr-4.0-jar-with-dependencies.jar
 #CMD sh init.sh
