@@ -14,16 +14,16 @@ public class AggregateGenCdrsToEs implements Runnable {
     private PgClient pgClient;
     private EsClient esClient;
 
-    private static final String INDEX_CDR_CALLS = Props.ES_INDEX_PREFIX + "pmon_cdr_node_calls_idx";
-    private static final String INDEX_CDR_KPI_ASR = Props.ES_INDEX_PREFIX + "pmon_cdr_node_calls_asr_idx";
-    private static final String INDEX_CDR_ACTIVE_CALLS = Props.ES_INDEX_PREFIX + "pmon_cdr_node_active_calls_idx";
-    private static final String INDEX_CDR_CALL_DURATION = Props.ES_INDEX_PREFIX + "pmon_cdr_node_durations_idx";
-    private static final String INDEX_CDR_BG = Props.ES_INDEX_PREFIX + "pmon_cdr_business_group_idx";
-    private static final String INDEX_CDR_SUPP_SERVICE = Props.ES_INDEX_PREFIX + "pmon_cdr_supplementary_service_idx";
-    private static final String INDEX_CDR_SG = Props.ES_INDEX_PREFIX + "pmon_cdr_subscriber_group_idx";
-    private static final String INDEX_CDR_VOIP = Props.ES_INDEX_PREFIX + "pmon_cdr_voip_idx";
-    private static final String INDEX_CDR_TRUNK = Props.ES_INDEX_PREFIX + "pmon_cdr_trunk_calls_idx";
-    private static final String INDEX_CDR_TRUNK_DURATION = Props.ES_INDEX_PREFIX + "pmon_cdr_trunk_durations_idx";
+    private static final String INDEX_CDR_CALLS = Props.ES_INDEX_PREFIX + "pmon_cdraggs_node_calls_idx";
+    private static final String INDEX_CDR_KPI_ASR = Props.ES_INDEX_PREFIX + "pmon_cdraggs_node_calls_asr_idx";
+    private static final String INDEX_CDR_ACTIVE_CALLS = Props.ES_INDEX_PREFIX + "pmon_cdraggs_node_active_calls_idx";
+    private static final String INDEX_CDR_CALL_DURATION = Props.ES_INDEX_PREFIX + "pmon_cdraggs_node_durations_idx";
+    private static final String INDEX_CDR_BG = Props.ES_INDEX_PREFIX + "pmon_cdraggs_business_group_idx";
+    private static final String INDEX_CDR_SUPP_SERVICE = Props.ES_INDEX_PREFIX + "pmon_cdraggs_supplementary_service_idx";
+    private static final String INDEX_CDR_SG = Props.ES_INDEX_PREFIX + "pmon_cdraggs_subscriber_group_idx";
+    private static final String INDEX_CDR_VOIP = Props.ES_INDEX_PREFIX + "pmon_cdraggs_voip_idx";
+    private static final String INDEX_CDR_TRUNK = Props.ES_INDEX_PREFIX + "pmon_cdraggs_trunk_calls_idx";
+    private static final String INDEX_CDR_TRUNK_DURATION = Props.ES_INDEX_PREFIX + "pmon_cdraggs_trunk_durations_idx";
 
     // metrics
     public static PMetric pmon_cdr_calls_by_cause = PMetric.build()
@@ -36,11 +36,13 @@ public class AggregateGenCdrsToEs implements Runnable {
             .setHelp("Answer to seizure ratio - success rate")
             .setLabelNames("nodeName")
             .register(INDEX_CDR_KPI_ASR);
+
     public static PMetric pmon_cdr_calls_in_progress = PMetric.build()
             .setName("pmon_cdr_calls_in_progress")
             .setHelp("Current number of calls in progress (answered only)")
             .setLabelNames("nodeName")
             .register(INDEX_CDR_ACTIVE_CALLS);
+
     public static PMetric pmon_cdr_call_duration = PMetric.build()
             .setName("pmon_cdr_call_duration")
             .setHelp("Total duration of answered calls on node")

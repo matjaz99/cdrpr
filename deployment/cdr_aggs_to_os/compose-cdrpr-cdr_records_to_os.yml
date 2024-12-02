@@ -12,12 +12,10 @@ services:
       - net
     ports:
       - 9099:9099
-    environment:
-      - CDRPR_SIMULATOR_MODE=GENERATE_CDR_AND_STORE_ALL_TO_ES
     volumes:
       - /var/log:/opt/log
       #- ./dump:/opt/dump
-      - ../config/cdrpr.properties:/opt/config/cdrpr.properties
+      - ./cdrpr.properties:/opt/config/cdrpr.properties
     deploy:
       mode: replicated
       replicas: 1

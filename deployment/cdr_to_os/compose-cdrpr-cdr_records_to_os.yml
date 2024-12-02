@@ -1,0 +1,22 @@
+version: '3.6'
+
+networks:
+  net:
+    driver: overlay
+    attachable: true
+
+services:
+  cdrsim:
+    image: matjaz99/cdrpr:4.0
+    networks:
+      - net
+    ports:
+      - 9099:9099
+    volumes:
+      - /var/log:/opt/log
+      #- ./dump:/opt/dump
+      - ./cdrpr.properties:/opt/config/cdrpr.properties
+    deploy:
+      mode: replicated
+      replicas: 1
+
