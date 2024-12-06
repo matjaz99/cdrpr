@@ -21,13 +21,13 @@ public class XmlSimulatorThread extends Thread {
 
         EsClient esClient = new EsClient(Props.ES_SCHEMA, Props.ES_HOST, Props.ES_PORT);
 
-        PMetric xml_metric = PMetric.build()
+        PMetric pmon_xml_metric = PMetric.build()
                 .setName("pmon_xml_metric")
                 .setHelp("Metric from xml")
                 .setLabelNames("nodeName", "measurement", "elementType", "measInfoId", "jobId")
                 .register(Props.ES_INDEX_PREFIX + "pmon_xml_measurements_idx");
 
-        PMetric inventory_metric = PMetric.build()
+        PMetric pmon_inventory_metric = PMetric.build()
                 .setName("pmon_cdr_inventory")
                 .setHelp("Inventory of PAM-CDR module")
                 .setLabelNames("nodeId", "nodeName", "productCategory", "subType", "status")
@@ -47,24 +47,51 @@ public class XmlSimulatorThread extends Thread {
 
             PMetricRegistry.getRegistry(Props.ES_INDEX_PREFIX + "pmon_xml_measurements_idx").resetMetrics();
 
+            // store each measurement as single metric
+            // document example:
+            // {
+            //     "metric_name": "pmon_xml_metric",
+            //     "nodeName": "Ljubljana",
+            //     "measurement": "IT.SS.CFUTDeact",
+            //     "elementType": "BGCF",
+            //     "measInfoId": "0",
+            //     "jobId": "1",
+            //     "value": 2208,
+            //     "@timestamp": 1733012054525
+            // }
             for (int i = 0; i < measurements.length; i++) {
-                xml_metric.setLabelValues(
+                pmon_xml_metric.setLabelValues(
                         Start.getRandomNodeId(),
                         measurements[i],
                         elementTypes[getRandomInRange(0, elementTypes.length - 1)],
                         "" + getRandomInRange(0, 5),
                         "" + getRandomInRange(1, 3)
                 ).set(getRandomInRange(0, 5000));
-                PMultivalueTimeSeries mvts = new PMultivalueTimeSeries();
-                mvts.addLabel("nodeName", Start.getRandomNodeId())
-                        .addLabel("elementType", elementTypes[getRandomInRange(0, elementTypes.length - 1)])
-                        .addValue(measurements[i], 1.0 * getRandomInRange(0, 5000));
-                test_mv_metric.addMultiValueTimeSeries(mvts);
-                esClient.sendBulkPost(test_mv_metric);
             }
-            esClient.sendBulkPost(xml_metric);
+            esClient.sendBulkPost(pmon_xml_metric);
 
 
+            // store each measurement as multi-value metric
+            // data size in opensearch 4 GB (87 M docs)
+            // document example:
+            // {
+            //     "metric_name": "test_mv_metric",
+            //     "nodeName": "Prague",
+            //     "elementType": "HSS",
+            //     "SC.AttSessions.orig": 1618,
+            //     "@timestamp": 1732396697456
+            // }
+//            for (int i = 0; i < measurements.length; i++) {
+//                PMultivalueTimeSeries mvts = new PMultivalueTimeSeries();
+//                mvts.addLabel("nodeName", Start.getRandomNodeId())
+//                        .addLabel("elementType", elementTypes[getRandomInRange(0, elementTypes.length - 1)])
+//                        .addValue(measurements[i], 1.0 * getRandomInRange(0, 5000));
+//                test_mv_metric.addMultiValueTimeSeries(mvts);
+//                esClient.sendBulkPost(test_mv_metric);
+//            }
+
+
+            // set cdr status (found, not found, error...)
             Map<String, Object> nodesMap = new HashMap<>();
             String[] nodes = Props.SIMULATOR_NODEID.split(",");
             for (int i = 0; i < nodes.length; i++) {
@@ -72,9 +99,9 @@ public class XmlSimulatorThread extends Thread {
             }
             for (String n : nodesMap.keySet()) {
                 int status = (System.currentTimeMillis() % 13 == 0) ? 0 : 1;
-                inventory_metric.setLabelValues("" + n.hashCode(), n, "elementType", "subType", "No CDR files found").set(status);
+                pmon_inventory_metric.setLabelValues("" + n.hashCode(), n, "elementType", "subType", "No CDR files found").set(status);
             }
-            esClient.sendBulkPost(inventory_metric);
+            esClient.sendBulkPost(pmon_inventory_metric);
 
             // send random event
             if (System.currentTimeMillis() % 7 == 0) {
