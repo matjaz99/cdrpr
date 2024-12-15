@@ -15,7 +15,7 @@ public class Props {
     public static String HOSTNAME = "localhost0";
     public static int BULK_SIZE = 100;
     public static int SEND_INTERVAL_SEC = 60;
-    public static int SIMULATOR_SIMULATOR_THREADS = 1;
+    public static int SIMULATOR_SIMULATOR_THREADS = 1; // not used?
     public static boolean DEBUG_ENABLED = false;
     public static int RETRIES = 3;
     public static boolean CLIENT_WAIT_UNTIL_READY = true;

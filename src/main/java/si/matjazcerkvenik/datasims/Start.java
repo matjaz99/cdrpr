@@ -19,7 +19,7 @@ public class Start {
 
     public static boolean running = true;
 
-    public static List<CdrGeneratorThread> simulatorThreads = new ArrayList<>();
+//    public static List<CdrGeneratorThread> simulatorThreads = new ArrayList<>();
     public static List<CdrNodeGeneratorThread> nodeSimulatorThreads = new ArrayList<>();
 
 
@@ -48,7 +48,7 @@ public class Start {
         // config via env vars
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AGGREGATE_AND_STORE_TO_ES")) {
             initMetricsLib();
-            startCdrGenerators();
+            startCdrNodeGenerators();
             Thread t = new Thread(new AggregateGenCdrsToEs(1));
             t.setName("aggregator");
             t.start();
@@ -58,7 +58,7 @@ public class Start {
         // store each record into Kafka topic
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AND_STORE_ALL_TO_KAFKA")) {
             initMetricsLib();
-            startCdrGenerators();
+            startCdrNodeGenerators();
             Thread t = new Thread(new AllGenCdrsToKafka(1));
             t.setName("aggregator");
             t.start();
@@ -87,26 +87,26 @@ public class Start {
     }
 
 
-    public static void startCdrGenerators() {
-
-        // this is the generator, which generates CdrBean objects
-        // and adds them to storage
-        for (int i = 1; i < Props.SIMULATOR_SIMULATOR_THREADS + 1; i++) {
-            CdrGeneratorThread t = new CdrGeneratorThread(i);
-            t.setName("CdrSimulatorThread");
-            t.start();
-            simulatorThreads.add(t);
-            System.out.println("Simulator thread created: " + t.getThreadId());
-        }
-
-        StorageThread ct = new StorageThread();
-        ct.setName("Storage");
-        ct.start();
-
-        XmlSimulatorThread xst = new XmlSimulatorThread();
-        xst.setName("XmlSimulatorThread");
-        xst.start();
-    }
+//    public static void startCdrGenerators() {
+//
+//        // this is the generator, which generates CdrBean objects
+//        // and adds them to storage
+//        for (int i = 1; i < Props.SIMULATOR_SIMULATOR_THREADS + 1; i++) {
+//            CdrGeneratorThread t = new CdrGeneratorThread(i);
+//            t.setName("CdrSimulatorThread");
+//            t.start();
+//            simulatorThreads.add(t);
+//            System.out.println("Simulator thread created: " + t.getThreadId());
+//        }
+//
+//        StorageThread ct = new StorageThread();
+//        ct.setName("Storage");
+//        ct.start();
+//
+//        XmlSimulatorThread xst = new XmlSimulatorThread();
+//        xst.setName("XmlSimulatorThread");
+//        xst.start();
+//    }
 
     public static void startCdrNodeGenerators() {
 
