@@ -58,7 +58,7 @@ public class CdrNodeGeneratorThread extends Thread {
         cdrBean.setCallid(totalCount);
         cdrBean.setSequence(2);
         cdrBean.setCallType(0);
-        cdrBean.setNodeId(Start.getRandomNodeId());
+        cdrBean.setNodeId(nodeId);
 
         String aNumber = getAvailableANumber();
         cdrBean.setCallingNumber(aNumber);
@@ -69,7 +69,7 @@ public class CdrNodeGeneratorThread extends Thread {
         cdrBean.setCdrRingingTimeBeforeAnsw((int) (getRandomGaussian(25000, 1000)));
 
         cdrBean.setCause(Props.SIMULATOR_CALL_REASON);
-        int rnd = getRandomInRange(1, 100);
+        int rnd = getRandomInRange(1, 200);
         if (Props.SIMULATOR_CALL_REASON == 0) {
             if (rnd % 2 == 0 || rnd % 5 == 0) {
                 cdrBean.setCause(16);

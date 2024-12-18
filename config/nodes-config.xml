@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<nodes>
+    <node id="1001" name="Ljubljana">
+        <threadDelayMs>1000</threadDelayMs>
+        <trunkGroups>
+            <trunkGroup id="11001" name="TG1">
+                <trunk id="1"/>
+                <trunk id="2"/>
+                <trunk id="3"/>
+                <trunk id="4"/>
+                <trunk id="5"/>
+            </trunkGroup>
+            <trunkGroup id="11002" name="TG2">
+                <trunk id="1"/>
+                <trunk id="2"/>
+                <trunk id="3"/>
+                <trunk id="4"/>
+            </trunkGroup>
+            <trunkGroup id="11003" name="TG3">
+                <trunk id="1"/>
+                <trunk id="2"/>
+            </trunkGroup>
+        </trunkGroups>
+    </node>
+</nodes>
