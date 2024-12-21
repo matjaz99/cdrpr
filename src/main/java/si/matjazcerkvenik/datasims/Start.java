@@ -3,23 +3,16 @@ package si.matjazcerkvenik.datasims;
 
 import si.matjazcerkvenik.metricslib.MetricsLib;
 import si.matjazcerkvenik.datasims.cdrpr.simulator.*;
-import si.matjazcerkvenik.datasims.cdrpr.simulator.generator.CdrGeneratorThread;
 import si.matjazcerkvenik.datasims.cdrpr.simulator.generator.CdrNodeGeneratorThread;
 import si.matjazcerkvenik.datasims.cdrpr.simulator.generator.StorageThread;
 import si.matjazcerkvenik.datasims.cdrpr.simulator.generator.XmlSimulatorThread;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.*;
 
 public class Start {
 
 
     public static boolean running = true;
-
-//    public static List<CdrGeneratorThread> simulatorThreads = new ArrayList<>();
     public static List<CdrNodeGeneratorThread> nodeSimulatorThreads = new ArrayList<>();
 
 
@@ -86,27 +79,6 @@ public class Start {
 
     }
 
-
-//    public static void startCdrGenerators() {
-//
-//        // this is the generator, which generates CdrBean objects
-//        // and adds them to storage
-//        for (int i = 1; i < Props.SIMULATOR_SIMULATOR_THREADS + 1; i++) {
-//            CdrGeneratorThread t = new CdrGeneratorThread(i);
-//            t.setName("CdrSimulatorThread");
-//            t.start();
-//            simulatorThreads.add(t);
-//            System.out.println("Simulator thread created: " + t.getThreadId());
-//        }
-//
-//        StorageThread ct = new StorageThread();
-//        ct.setName("Storage");
-//        ct.start();
-//
-//        XmlSimulatorThread xst = new XmlSimulatorThread();
-//        xst.setName("XmlSimulatorThread");
-//        xst.start();
-//    }
 
     public static void startCdrNodeGenerators() {
 

@@ -20,7 +20,7 @@ public class StorageThread extends Thread {
         while (true) {
 
             SimulatorMetrics.queueSize.set(queue.size());
-            pruneMap();
+            clearCallsInProgresMap();
 
             try {
                 sleep(500);
@@ -60,7 +60,7 @@ public class StorageThread extends Thread {
         return callsInProgress.size();
     }
 
-    private static synchronized void pruneMap() {
+    private static synchronized void clearCallsInProgresMap() {
         // clean subscribers that are not in the call anymore
         long now = System.currentTimeMillis();
         try {

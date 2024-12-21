@@ -7,6 +7,7 @@ import si.matjazcerkvenik.datasims.Start;
 
 import java.util.Date;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This thread generates CdrBeans with random data.
@@ -115,8 +116,7 @@ public class CdrNodeGeneratorThread extends Thread {
 
         Date d = new Date();
         cdrBean.setStartTime(d);
-        long st = d.getTime();
-        long et = st + duration;
+        long et = d.getTime() + duration;
         Date d2 = new Date(et);
         cdrBean.setEndTime(d2);
 

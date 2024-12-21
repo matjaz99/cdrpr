@@ -34,6 +34,7 @@ public class Props {
     public static boolean PG_CREATE_TABLES_ON_START = true;
     public static String ES_INDEX_PREFIX = "";
     public static String SIMULATOR_MODE;
+    public static long SIMULATOR_TIME_OFFSET_MONTHS = 0L;
     public static String SIMULATOR_STORAGE_TYPE;
     public static String SIMULATOR_NODEID;
     public static boolean SIMULATOR_EXIT_WHEN_DONE = true;
@@ -89,6 +90,7 @@ public class Props {
 
         // possible values:
         SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES").toString();
+        SIMULATOR_TIME_OFFSET_MONTHS = Integer.parseInt(getenv.getOrDefault("SIMULATOR_TIME_OFFSET_MONTHS", "0").toString());
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH").toString();
         SIMULATOR_EXIT_WHEN_DONE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT_WHEN_DONE", "true").toString());

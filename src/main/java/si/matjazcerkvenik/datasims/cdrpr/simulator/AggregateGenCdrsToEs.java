@@ -5,6 +5,7 @@ import si.matjazcerkvenik.metricslib.*;
 import si.matjazcerkvenik.datasims.cdrpr.simulator.generator.StorageThread;
 
 import java.sql.SQLException;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AggregateGenCdrsToEs implements Runnable {
 
@@ -165,22 +166,36 @@ public class AggregateGenCdrsToEs implements Runnable {
 
             }
 
+
+            if (Props.SIMULATOR_TIME_OFFSET_MONTHS > 0) {
+                long now = System.currentTimeMillis();
+                long randomOffset = 0L;
+                // rnd offset between now and then
+                randomOffset = ThreadLocalRandom.current().nextLong(Props.SIMULATOR_TIME_OFFSET_MONTHS * 30 * 24 * 3600 * 1000);
+                pmon_cdr_calls_by_trunkgroup.setTimestamp(now - randomOffset);
+                pmon_cdr_calls_by_cause.setTimestamp(now - randomOffset);
+                pmon_cdr_call_duration.setTimestamp(now - randomOffset);
+                pmon_cdr_duration_by_trunkgroup.setTimestamp(now - randomOffset);
+                pmon_cdr_time_before_ringing.setTimestamp(now - randomOffset);
+                pmon_cdr_time_before_answer.setTimestamp(now - randomOffset);
+            }
+
             SimulatorMetrics.bulkCount.set(pmon_cdr_calls_by_cause.getTimeSeriesSize());
 
             pmon_cdr_calls_in_progress.setLabelValues(Props.HOSTNAME).set(1.0 * StorageThread.getNumberOfCallsInProgress());
 
             // TEST operations on metrics
             // convert millis to hours
-            pmon_cdr_call_duration.MULTIPLY(1.0/1000 * 1.0/3600);
+//            pmon_cdr_call_duration.MULTIPLY(1.0/1000 * 1.0/3600);
 
             if (Props.SIMULATOR_STORAGE_TYPE.equalsIgnoreCase("ELASTICSEARCH")) {
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_CALLS));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_KPI_ASR));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_CALL_DURATION));
-                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_BG));
-                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_SUPP_SERVICE));
-                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_SG));
-                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_VOIP));
+//                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_BG));
+//                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_SUPP_SERVICE));
+//                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_SG));
+//                esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_VOIP));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_TRUNK));
                 esClient.sendBulkPost(PMetricRegistry.getRegistry(INDEX_CDR_TRUNK_DURATION));
             }
