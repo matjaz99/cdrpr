@@ -38,7 +38,7 @@ public class Start {
         // start generator
         // aggregate (PMetric)
         // store each record into ES
-        // config via env vars
+        // config via cdrpr.properties
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AGGREGATE_AND_STORE_TO_ES")) {
             initMetricsLib();
             startCdrNodeGenerators();

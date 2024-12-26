@@ -18,7 +18,7 @@ public class CdrNodeGeneratorThread extends Thread {
     private int threadId = 0;
     private long totalCount = 0;
     private int randomFactor = 1;
-    private static String nodeId;
+    private String nodeId;
 
     public CdrNodeGeneratorThread(int id, String nodeId) {
         threadId = id;
