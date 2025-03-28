@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Map;
+import java.time.Instant;
 import java.util.Properties;
 
 public class Props {
@@ -35,6 +35,11 @@ public class Props {
     public static String ES_INDEX_PREFIX = "";
     public static String SIMULATOR_MODE;
     public static long SIMULATOR_TIME_OFFSET_MONTHS = 0L;
+    public static String SIMULATOR_START_TIME = "2024/01/01T00:00:00";
+    public static long SIMULATOR_START_TIME_MILLIS = 0L;
+    public static String SIMULATOR_END_TIME = "2024/12/31T23:59:59";
+    public static long SIMULATOR_END_TIME_MILLIS = 0L;
+    public static int SIMULATOR_SAMPLING_INTERVAL_SECONDS = 900;
     public static String SIMULATOR_STORAGE_TYPE;
     public static String SIMULATOR_NODEID;
     public static boolean SIMULATOR_EXIT_WHEN_DONE = true;
@@ -91,6 +96,11 @@ public class Props {
         // possible values:
         SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES").toString();
         SIMULATOR_TIME_OFFSET_MONTHS = Integer.parseInt(getenv.getOrDefault("SIMULATOR_TIME_OFFSET_MONTHS", "0").toString());
+        SIMULATOR_START_TIME = getenv.getOrDefault("SIMULATOR_START_TIME", "2024-01-01T00:00:00Z").toString();
+        SIMULATOR_START_TIME_MILLIS = Instant.parse(SIMULATOR_START_TIME).getEpochSecond();
+        SIMULATOR_END_TIME = getenv.getOrDefault("SIMULATOR_END_TIME", "2024-12-31T23:59:59Z").toString();
+        SIMULATOR_END_TIME_MILLIS = Instant.parse(SIMULATOR_END_TIME).getEpochSecond();
+        SIMULATOR_SAMPLING_INTERVAL_SECONDS = Integer.parseInt(getenv.getOrDefault("SIMULATOR_SAMPLING_INTERVAL_SECONDS", "900").toString());
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH").toString();
         SIMULATOR_EXIT_WHEN_DONE = Boolean.parseBoolean(getenv.getOrDefault("CDRPR_EXIT_WHEN_DONE", "true").toString());

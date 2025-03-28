@@ -40,11 +40,27 @@ public class Start {
         // store each record into ES
         // config via cdrpr.properties
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AGGREGATE_AND_STORE_TO_ES")) {
+            // this use case is also known as CDRAGGS
             initMetricsLib();
             startCdrNodeGenerators();
-            Thread t = new Thread(new AggregateGenCdrsToEs(1));
+            Thread t = new Thread(new AggCdrsToEs(1));
             t.setName("aggregator");
             t.start();
+        }
+
+        if (Props.SIMULATOR_MODE.equalsIgnoreCase("GENERATE_CDR_AGGREGATE_AND_STORE_TO_ES_BY_NODE")) {
+            // this use case is also known as NODEAGGS and TGAGGS
+            // TODO
+            initMetricsLib();
+            startCdrNodeGenerators();
+            Thread t = new Thread(new AggCdrsToEsByNode(1));
+            t.setName("aggregator");
+            t.start();
+        }
+
+        if (Props.SIMULATOR_MODE.equalsIgnoreCase("SEQUENTIAL_RANDOM_DATA_TO_OS")) {
+            SeqRandomDataToEs seqRandomDataToEs = new SeqRandomDataToEs();
+            seqRandomDataToEs.generateData();
         }
 
         // start generator

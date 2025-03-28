@@ -7,7 +7,10 @@ import si.matjazcerkvenik.datasims.cdrpr.simulator.generator.StorageThread;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class AggregateGenCdrsToEs implements Runnable {
+/**
+ * Aggregate data as single-value metric. Store data for all nodes in one index.
+ */
+public class AggCdrsToEs implements Runnable {
 
     private boolean running = true;
     private int threadId = 0;
@@ -110,7 +113,7 @@ public class AggregateGenCdrsToEs implements Runnable {
             .setLabelNames("nodeName", "duration")
             .register(INDEX_CDR_KPI_ASR);
 
-    public AggregateGenCdrsToEs(int id) {
+    public AggCdrsToEs(int id) {
         threadId = id;
         pgClient = new PgClient(Props.PG_URL, Props.PG_USER, Props.PG_PASS);
         esClient = new EsClient(Props.ES_SCHEMA, Props.ES_HOST, Props.ES_PORT);
