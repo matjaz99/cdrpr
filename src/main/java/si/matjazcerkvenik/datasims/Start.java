@@ -59,6 +59,7 @@ public class Start {
         }
 
         if (Props.SIMULATOR_MODE.equalsIgnoreCase("SEQUENTIAL_RANDOM_DATA_TO_OS")) {
+            initMetricsLib();
             SeqRandomDataToEs seqRandomDataToEs = new SeqRandomDataToEs();
             seqRandomDataToEs.generateData();
         }

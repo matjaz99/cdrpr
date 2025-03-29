@@ -36,9 +36,9 @@ public class Props {
     public static String SIMULATOR_MODE;
     public static long SIMULATOR_TIME_OFFSET_MONTHS = 0L;
     public static String SIMULATOR_START_TIME = "2024/01/01T00:00:00";
-    public static long SIMULATOR_START_TIME_MILLIS = 0L;
+    public static long SIMULATOR_START_TIME_SECONDS = 0L;
     public static String SIMULATOR_END_TIME = "2024/12/31T23:59:59";
-    public static long SIMULATOR_END_TIME_MILLIS = 0L;
+    public static long SIMULATOR_END_TIME_SECONDS = 0L;
     public static int SIMULATOR_SAMPLING_INTERVAL_SECONDS = 900;
     public static String SIMULATOR_STORAGE_TYPE;
     public static String SIMULATOR_NODEID;
@@ -94,12 +94,13 @@ public class Props {
                 "London, Moscow, Zagreb, Bonn, Prague").toString();
 
         // possible values:
-        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES").toString();
+//        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "GENERATE_CDR_AND_STORE_ALL_TO_ES").toString();
+        SIMULATOR_MODE = getenv.getOrDefault("CDRPR_SIMULATOR_MODE", "SEQUENTIAL_RANDOM_DATA_TO_OS").toString();
         SIMULATOR_TIME_OFFSET_MONTHS = Integer.parseInt(getenv.getOrDefault("SIMULATOR_TIME_OFFSET_MONTHS", "0").toString());
         SIMULATOR_START_TIME = getenv.getOrDefault("SIMULATOR_START_TIME", "2024-01-01T00:00:00Z").toString();
-        SIMULATOR_START_TIME_MILLIS = Instant.parse(SIMULATOR_START_TIME).getEpochSecond();
+        SIMULATOR_START_TIME_SECONDS = Instant.parse(SIMULATOR_START_TIME).getEpochSecond();
         SIMULATOR_END_TIME = getenv.getOrDefault("SIMULATOR_END_TIME", "2024-12-31T23:59:59Z").toString();
-        SIMULATOR_END_TIME_MILLIS = Instant.parse(SIMULATOR_END_TIME).getEpochSecond();
+        SIMULATOR_END_TIME_SECONDS = Instant.parse(SIMULATOR_END_TIME).getEpochSecond();
         SIMULATOR_SAMPLING_INTERVAL_SECONDS = Integer.parseInt(getenv.getOrDefault("SIMULATOR_SAMPLING_INTERVAL_SECONDS", "900").toString());
         // possible values: ELASTICSEARCH, POSTGRES
         SIMULATOR_STORAGE_TYPE = getenv.getOrDefault("CDRPR_SIMULATOR_STORAGE_TYPE", "ELASTICSEARCH").toString();
@@ -136,12 +137,18 @@ public class Props {
 
         logger.info("CONFIGURATION:");
         logger.info("- HOSTNAME: " + HOSTNAME);
+        logger.info("- CURRENT_TIMESTAMP: " + System.currentTimeMillis());
         logger.info("- CURRENT_DIR: " + System.getProperty("user.dir"));
         logger.info("- SIMULATOR_MODE: " + SIMULATOR_MODE);
         logger.info("- SIMULATOR_SIMULATOR_THREADS: " + SIMULATOR_SIMULATOR_THREADS);
         logger.info("- SIMULATOR_CALL_REASON: " + SIMULATOR_CALL_REASON);
         logger.info("- SIMULATOR_DELAY: " + SIMULATOR_CALL_DELAY);
         logger.info("- SEND_INTERVAL_SEC: " + SEND_INTERVAL_SEC);
+        logger.info("- SIMULATOR_START_TIME: " + SIMULATOR_START_TIME);
+        logger.info("- SIMULATOR_START_TIME_MILLIS: " + SIMULATOR_START_TIME_SECONDS);
+        logger.info("- SIMULATOR_END_TIME: " + SIMULATOR_END_TIME);
+        logger.info("- SIMULATOR_END_TIME_MILLIS: " + SIMULATOR_END_TIME_SECONDS);
+        logger.info("- SIMULATOR_SAMPLING_INTERVAL_SECONDS: " + SIMULATOR_SAMPLING_INTERVAL_SECONDS);
         logger.info("- BULK_SIZE: " + BULK_SIZE);
         logger.info("- ES_SCHEMA: " + ES_SCHEMA);
         logger.info("- ES_BASIC_USER: " + ES_BASIC_USER);
